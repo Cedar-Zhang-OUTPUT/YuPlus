@@ -20,6 +20,26 @@ Infer whether the request concerns collection (draft) or organization (review), 
 
 This is a continuous loop: materials and user input → draft objects → review objects → user review → updated materials/instructions and draft → updated review. New materials or feedback can enter at any step, including while a review is being written or after it has been shown. Interpret their effect, record new evidence/instructions as needed, update the relevant draft objects, and synchronize affected existing review objects within the requested scope. Do not require a completed round, a restart, or a formal approval before accepting changes. After an update, present the changed review content and explain remaining work; receiving feedback alone does not establish user acceptance of the next version.
 
+## Read the right guidance at the relevant step
+
+The files below are Yu+ references, not separate skills. Follow this routing when reaching a step; do not load the whole table's references at startup. A link or skill name does not mean its instructions have already been read.
+
+| Step | Yu+ reference to consult | When to use another Skill |
+| --- | --- | --- |
+| First setup or environment failure | [materials.md](references/materials.md), “First setup” | Use the installed `lark-shared` authentication guidance for the initial Feishu health check or a relevant authentication failure; not before every material read. |
+| Read Feishu material | [materials.md](references/materials.md), “Feishu documents and exports” | Use `lark-doc` for documents/wiki content, `lark-drive` for file download/export; for other resource types select the matching installed Feishu Skill. Read only the guidance for the operation needed. |
+| Read a local file | [materials.md](references/materials.md), “Local files, images and video” | For PDFs, office documents or media, select an available Skill appropriate to the format and requested reading task. Plain text can be read directly; do not load every document Skill. |
+| Receive spoken input or a modification instruction | [materials.md](references/materials.md), “Spoken input and review instructions” | Existing conversation text needs no transcription Skill. If an actual recording needs transcription, use a suitable available tool/Skill and retain what was really obtained. |
+| Save or append source material | [cli.md](references/cli.md), `source.import`; consult the relevant materials section above for capture rules | Reuse the already-read material; saving it in Yu+ alone does not require rerunning the external Skill. |
+| Create or change draft objects | [objects.md](references/objects.md), only the relevant object entries; [cli.md](references/cli.md), `draft.apply` | Use external Skills only if additional material must be read. Business attributes can also be queried with `yu types show --type TYPE --json`; inspect only the needed input contracts with the helper described in cli.md. |
+| Compose review objects | [objects.md](references/objects.md), the relevant review/dependency mapping; [cli.md](references/cli.md), `review.prepare / review.publish` | Composing review from already-read draft does not by itself require a Feishu or file-reading Skill. |
+| Apply review feedback | The draft-first sequence below; relevant business entries or `expression_guide` in [objects.md](references/objects.md), then the corresponding draft/review sections in [cli.md](references/cli.md) | If feedback includes new material, also follow its material-reading row. A wording-only correction does not require reopening all original materials. |
+| Recover from a CLI error | [cli.md](references/cli.md), “Results and recovery”; the failing command's contract/help as needed | Consult external Skill error guidance only when that external tool is involved. |
+
+For another Skill, locate its actual installed entry in the environment's Skill catalog and read its `SKILL.md` before using it, unless its relevant instructions are already available in this conversation. Follow only the references needed for this task. Do not assume Yu+ automatically loads or installs dependent Skills. If a named Skill is unavailable, use supported tool/CLI help or an appropriate available reader; explain an actual capability gap instead of inventing commands or installation paths.
+
+**Reuse what has already been read.** Before opening any reference or external Skill, check whether its relevant instructions remain available and applicable. If so, use them without rereading, even across turns, project switches or repeated operations. Load only a previously unread section needed by a new task, or refresh the affected instructions when they were lost in context compaction, the Skill/tool version changed, or an observed mismatch makes them unreliable. A new turn alone is not a refresh trigger. Instruction reuse is separate from data freshness: refresh affected project versions when needed without reloading all guidance.
+
 ## Orient without restarting
 
 - Establish the executable, data directory and project ID. Reuse them when already known. If several projects fit and the target is unclear, ask one project-selection question before writing. Create a project when requested; do not force one project per installation.
@@ -31,13 +51,13 @@ This is a continuous loop: materials and user input → draft objects → review
 
 There are **no mandatory business fields or stage-entry requirements**. Unknown budgets, dates and audiences stay unknown. Explain what might be useful and how to provide it—meeting notes, a document, a local file or a short spoken explanation—while making clear that organization can begin now. Do not impose a completion checklist, approval workflow or creative-direction selection on collection.
 
-Read only the relevant object entry in [object guide](references/objects.md), or use `yu types show --type TYPE --json`. The guide describes meaning, possible sources and downstream use; it is not a checklist. Obtain exact input fields through [CLI reference](references/cli.md) before composing an unfamiliar write.
+Use the step-specific guidance above for object meaning and exact CLI fields. The object guide describes meaning, possible sources and downstream use; it is not a checklist.
 
 Preserve original material and distinguish source statements, user supplements, reports, hypotheses, suggestions and adopted decisions. Never turn your inference into a client's decision. Keep conflicting accounts with their evidence; ask only when choosing the current interpretation would otherwise require guessing. Do not create a consensus pool or duplicate R05 Q&A data.
 
 ## Information collection — draft
 
-1. Read the supplied material using available tools: Feishu CLI/skills for Feishu, an appropriate document/PDF tool or direct reading for files, and the user's actual words for spoken input. Preserve a real title, source identity and available location/version information. An imported attachment does not mean its contents were analyzed.
+1. Follow the relevant material-reading row above, reusing guidance already read. Read the supplied material with the selected tool or Skill, or use the user's actual words for spoken input. Preserve a real title, source identity and available location/version information. An imported attachment does not mean its contents were analyzed.
 2. Record the source with `source import`. Save original bytes where appropriate; save excerpts as selections, never as a complete-source replacement. For an existing source, append using its actual ID and base snapshot. Keep client originals immutable.
 3. As part of collection, use `draft apply` to record information actually obtained in the relevant draft objects, with its evidence and relationships. Do not wait for a separate organization request to maintain draft. If the user explicitly asks only to archive the original, honor that narrower scope. Do not invent missing facts, create every object type, or generate review outputs merely because material was collected.
 4. Retain stable item IDs, evidence and dependencies. A `set_items` entry replaces that entire item, including its references; preserve unrelated fields and siblings. Record actual adopted decisions with the user's instruction source and affected items. Keep prior decisions rather than overwriting them.
