@@ -1,0 +1,40 @@
+{
+  "api_version": "1",
+  "command": "review.publish",
+  "reason": "同步已采用的预算决定",
+  "documents": [
+    {
+      "target": {
+        "type_key": "debrief",
+        "scope_key": "project",
+        "object_id": "obj_debrief"
+      },
+      "base_revision": "rev_debrief_1",
+      "read_basis": [
+        {
+          "object_id": "obj_budget",
+          "revision_id": "rev_budget_2"
+        }
+      ],
+      "structure_cause_change_ids": [],
+      "set_blocks": [
+        {
+          "block_id": "budget",
+          "markdown": "本轮按主策指示，以 **60 万元人民币**预算推进；客户原始材料中的 100 万元说法保留为历史来源。",
+          "dependencies": [
+            {
+              "dependency_id": "dep_budget",
+              "object_id": "obj_budget",
+              "revision_id": "rev_budget_2",
+              "item_id": "client_budget",
+              "kind": "fact"
+            }
+          ],
+          "cause_change_ids": [
+            "chg_budget_02"
+          ]
+        }
+      ]
+    }
+  ]
+}

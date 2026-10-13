@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yuplus-local"
+version = "0.1.0"
+description = "Local, provenance-aware project CLI for Yu+"
+requires-python = ">=3.12"
+dependencies = ["jsonschema[format]==4.25.1"]
+
+[project.scripts]
+yu = "yuplus.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+yuplus = ["contracts/*.json", "contracts/*.sql"]

@@ -1,0 +1,38 @@
+{
+  "api_version": "1",
+  "command": "draft.apply",
+  "reason": "把用户对预算段的表达要求保存为编写依据",
+  "instruction_source_version_id": "sv_wording_1",
+  "objects": [
+    {
+      "op_id": "guide",
+      "type_key": "expression_guide",
+      "scope_key": "review:obj_debrief",
+      "base_revision": null,
+      "set_items": [
+        {
+          "item_id": "short_budget",
+          "data": {
+            "review_object_id": "obj_debrief",
+            "block_ids": [
+              "budget"
+            ],
+            "instruction": "预算这一段简短一点。",
+            "intent": "rewrite"
+          },
+          "epistemic_kind": "user_supplied",
+          "source_refs": [
+            {
+              "evidence_id": "ev_wording",
+              "source_version_id": "sv_wording_1",
+              "kind": "instruction",
+              "locator": {}
+            }
+          ],
+          "dependencies": []
+        }
+      ]
+    }
+  ],
+  "decisions": []
+}

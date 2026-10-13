@@ -1,0 +1,94 @@
+"""Machine-friendly CLI; domain writes are accessible only through command handlers."""
+import argparse
+import json
+import os
+from pathlib import Path
+import sqlite3
+import sys
+from .app import App
+from .core import YuError
+
+COMMANDS={
+    'project.create','project.list','project.show','source.import','source.list','source.show',
+    'draft.apply','draft.list','draft.show','review.prepare','review.publish','review.list','review.show',
+    'changes.list','decisions.list','types.show','doctor',
+}
+INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
+
+class Parser(argparse.ArgumentParser):
+    def error(self,message): raise YuError('INVALID_INPUT',message)
+
+def reject_duplicate(pairs):
+    result={}
+    for key,value in pairs:
+        if key in result:raise YuError('INVALID_INPUT','JSON 含有重复字段。',details=[{'field':key}])
+        result[key]=value
+    return result
+
+def parse_json(text):
+    def bad_constant(value):raise YuError('INVALID_INPUT','JSON 不允许 NaN 或 Infinity。')
+    try:
+        value=json.loads(text,object_pairs_hook=reject_duplicate,parse_constant=bad_constant)
+        def check(v):
+            if type(v) is int and abs(v)>9007199254740991:raise YuError('INVALID_INPUT','大整数请使用字符串。')
+            if isinstance(v,dict):
+                for x in v.values():check(x)
+            elif isinstance(v,list):
+                for x in v:check(x)
+        check(value)
+        return value
+    except (json.JSONDecodeError,UnicodeError,RecursionError) as exc:raise YuError('INVALID_INPUT','无法解析 JSON 输入。') from exc
+
+def main(argv=None):
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（最小链路 v0.1）',
+                  epilog='可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
+                  formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
+    parser.add_argument('--data-dir',default=os.environ.get('YUPLUS_DATA_DIR',str(Path.home()/'.local/share/yuplus')))
+    parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
+    parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
+    parser.add_argument('--include-body',action='store_true',help='source show 显式读取来源正文')
+    parser.add_argument('--object');parser.add_argument('--revision');parser.add_argument('--type',dest='type_key')
+    parser.add_argument('--limit',type=int,default=50);parser.add_argument('--after-cursor',default=0)
+    parser.add_argument('--json',action='store_true',help='输出稳定 JSON（默认同样输出 JSON）')
+    app=None;args=None;command='unknown'
+    try:
+        args=parser.parse_args(argv)
+        command='.'.join(x for x in (args.resource,args.action) if x)
+        if command not in COMMANDS:raise YuError('INVALID_INPUT','未知命令，请运行 yu --help。')
+        if command in INPUT_COMMANDS:
+            if not args.input:raise YuError('INVALID_INPUT','该命令需要 --input 文件或 --input -。')
+            if args.input=='-':raw=sys.stdin.buffer.read(8*1024*1024+1)
+            else:
+                with open(args.input,'rb') as file:raw=file.read(8*1024*1024+1)
+            if len(raw)>8*1024*1024:raise YuError('INPUT_TOO_LARGE','单次 JSON 不能超过 8 MiB。')
+            try:payload=parse_json(raw.decode('utf-8'))
+            except UnicodeDecodeError as exc:raise YuError('INVALID_INPUT','输入必须是 UTF-8。') from exc
+        elif command=='project.create':
+            if not args.name:raise YuError('INVALID_INPUT','创建项目需要 --name。')
+            payload={'name':args.name}
+        else:
+            payload={}
+            mapping={'source_id':args.source,'snapshot_id':args.snapshot,'object_id':args.object,'revision_id':args.revision,'type_key':args.type_key}
+            payload.update({k:v for k,v in mapping.items() if v is not None})
+            if args.include_body:payload['include_body']=True
+            if command.endswith('.show') and command.startswith(('draft.','review.')) and not args.object:raise YuError('INVALID_INPUT','需要 --object。')
+            if command=='source.show' and not args.source:raise YuError('INVALID_INPUT','需要 --source。')
+            if command in {'changes.list','decisions.list'}:payload.update(limit=args.limit,after_cursor=args.after_cursor)
+        app=App(args.data_dir)
+        result=app.execute(command,payload,project_id=args.project,request_id=args.request_id)
+        print(json.dumps(result,ensure_ascii=False,allow_nan=False));return 0
+    except YuError as exc:error=exc
+    except FileNotFoundError as exc:error=YuError('FILE_NOT_FOUND','输入文件不存在。',details=[{'path':str(exc.filename)}])
+    except OSError as exc:error=YuError('DISK_FULL' if exc.errno==28 else 'IO_FAILURE','本地文件操作失败。',details=[{'reason':str(exc)}])
+    except sqlite3.OperationalError as exc:
+        error=YuError('DATABASE_BUSY' if 'locked' in str(exc).lower() or 'busy' in str(exc).lower() else 'INTEGRITY_FAILURE','数据库暂时忙碌。' if 'locked' in str(exc).lower() else '数据库操作失败。',retryable='locked' in str(exc).lower())
+    except sqlite3.IntegrityError as exc:error=YuError('INTEGRITY_FAILURE','数据库约束拒绝提交。',details=[{'constraint':str(exc)}])
+    except sqlite3.DatabaseError as exc:error=YuError('INTEGRITY_FAILURE','数据库无法读取，已保留原文件。',details=[{'reason':str(exc)}])
+    except (KeyError,TypeError,ValueError,RecursionError) as exc:error=YuError('INVALID_INPUT','输入缺少字段或格式不正确。',details=[{'reason':str(exc)[:200]}])
+    finally:
+        if app is not None:app.close()
+    result={'api_version':'1','command':command or 'unknown','ok':False,'project_id':args.project if args else None,'request_id':args.request_id if args else None,
+            'error':{'code':error.code,'message':error.message,'retryable':error.retryable,'details':error.details,'next_action':error.next_action},
+            'meta':{'change_id':None,'history_cursor':None,'replayed':False}}
+    print(json.dumps(result,ensure_ascii=False,allow_nan=False));return error.exit_code

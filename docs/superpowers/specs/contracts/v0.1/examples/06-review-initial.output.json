@@ -1,0 +1,33 @@
+{
+  "api_version": "1",
+  "command": "review.publish",
+  "ok": true,
+  "project_id": "prj_city",
+  "request_id": "req_review_01",
+  "data": {
+    "effect": "changed",
+    "documents": [
+      {
+        "object_id": "obj_debrief",
+        "revision_id": "rev_debrief_1",
+        "version": 1,
+        "updated_blocks": [
+          "budget"
+        ],
+        "removed_blocks": [],
+        "basis": [
+          {
+            "object_id": "obj_budget",
+            "revision_id": "rev_budget_1"
+          }
+        ],
+        "requires_recheck_blocks": []
+      }
+    ]
+  },
+  "meta": {
+    "change_id": "chg_review_01",
+    "history_cursor": 3,
+    "replayed": false
+  }
+}

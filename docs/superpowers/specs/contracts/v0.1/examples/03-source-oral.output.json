@@ -1,0 +1,24 @@
+{
+  "api_version": "1",
+  "command": "source.import",
+  "ok": true,
+  "project_id": "prj_city",
+  "request_id": "req_instruction_01",
+  "data": {
+    "effect": "changed",
+    "source_id": "src_instruction",
+    "snapshot_id": "sv_instruction_1",
+    "snapshot_version": 1,
+    "head_snapshot_id": "sv_instruction_1",
+    "snapshot_reused": false,
+    "title": "主策补充：采用预算 60 万",
+    "canonical_url": null,
+    "assets": [],
+    "dependent_draft_items": []
+  },
+  "meta": {
+    "change_id": "chg_instruction_01",
+    "history_cursor": 4,
+    "replayed": false
+  }
+}

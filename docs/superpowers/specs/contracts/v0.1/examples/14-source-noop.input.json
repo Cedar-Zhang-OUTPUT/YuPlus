@@ -1,0 +1,27 @@
+{
+  "api_version": "1",
+  "command": "source.import",
+  "target": {
+    "mode": "append",
+    "source_id": "src_brief",
+    "base_snapshot_id": "sv_brief_2"
+  },
+  "snapshot": {
+    "title": "城市展项目需求",
+    "provider_revision": "18",
+    "captured_at": "2026-10-13T04:05:00Z",
+    "capture_scope": {
+      "kind": "whole_resource"
+    },
+    "extraction_profile": "plain-text-v1",
+    "body": {
+      "format": "text",
+      "text": "客户提出预算为人民币 100 万元。补充：场地位于展厅一层。"
+    },
+    "provenance": {
+      "method": "feishu-cli-docx"
+    }
+  },
+  "advance_head": true,
+  "reason": "再次收录相同 revision 和内容"
+}

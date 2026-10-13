@@ -1,0 +1,17 @@
+{
+  "api_version": "1",
+  "command": "review.prepare",
+  "target": {
+    "type_key": "debrief",
+    "scope_key": "project"
+  },
+  "cause_change_ids": [],
+  "select_basis": [
+    {
+      "object_id": "obj_budget",
+      "item_ids": [
+        "client_budget"
+      ]
+    }
+  ]
+}

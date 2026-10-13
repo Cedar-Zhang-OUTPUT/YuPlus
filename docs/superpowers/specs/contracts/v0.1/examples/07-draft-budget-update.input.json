@@ -1,0 +1,58 @@
+{
+  "api_version": "1",
+  "command": "draft.apply",
+  "reason": "用户要求当前按 60 万推进，保留原始客户说法",
+  "instruction_source_version_id": "sv_instruction_1",
+  "objects": [
+    {
+      "op_id": "budget",
+      "object_id": "obj_budget",
+      "type_key": "budget_range",
+      "scope_key": "project",
+      "base_revision": "rev_budget_1",
+      "set_items": [
+        {
+          "item_id": "client_budget",
+          "data": {
+            "budget_kind": "adopted",
+            "currency": "CNY",
+            "min_minor": "60000000",
+            "max_minor": "60000000",
+            "scope": "本轮项目预算"
+          },
+          "epistemic_kind": "adopted_decision",
+          "source_refs": [
+            {
+              "evidence_id": "ev_instruction",
+              "source_version_id": "sv_instruction_1",
+              "kind": "instruction",
+              "locator": {}
+            },
+            {
+              "evidence_id": "ev_original",
+              "source_version_id": "sv_brief_1",
+              "kind": "contradicts",
+              "locator": {}
+            }
+          ],
+          "dependencies": []
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "decision_key": "adopt_budget",
+      "statement": "本轮采用人民币 60 万元预算推进。",
+      "decided_by": "当前用户（主策）",
+      "instruction_source_version_id": "sv_instruction_1",
+      "rationale": "用户明确指示；尚未提供进一步理由。",
+      "affected_items": [
+        {
+          "op_id": "budget",
+          "item_id": "client_budget"
+        }
+      ]
+    }
+  ]
+}

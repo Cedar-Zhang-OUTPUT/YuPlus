@@ -1,0 +1,26 @@
+{
+  "api_version": "1",
+  "command": "review.publish",
+  "ok": false,
+  "project_id": "prj_city",
+  "request_id": "req_review_02",
+  "error": {
+    "code": "DRAFT_BASIS_CHANGED",
+    "message": "预算依据已变化，请重新读取后生成成果。",
+    "retryable": true,
+    "details": [
+      {
+        "path": "/documents/0/read_basis/0",
+        "object_id": "obj_budget",
+        "expected": "rev_budget_2",
+        "actual": "rev_budget_3"
+      }
+    ],
+    "next_action": "重新运行 review.prepare，基于新依据生成输入，并使用新的 request-id。"
+  },
+  "meta": {
+    "change_id": null,
+    "history_cursor": 6,
+    "replayed": false
+  }
+}

@@ -1,0 +1,10 @@
+.venv/
+.preview/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.yuplus/
+.DS_Store
+.local/

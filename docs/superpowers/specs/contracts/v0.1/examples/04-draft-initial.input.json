@@ -1,0 +1,37 @@
+{
+  "api_version": "1",
+  "command": "draft.apply",
+  "reason": "提取客户预算说法",
+  "objects": [
+    {
+      "op_id": "budget",
+      "type_key": "budget_range",
+      "scope_key": "project",
+      "base_revision": null,
+      "title": "项目预算",
+      "set_items": [
+        {
+          "item_id": "client_budget",
+          "data": {
+            "budget_kind": "client",
+            "currency": "CNY",
+            "min_minor": "100000000",
+            "max_minor": "100000000",
+            "scope": "本轮项目预算"
+          },
+          "epistemic_kind": "source_statement",
+          "source_refs": [
+            {
+              "evidence_id": "ev_budget",
+              "source_version_id": "sv_brief_1",
+              "kind": "supports",
+              "locator": {}
+            }
+          ],
+          "dependencies": []
+        }
+      ]
+    }
+  ],
+  "decisions": []
+}

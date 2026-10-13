@@ -1,0 +1,27 @@
+{
+  "api_version": "1",
+  "command": "draft.apply",
+  "ok": true,
+  "project_id": "prj_city",
+  "request_id": "req_budget_01",
+  "data": {
+    "effect": "changed",
+    "objects": [
+      {
+        "op_id": "budget",
+        "object_id": "obj_budget",
+        "revision_id": "rev_budget_1",
+        "version": 1,
+        "changed": true
+      }
+    ],
+    "decisions": [],
+    "affected_reviews": [],
+    "affected_draft_items": []
+  },
+  "meta": {
+    "change_id": "chg_budget_01",
+    "history_cursor": 2,
+    "replayed": false
+  }
+}

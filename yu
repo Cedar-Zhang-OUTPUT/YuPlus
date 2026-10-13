@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+"""Repository launcher. Prefer .venv if installed; never install dependencies implicitly."""
+import os
+import sys
+from pathlib import Path
+root = Path(__file__).resolve().parent
+venv_python = root / '.venv/bin/python'
+if venv_python.exists() and Path(sys.prefix).resolve() != (root / '.venv').resolve():
+    os.execv(str(venv_python), [str(venv_python), str(Path(__file__).resolve()), *sys.argv[1:]])
+sys.path.insert(0, str(root / 'src'))
+from yuplus.cli import main
+raise SystemExit(main())

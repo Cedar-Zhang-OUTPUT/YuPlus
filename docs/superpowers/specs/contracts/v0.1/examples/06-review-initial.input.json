@@ -1,0 +1,38 @@
+{
+  "api_version": "1",
+  "command": "review.publish",
+  "reason": "依据现有信息组织第一版 Debrief",
+  "documents": [
+    {
+      "target": {
+        "type_key": "debrief",
+        "scope_key": "project"
+      },
+      "base_revision": null,
+      "title": "城市展项目 Debrief",
+      "read_basis": [
+        {
+          "object_id": "obj_budget",
+          "revision_id": "rev_budget_1"
+        }
+      ],
+      "structure_cause_change_ids": [],
+      "set_blocks": [
+        {
+          "block_id": "budget",
+          "markdown": "客户原始材料提出预算为 **100 万元人民币**。",
+          "dependencies": [
+            {
+              "dependency_id": "dep_budget",
+              "object_id": "obj_budget",
+              "revision_id": "rev_budget_1",
+              "item_id": "client_budget",
+              "kind": "fact"
+            }
+          ],
+          "cause_change_ids": []
+        }
+      ]
+    }
+  ]
+}

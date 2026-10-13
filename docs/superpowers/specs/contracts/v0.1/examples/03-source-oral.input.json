@@ -1,0 +1,28 @@
+{
+  "api_version": "1",
+  "command": "source.import",
+  "target": {
+    "mode": "create",
+    "provider": "oral",
+    "resource_type": "statement"
+  },
+  "snapshot": {
+    "title": "主策补充：采用预算 60 万",
+    "provider_revision": null,
+    "captured_at": "2026-10-13T02:00:00Z",
+    "capture_scope": {
+      "kind": "whole_resource"
+    },
+    "extraction_profile": "plain-text-v1",
+    "body": {
+      "format": "text",
+      "text": "现在按 60 万推进。"
+    },
+    "provenance": {
+      "method": "conversation-verbatim",
+      "reported_by": "当前用户（主策）"
+    }
+  },
+  "advance_head": true,
+  "reason": "保存用户修改预算的原话"
+}

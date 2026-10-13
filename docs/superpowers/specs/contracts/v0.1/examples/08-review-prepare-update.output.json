@@ -1,0 +1,97 @@
+{
+  "api_version": "1",
+  "command": "review.prepare",
+  "ok": true,
+  "project_id": "prj_city",
+  "request_id": null,
+  "data": {
+    "target": {
+      "type_key": "debrief",
+      "scope_key": "project",
+      "object_id": "obj_debrief"
+    },
+    "object_id": "obj_debrief",
+    "current_revision_id": "rev_debrief_1",
+    "document": {
+      "title": "城市展项目 Debrief",
+      "blocks": [
+        {
+          "block_id": "budget",
+          "markdown": "客户原始材料提出预算为 **100 万元人民币**。",
+          "dependencies": [
+            {
+              "dependency_id": "dep_budget",
+              "object_id": "obj_budget",
+              "revision_id": "rev_budget_1",
+              "item_id": "client_budget",
+              "kind": "fact"
+            }
+          ],
+          "cause_change_ids": []
+        }
+      ],
+      "block_order": [
+        "budget"
+      ]
+    },
+    "read_basis": [
+      {
+        "object_id": "obj_budget",
+        "revision_id": "rev_budget_2"
+      }
+    ],
+    "selected_items": [
+      {
+        "object_id": "obj_budget",
+        "revision_id": "rev_budget_2",
+        "fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "item_id": "client_budget",
+        "data": {
+          "budget_kind": "adopted",
+          "currency": "CNY",
+          "min_minor": "60000000",
+          "max_minor": "60000000",
+          "scope": "本轮项目预算"
+        },
+        "epistemic_kind": "adopted_decision",
+        "source_refs": [
+          {
+            "evidence_id": "ev_instruction",
+            "source_version_id": "sv_instruction_1",
+            "kind": "instruction",
+            "locator": {}
+          },
+          {
+            "evidence_id": "ev_original",
+            "source_version_id": "sv_brief_1",
+            "kind": "contradicts",
+            "locator": {}
+          }
+        ],
+        "dependencies": []
+      }
+    ],
+    "affected_blocks": [
+      {
+        "block_id": "budget",
+        "reason": "dependency_changed"
+      }
+    ],
+    "available_causes": [
+      {
+        "change_id": "chg_budget_02",
+        "object_id": "obj_budget",
+        "item_ids": [
+          "client_budget"
+        ]
+      }
+    ],
+    "expression_guides": [],
+    "review_checks": []
+  },
+  "meta": {
+    "change_id": null,
+    "history_cursor": 5,
+    "replayed": false
+  }
+}

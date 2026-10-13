@@ -1,0 +1,37 @@
+{
+  "api_version": "1",
+  "command": "source.import",
+  "target": {
+    "mode": "create",
+    "provider": "local",
+    "resource_type": "file"
+  },
+  "snapshot": {
+    "title": "场地资料.pdf",
+    "provider_revision": null,
+    "captured_at": "2026-10-13T02:00:00Z",
+    "capture_scope": {
+      "kind": "whole_resource"
+    },
+    "extraction_profile": "plain-text-v1",
+    "body": {
+      "format": "text",
+      "text": "场地位于展厅一层。"
+    },
+    "provenance": {
+      "method": "pdf-text-extraction"
+    },
+    "assets": [
+      {
+        "asset_id": "asset_original",
+        "role": "original",
+        "display_name": "场地资料.pdf",
+        "mime_type": "application/pdf",
+        "local_path": "/Users/example/Materials/场地资料.pdf",
+        "storage": "copy"
+      }
+    ]
+  },
+  "advance_head": true,
+  "reason": "收录本地场地原件；此示例独立于预算链路"
+}

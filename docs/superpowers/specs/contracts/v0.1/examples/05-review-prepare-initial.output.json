@@ -1,0 +1,56 @@
+{
+  "api_version": "1",
+  "command": "review.prepare",
+  "ok": true,
+  "project_id": "prj_city",
+  "request_id": null,
+  "data": {
+    "target": {
+      "type_key": "debrief",
+      "scope_key": "project"
+    },
+    "object_id": null,
+    "current_revision_id": null,
+    "document": null,
+    "read_basis": [
+      {
+        "object_id": "obj_budget",
+        "revision_id": "rev_budget_1"
+      }
+    ],
+    "selected_items": [
+      {
+        "object_id": "obj_budget",
+        "revision_id": "rev_budget_1",
+        "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "item_id": "client_budget",
+        "data": {
+          "budget_kind": "client",
+          "currency": "CNY",
+          "min_minor": "100000000",
+          "max_minor": "100000000",
+          "scope": "本轮项目预算"
+        },
+        "epistemic_kind": "source_statement",
+        "source_refs": [
+          {
+            "evidence_id": "ev_budget",
+            "source_version_id": "sv_brief_1",
+            "kind": "supports",
+            "locator": {}
+          }
+        ],
+        "dependencies": []
+      }
+    ],
+    "affected_blocks": [],
+    "available_causes": [],
+    "expression_guides": [],
+    "review_checks": []
+  },
+  "meta": {
+    "change_id": null,
+    "history_cursor": 2,
+    "replayed": false
+  }
+}

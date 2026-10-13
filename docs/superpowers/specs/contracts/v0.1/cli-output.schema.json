@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:yuplus:cli:outputs:1",
+  "title": "Yu+ response envelope v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "change_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "history_cursor": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "replayed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "change_id",
+            "history_cursor",
+            "replayed"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "project_id",
+        "request_id",
+        "meta",
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "change_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "history_cursor": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "replayed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "change_id",
+            "history_cursor",
+            "replayed"
+          ],
+          "additionalProperties": false
+        },
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            },
+            "message": {
+              "type": "string"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "details": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "next_action": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "retryable",
+            "details",
+            "next_action"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "project_id",
+        "request_id",
+        "meta",
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

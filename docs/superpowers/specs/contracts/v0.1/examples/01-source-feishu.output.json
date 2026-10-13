@@ -1,0 +1,24 @@
+{
+  "api_version": "1",
+  "command": "source.import",
+  "ok": true,
+  "project_id": "prj_city",
+  "request_id": "req_source_01",
+  "data": {
+    "effect": "changed",
+    "source_id": "src_brief",
+    "snapshot_id": "sv_brief_1",
+    "snapshot_version": 1,
+    "head_snapshot_id": "sv_brief_1",
+    "snapshot_reused": false,
+    "title": "城市展项目需求",
+    "canonical_url": "https://example.feishu.cn/docx/docx_demo",
+    "assets": [],
+    "dependent_draft_items": []
+  },
+  "meta": {
+    "change_id": "chg_source_01",
+    "history_cursor": 1,
+    "replayed": false
+  }
+}

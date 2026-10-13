@@ -1,0 +1,40 @@
+{
+  "api_version": "1",
+  "command": "draft.apply",
+  "ok": true,
+  "project_id": "prj_city",
+  "request_id": "req_budget_02",
+  "data": {
+    "effect": "changed",
+    "objects": [
+      {
+        "op_id": "budget",
+        "object_id": "obj_budget",
+        "revision_id": "rev_budget_2",
+        "version": 2,
+        "changed": true
+      }
+    ],
+    "decisions": [
+      {
+        "decision_key": "adopt_budget",
+        "decision_id": "dec_budget_60"
+      }
+    ],
+    "affected_reviews": [
+      {
+        "object_id": "obj_debrief",
+        "block_ids": [
+          "budget"
+        ],
+        "reason": "dependency_changed"
+      }
+    ],
+    "affected_draft_items": []
+  },
+  "meta": {
+    "change_id": "chg_budget_02",
+    "history_cursor": 5,
+    "replayed": false
+  }
+}
