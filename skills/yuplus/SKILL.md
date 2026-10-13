@@ -9,14 +9,16 @@ Help a lead exhibition planner move information through a project with less sear
 
 ## Exactly two supported scenarios
 
-Yu+ currently supports **information collection** and **information organization**. Draft and review are stages within information organization, not additional scenarios.
+Yu+ currently supports **information collection** and **information organization**. **Draft corresponds to information collection; review corresponds to information organization.**
 
 | Scenario | Agent's work |
 | --- | --- |
-| Information collection | Read and preserve supplied materials and provenance; suggest useful supplements and ways to provide them. Explain that organization can begin before all information is collected. |
-| Information organization | **Draft:** organize evidence into project objects with sources and relationships. **Review:** compose readable outputs from draft, help the user examine them, and apply requested corrections through draft before updating the outputs. |
+| Information collection — draft | Gather enough information for the current task and structure it into the relevant draft objects, preserving materials, sources and relationships. Suggest useful supplements and ways to provide them. “Enough” is task-specific, not a mandatory field count or a gate. |
+| Information organization — review | Organize existing draft objects into the required review objects with coherent content and traceable dependencies, then present them for the user to review. Apply feedback to draft first, then update the affected review objects. |
 
-Infer the scenario and, within organization, the draft/review stage from the user's request; use this to choose actions and next-step guidance. Do not require the user to select a mode. Collection and organization can alternate, and review can return to draft or receive new material at any time. These are not completion gates. Stored `working_scene` is only a hint; neither its value nor the source/draft/review data layers define additional product scenarios.
+Infer whether the request concerns collection (draft) or organization (review), and use that distinction for actions and next-step guidance. Extracting information into draft is still collection; AI composition and rewriting from that information is organization. Do not require a mode-selection ceremony or complete information before proceeding to review. Both scenarios can be revisited; review corrections update their draft basis without a forced scene switch. Stored `working_scene` is only a hint, and source is the provenance layer, not a third scenario.
+
+This is a continuous loop: materials and user input → draft objects → review objects → user review → updated materials/instructions and draft → updated review. New materials or feedback can enter at any step, including while a review is being written or after it has been shown. Interpret their effect, record new evidence/instructions as needed, update the relevant draft objects, and synchronize affected existing review objects within the requested scope. Do not require a completed round, a restart, or a formal approval before accepting changes. After an update, present the changed review content and explain remaining work; receiving feedback alone does not establish user acceptance of the next version.
 
 ## Orient without restarting
 
@@ -33,16 +35,18 @@ Read only the relevant object entry in [object guide](references/objects.md), or
 
 Preserve original material and distinguish source statements, user supplements, reports, hypotheses, suggestions and adopted decisions. Never turn your inference into a client's decision. Keep conflicting accounts with their evidence; ask only when choosing the current interpretation would otherwise require guessing. Do not create a consensus pool or duplicate R05 Q&A data.
 
-## Collect and organize
+## Information collection — draft
 
 1. Read the supplied material using available tools: Feishu CLI/skills for Feishu, an appropriate document/PDF tool or direct reading for files, and the user's actual words for spoken input. Preserve a real title, source identity and available location/version information. An imported attachment does not mean its contents were analyzed.
 2. Record the source with `source import`. Save original bytes where appropriate; save excerpts as selections, never as a complete-source replacement. For an existing source, append using its actual ID and base snapshot. Keep client originals immutable.
-3. When organization is requested or needed for the requested factual update, use `draft apply` for the relevant objects only. In a collection-only request, store the material and suggest organization; do not silently create a full strategy or review document.
+3. As part of collection, use `draft apply` to record information actually obtained in the relevant draft objects, with its evidence and relationships. Do not wait for a separate organization request to maintain draft. If the user explicitly asks only to archive the original, honor that narrower scope. Do not invent missing facts, create every object type, or generate review outputs merely because material was collected.
 4. Retain stable item IDs, evidence and dependencies. A `set_items` entry replaces that entire item, including its references; preserve unrelated fields and siblings. Record actual adopted decisions with the user's instruction source and affected items. Keep prior decisions rather than overwriting them.
 
-## Review: change the cause before the result
+## Information organization — review
 
-For a requested saved review correction, follow this order:
+When the user asks to organize the collected information into an output, select the relevant existing draft basis, run `review prepare`, compose coherent content, and save it with `review publish`. Preserve links to the actual draft items and source evidence. If a new factual interpretation or adopted position is needed, record it in draft before using it in review. R05 Q&A remains a view of D15 rather than a copied review document.
+
+For a requested saved review correction, change the cause before the result:
 
 1. Locate the affected review blocks and their draft dependencies, reusing known versions where safe.
 2. Capture the user's new factual or wording instruction as a source when it is not already recorded.
@@ -60,7 +64,7 @@ At the end of **each user-triggered Yu+ project response**, briefly state, in th
 - **本次修改：** what was successfully saved, or “无／仅展示预览”; mention partial failure and pending synchronization honestly.
 - **下一步建议：** one concrete, useful next action, optionally one alternative. Say what the user can ask you to do, using this project's current evidence. Do not execute an optional suggestion merely because you offered it.
 
-For example, after saving only a meeting note: “下一步建议：你可以让我把这份纪要整理成已有需求和待讨论问题；预算、档期可以后补。” Do not repeat generic “complete the information / continue the project” menus or make the user grant permission again for work already requested. When nothing else is useful, say this task can stop here and identify only a natural later trigger.
+For example, after collecting a meeting note and recording its information in draft: “下一步建议：你可以让我根据已有信息整理一版主策 Debrief；预算、档期可以后补。” Do not repeat generic “complete the information / continue the project” menus or make the user grant permission again for work already requested. When nothing else is useful, say this task can stop here and identify only a natural later trigger.
 
 These closing rules apply to the **Yu+ end-user copilot**, not to software-development conversations, Skill authoring or unrelated tasks.
 

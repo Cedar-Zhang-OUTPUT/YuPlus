@@ -23,7 +23,7 @@ SQLite 版本不满足时，需选择带有较新 SQLite 的 Python 后重新建
 
 可安装的 Skill 在 [skills/yuplus](skills/yuplus/SKILL.md)，用于主策实际推进项目。它包含按需恢复上下文、飞书/本地/口述材料收录、draft 与 review 的因果更新规则，以及每轮结束时的下一步引导；不应用于 Yu+ 软件开发对话。
 
-当前只有信息收集、信息整理两个场景；draft 与 review 是信息整理场景内的阶段。场景可往返，不设信息完整度门槛。
+当前只有信息收集（draft）、信息整理（review）两个场景：收集时将材料中的信息落到 draft 对象；整理时由 AI 根据已有信息组织、改写 review 成果。场景可往返，不设信息完整度门槛。
 
 - [完整中文审阅版](docs/skills/yuplus/SKILL.zh-CN.md)：主文件、材料处理和 CLI 参考的中文译文。
 - [对象属性与成果关系](skills/yuplus/references/objects.md)：23 类 draft、内部编写依据，以及五类成果的依赖和回改位置。
