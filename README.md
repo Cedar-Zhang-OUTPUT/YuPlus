@@ -19,6 +19,37 @@ SQLite 版本不满足时，需选择带有较新 SQLite 的 Python 后重新建
 
 安装后可用 `.venv/bin/yu`；仓库中的 `./yu` 也提供入口。下文使用 `./yu`。默认数据目录为 `~/.local/share/yuplus`，开发和演示建议显式提供独立的 `--data-dir`。
 
+## Yu+ Agent Skill
+
+可安装的 Skill 在 [skills/yuplus](skills/yuplus/SKILL.md)，用于主策实际推进项目。它包含按需恢复上下文、飞书/本地/口述材料收录、draft 与 review 的因果更新规则，以及每轮结束时的下一步引导；不应用于 Yu+ 软件开发对话。
+
+- [完整中文审阅版](docs/skills/yuplus/SKILL.zh-CN.md)：主文件、材料处理和 CLI 参考的中文译文。
+- [对象属性与成果关系](skills/yuplus/references/objects.md)：23 类 draft、内部编写依据，以及五类成果的依赖和回改位置。
+- [验证记录](docs/skills/yuplus/validation.md)：实际执行范围及尚未验证的边界。
+
+在本仓库根目录执行以下命令可将 Skill 链接到本机 Codex 的 skills 目录；目标已存在时命令会停止，避免覆盖其他版本：
+
+```sh
+python3 - <<'PY'
+import os
+from pathlib import Path
+source = (Path.cwd() / 'skills' / 'yuplus').resolve()
+assert (source / 'SKILL.md').is_file(), '请在 YuPlus 仓库根目录运行'
+destination = Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex'))) / 'skills' / 'yuplus'
+destination.parent.mkdir(parents=True, exist_ok=True)
+destination.symlink_to(source, target_is_directory=True)
+print(destination)
+PY
+```
+
+Skill 被 Codex 发现后，可用 `$yuplus` 明确调用。安装 Skill 不会安装应用、创建项目或登录飞书。首次项目使用时，Agent 按 Skill 检查实际 CLI 环境；飞书不可用仍可处理本地材料。
+
+Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只读取包内契约，不打开数据库。例如：
+
+```sh
+.venv/bin/python skills/yuplus/scripts/inspect_contract.py command draft.apply --type budget_range
+```
+
 ## 运行完整演示
 
 ```sh
@@ -90,7 +121,7 @@ SQLite 版本不满足时，需选择带有较新 SQLite 的 Python 后重新建
 - review 更新校验相关 draft 变更、段落因果履历和依赖有效性；CLI 不判断自然语言的分析是否正确。
 - 一个 draft 批次或一次 review 发布分别原子提交。draft 已保存而 review 发布失败时，保留 draft，读取新的依据后继续。
 
-当前未包含可视化界面/浏览器网关、飞书自动读取与启动检查、导出、备份/GC 命令，以及完整 Yu+ Agent Skill。原契约中列出的其他辅助命令（如 archive、diff、relations、review check）也不应视为已经提供；实际命令以 `./yu --help` 为准。
+当前未包含可视化界面/浏览器网关、飞书后台自动读取与启动版本扫描、导出、备份/GC 命令。Skill 指导 Agent 使用外部飞书 CLI 读取材料和做首次环境检查，应用本身不提供这些服务。原契约中列出的其他辅助命令（如 archive、diff、relations、review check）也不应视为已经提供；实际命令以 `./yu --help` 为准。
 
 数据库文件与对象池共同组成项目数据。当前没有在线备份命令；不要只复制运行中的 SQLite 主文件来当作完整项目备份。
 

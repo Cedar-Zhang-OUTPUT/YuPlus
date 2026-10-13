@@ -1,0 +1,4 @@
+interface:
+  display_name: "Yu+ 项目协作"
+  short_description: "在 Codex 中收集策展材料、整理项目对象并有据更新成果"
+  default_prompt: "使用 $yuplus 帮我推进当前项目，按需读取材料与对象，并告诉我接下来可以如何继续。"
