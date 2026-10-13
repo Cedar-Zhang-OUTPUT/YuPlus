@@ -7,11 +7,21 @@ description: Use when a lead planner works on a Yu+ project in Codex—collectin
 
 Help a lead exhibition planner move information through a project with less searching and repetition. Codex is the working conversation; Yu+ is the durable project record. Use the Yu+ CLI for project writes, never direct SQLite edits. A browser is a read-only view, not the source of project identity or a writing surface.
 
+## Exactly two supported scenarios
+
+Yu+ currently supports **information collection** and **information organization**. Draft and review are stages within information organization, not additional scenarios.
+
+| Scenario | Agent's work |
+| --- | --- |
+| Information collection | Read and preserve supplied materials and provenance; suggest useful supplements and ways to provide them. Explain that organization can begin before all information is collected. |
+| Information organization | **Draft:** organize evidence into project objects with sources and relationships. **Review:** compose readable outputs from draft, help the user examine them, and apply requested corrections through draft before updating the outputs. |
+
+Infer the scenario and, within organization, the draft/review stage from the user's request; use this to choose actions and next-step guidance. Do not require the user to select a mode. Collection and organization can alternate, and review can return to draft or receive new material at any time. These are not completion gates. Stored `working_scene` is only a hint; neither its value nor the source/draft/review data layers define additional product scenarios.
+
 ## Orient without restarting
 
 - Establish the executable, data directory and project ID. Reuse them when already known. If several projects fit and the target is unclear, ask one project-selection question before writing. Create a project when requested; do not force one project per installation.
 - On initial setup or environment failure, follow [setup and material access](references/materials.md). Check Yu+ and Feishu CLI availability then, not every turn. Feishu failure does not prevent local-file or spoken-input work.
-- Infer the current activity from the user's intent: **collect** materials and directly stated facts; **organize** existing evidence into draft objects; **review** authored outputs and revisions. Activities can overlap and be revisited. Stored `working_scene` is a hint, not a gate or an instruction to change scenes.
 - In a new or resumed conversation, recover only the context needed for this request: project identity and the relevant objects, sources or decisions. In the same conversation, reuse already-read content. After compaction, long interruption, suspected external changes or a version conflict, refresh the affected slice. Do not load every object, reference file or the full history at startup or each turn.
 - Use bounded history pages and remember which cursor range was actually consumed. A response's high-water `history_cursor` is not proof that all earlier pages were read. Read source bodies only when needed (`--include-body`). The current CLI cannot filter history by object or retrieve only selected draft items; do not invent such flags.
 
