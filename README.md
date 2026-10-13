@@ -140,6 +140,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 实现入口在 `src/yuplus/`，安装包带有自己的 `contracts/` 资源。设计基线见：
 
 - [对象关系](docs/superpowers/specs/2026-10-13-yuplus-object-relations-design.md)
+- [可视化界面信息展示 Spec](docs/superpowers/specs/2026-10-13-yuplus-visualization-information-spec.md)：完整对象、来源、关联与历史的展示需求，用于选择 UI example，不规定布局和风格。
 - [数据库与 CLI 契约](docs/superpowers/specs/2026-10-13-yuplus-data-cli-contract.md)
 - [最小链路实施计划](docs/superpowers/plans/2026-10-13-yuplus-minimal-cli.md)
 
