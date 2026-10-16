@@ -1039,7 +1039,6 @@ function itemCard(o, rev, it, hue) {
   d.style.setProperty("--h", hue);
 
   const head = el("div", "ihead");
-  head.append(epistemicTag(it.epistemic_kind));
   const t = el("span", "topic");
   t.textContent = itemLabel(it, o.type_key);
   head.append(t);
@@ -1112,14 +1111,18 @@ function itemCard(o, rev, it, hue) {
     d.append(n);
   }
 
-  d.append(sourceLinksOf(it));
+  const footer = el("div", "item-footer");
+  const sources = el("div", "item-sources");
+  sources.append(sourceLinksOf(it));
 
   // 未知 / 分歧的显式表达
   if (it.epistemic_kind === "hypothesis") {
     const n = el("p", "tiny muted"); n.style.marginTop = "8px";
     n.textContent = "此条是假设/未核实信息，不是事实依据。";
-    d.append(n);
+    sources.append(n);
   }
+  footer.append(sources, epistemicTag(it.epistemic_kind));
+  d.append(footer);
   return d;
 }
 

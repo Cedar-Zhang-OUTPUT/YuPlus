@@ -200,6 +200,10 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .item .field dd.money { font-variant-numeric:tabular-nums; font-weight:600; }
 .item .prose { font-size:14.5px; line-height:1.68; }
 .item .struck { color:var(--label-3); text-decoration:line-through; }
+.item-footer { display:flex; align-items:flex-end; flex-wrap:wrap; gap:8px 14px; margin-top:9px; }
+.item-sources { flex:1 1 280px; min-width:0; }
+.item-sources .cites { margin-top:0; }
+.item-footer > .tag { flex:none; margin-left:auto; }
 
 /* ── 正文阅读（review） ────────────────────────────────────────────────── */
 .doc { font-size:16px; line-height:1.78; color:var(--label); }
