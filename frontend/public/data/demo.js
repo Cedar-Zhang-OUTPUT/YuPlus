@@ -416,9 +416,9 @@ const DATA = (() => {
         title: "受众",
         item_order: ["aud_on_site", "aud_online", "aud_assumption"],
         items: [
-          item("aud_on_site", "source_statement", { kind: "现场观众", text: "以亲子家庭与研学团为主，本地市民占多数；外地游客为次要人群。" }, [ref("ev_a_1", "sv_meeting_1", "quote", { locator: { section: "议题 4｜受众" } })]),
-          item("aud_online", "reported", { kind: "传播受众", text: "线上通过文旅局公众号推送一次，以本地 25–45 岁为主。未取得公众号后台画像数据。" }, [ref("ev_a_2", "sv_meeting_1", "reported")]),
-          item("aud_assumption", "hypothesis", { kind: "假设", text: "研学团停留时长可能高于普通观众，需要可分段观看的内容结构。尚未与客户确认。" }, []),
+          item("aud_on_site", "source_statement", { topic: "亲子家庭与研学团", kind: "现场观众", text: "以亲子家庭与研学团为主，本地市民占多数；外地游客为次要人群。" }, [ref("ev_a_1", "sv_meeting_1", "quote", { locator: { section: "议题 4｜受众" } })]),
+          item("aud_online", "reported", { topic: "本地 25–45 岁人群", kind: "传播受众", text: "线上通过文旅局公众号推送一次，以本地 25–45 岁为主。未取得公众号后台画像数据。" }, [ref("ev_a_2", "sv_meeting_1", "reported")]),
+          item("aud_assumption", "hypothesis", { topic: "研学团（待确认）", kind: "假设", text: "研学团停留时长可能高于普通观众，需要可分段观看的内容结构。尚未与客户确认。" }, []),
         ],
       },
     },

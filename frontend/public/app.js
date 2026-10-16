@@ -232,7 +232,9 @@ function sourceLinksOf(item) {
     const lbl = el("span", "tiny muted");
     lbl.textContent = ev.label;
     lbl.style.marginRight = "-2px";
-    box.append(lbl, sourceLink(r.source_version_id, { inline: true }));
+    const row = el("div", "source-row");
+    row.append(lbl, sourceLink(r.source_version_id, { inline: true }));
+    box.append(row);
   }
   return box;
 }
@@ -962,24 +964,7 @@ function objectBody(o, pid) {
   const grow = el("span", "grow"); head.append(grow);
 
   if (rev) {
-    const versionArea = el("label", "version-control");
-    const label = el("span"); label.textContent = "版本";
-    const select = el("select"); select.id = "draftVersion-" + o.id;
-    select.setAttribute("aria-label", "历史版本");
-    for (const version of revsOf(o.id).slice().reverse()) {
-      const option = el("option"); option.value = String(version.version);
-      option.textContent = (version.id === current.id ? "当前 v" : "历史 v") + version.version;
-      option.title = fullTime(version.created_at);
-      select.append(option);
-    }
-    select.value = String(rev.version);
-    select.onchange = () => {
-      if (Number(select.value) === current.version) delete S.versionOf[o.id];
-      else S.versionOf[o.id] = Number(select.value);
-      refreshDraftObject(o, pid);
-      $("draftVersion-" + o.id)?.focus({ preventScroll: true });
-    };
-    versionArea.append(label, select); head.append(versionArea);
+    head.append(versionControl(o, rev, current, pid));
   } else {
     head.append(tag("尚未建立内容", "gray"));
   }
@@ -1025,13 +1010,185 @@ function objectBody(o, pid) {
   for (const iid of order) {
     const it = rev.payload.items.find((x) => x.item_id === iid);
     if (!it) continue;
-    itemsBox.append(itemCard(o, rev, it, hue));
+    if (o.type_key !== "milestones") itemsBox.append(itemCard(o, rev, it, hue));
   }
-  bd.append(itemsBox);
+  if (o.type_key === "milestones") bd.append(milestoneChart(o, rev, hue));
+  else {
+    if (o.type_key === "deliverables") bd.append(deliveryTimeline(o, rev));
+    bd.append(itemsBox);
+  }
   card.append(bd);
   wrap.append(card);
 
   return wrap;
+}
+
+function versionControl(o, rev, current, pid) {
+  const area = el("div", "version-control");
+  const label = el("span"); label.textContent = "版本";
+  const trigger = chipBtn("", () => {
+    if (menu.matches(":popover-open")) { menu.hidePopover(); return; }
+    const rect = trigger.getBoundingClientRect();
+    menu.style.left = Math.max(12, Math.min(rect.right - 240, innerWidth - 252)) + "px";
+    const height = Math.min(320, options.length * 64 + 14);
+    menu.style.top = (rect.bottom + height + 8 <= innerHeight ? rect.bottom + 8 : Math.max(12, rect.top - height - 8)) + "px";
+    menu.showPopover();
+    options.find((b) => b.getAttribute("aria-checked") === "true")?.focus({ preventScroll:true });
+  });
+  trigger.id = "draftVersion-" + o.id;
+  trigger.classList.add("version-trigger");
+  trigger.setAttribute("aria-label", "历史版本");
+  trigger.setAttribute("aria-haspopup", "menu");
+  trigger.setAttribute("aria-expanded", "false");
+  const value = el("span"); value.textContent = (rev.id === current.id ? "当前 v" : "历史 v") + rev.version;
+  const chevron = el("span", "version-chevron"); chevron.textContent = "⌄"; chevron.setAttribute("aria-hidden", "true");
+  trigger.append(value, chevron);
+  const menu = el("div", "version-menu");
+  menu.id = "versions-" + o.id; menu.setAttribute("popover", "auto");
+  menu.setAttribute("role", "menu"); menu.setAttribute("aria-label", "选择版本");
+  trigger.setAttribute("aria-controls", menu.id);
+  const options = [];
+  for (const version of revsOf(o.id).slice().reverse()) {
+    const option = btn("", () => {
+      menu.hidePopover();
+      if (version.id === current.id) delete S.versionOf[o.id];
+      else S.versionOf[o.id] = version.version;
+      refreshDraftObject(o, pid);
+      $(trigger.id)?.focus({ preventScroll: true });
+    }, "version-option");
+    option.setAttribute("role", "menuitemradio");
+    option.setAttribute("aria-checked", String(version.id === rev.id));
+    option.tabIndex = -1;
+    const text = el("span");
+    const title = el("b"); title.textContent = (version.id === current.id ? "当前版本 v" : "历史版本 v") + version.version;
+    const time = el("small"); time.textContent = fullTime(version.created_at);
+    text.append(title, time);
+    const check = el("span", "version-check"); check.textContent = version.id === rev.id ? "✓" : ""; check.setAttribute("aria-hidden", "true");
+    option.append(text, check); menu.append(option); options.push(option);
+  }
+  menu.addEventListener("toggle", () => trigger.setAttribute("aria-expanded", String(menu.matches(":popover-open"))));
+  menu.onkeydown = (e) => {
+    const index = options.indexOf(document.activeElement);
+    if (["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+      e.preventDefault();
+      const next = e.key === "Home" ? 0 : e.key === "End" ? options.length - 1 : (index + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+      options[next].focus();
+    } else if (e.key === "Escape" || e.key === "Tab") {
+      menu.hidePopover(); trigger.focus({ preventScroll:true });
+      if (e.key === "Escape") e.preventDefault();
+    }
+  };
+  trigger.onkeydown = (e) => { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); trigger.click(); } };
+  area.append(label, trigger, menu);
+  return area;
+}
+
+function resourceScope(o, it) {
+  const box = el("section", "resource-scope");
+  const title = el("h4"); title.textContent = "职责与Scope"; box.append(title);
+  const responsibilities = DATA.objects.filter((x) => x.project_id === o.project_id && x.type_key === "responsibilities");
+  const assignments = responsibilities.flatMap((x) => (headRev(x)?.payload.items || []).filter((r) =>
+    r.dependencies?.some((dep) => dep.producer_object_id === o.id && dep.producer_item_id === it.item_id)));
+  if (it.data.scope) { const p = el("p"); p.textContent = it.data.scope; box.append(p); }
+  else if (!assignments.length) { const p = el("p", "muted"); p.textContent = "尚未记录职责与工作范围"; box.append(p); }
+  for (const assignment of assignments) {
+    const p = el("p"); p.textContent = assignment.data.duty; box.append(p);
+    const note = el("p", "tiny muted");
+    note.textContent = [DATA.EPISTEMIC[assignment.epistemic_kind]?.label, assignment.data.note].filter(Boolean).join(" · ");
+    box.append(note);
+  }
+  return box;
+}
+
+const dateNumber = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? Date.parse(date + "T00:00:00Z") : NaN;
+const milestoneDates = (item) => {
+  const d = item.data; const start = d.date || d.start; const end = d.date || d.end || start;
+  return { start, end, from: dateNumber(start), to: dateNumber(end) };
+};
+function milestoneChart(o, rev, hue) {
+  const box = el("div", "milestone-chart");
+  const dated = rev.payload.items.filter((it) => { const d = milestoneDates(it); return Number.isFinite(d.from) && d.to >= d.from; })
+    .sort((a,b) => milestoneDates(a).from - milestoneDates(b).from);
+  if (dated.length) {
+    const min = Math.min(...dated.map((it) => milestoneDates(it).from)) - 7 * 86400000;
+    const max = Math.max(...dated.map((it) => milestoneDates(it).to)) + 7 * 86400000;
+    const percent = (n) => (n - min) / (max - min) * 100;
+    const legend = el("p", "tiny muted"); legend.textContent = `${milestoneDates(dated[0]).start} — ${new Date(max - 7 * 86400000).toISOString().slice(0,10)}　· ◆ 单日节点　━ 时间区间　· 点击查看详情`; box.append(legend);
+    const scroll = el("div", "gantt-scroll"); const chart = el("div", "gantt-grid");
+    const axis = el("div", "gantt-axis"); const axisLabel = el("span"); axisLabel.textContent = "节点 / 区间";
+    const ticks = el("div", "gantt-ticks");
+    const tickPositions = [];
+    for (let m = new Date(min); m.getTime() <= max; m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth()+1,1))) {
+      const tick = el("span"); tick.textContent = `${m.getUTCMonth()+1}月`;
+      tick.title = `${m.getUTCFullYear()}年${m.getUTCMonth()+1}月`;
+      const position = percent(m.getTime());
+      tickPositions.push(position);
+      tick.style.left = position + "%"; ticks.append(tick);
+    }
+    axis.append(axisLabel, ticks); chart.append(axis);
+    for (const it of dated) {
+      const dates = milestoneDates(it); const row = el("div", "gantt-row");
+      const label = el("div", "gantt-label");
+      const name = el("b"); name.textContent = it.data.event;
+      const date = el("small"); date.textContent = dates.start === dates.end ? dates.start : `${dates.start} — ${dates.end}`;
+      label.append(name, date, epistemicTag(it.epistemic_kind));
+      const track = el("div", "gantt-track");
+      for (const position of tickPositions) { const line = el("span", "gantt-gridline"); line.style.left = position + "%"; track.append(line); }
+      const mark = chipBtn("", () => { details.hidden = !details.hidden; mark.setAttribute("aria-expanded", String(!details.hidden)); });
+      mark.className = "gantt-mark" + (dates.start === dates.end ? " is-point" : "");
+      mark.style.setProperty("--h", hue);
+      mark.style.left = percent(dates.from) + "%";
+      if (dates.start !== dates.end) mark.style.width = Math.max(1, percent(dates.to)-percent(dates.from)) + "%";
+      mark.setAttribute("aria-label", it.data.event + "，" + date.textContent + "，查看详情");
+      mark.setAttribute("aria-expanded", "false"); mark.title = it.data.source_note || it.data.basis || it.data.event;
+      const details = el("div", "gantt-details"); details.id = `milestone-${o.id}-${it.item_id}`; details.hidden = true;
+      mark.setAttribute("aria-controls", details.id);
+      details.append(itemCard(o, rev, it, hue));
+      const note = it.data.source_note || it.data.basis;
+      if (note) { const p = el("p", "tiny muted"); p.textContent = note; label.append(p); }
+      track.append(mark); row.append(label, track); chart.append(row, details);
+    }
+    scroll.append(chart); box.append(scroll);
+  }
+  for (const it of rev.payload.items.filter((it) => !dated.includes(it))) {
+    const note = el("div", "timeline-note");
+    const title = el("b"); title.textContent = it.data.event || "补充说明";
+    const p = el("p"); p.textContent = it.data.text || it.data.note || "日期待明确";
+    note.append(title, p, sourceLinksOf(it), epistemicTag(it.epistemic_kind)); box.append(note);
+  }
+  return box;
+}
+
+function deliveryTimeline(o, rev) {
+  const box = el("section", "delivery-timeline");
+  const title = el("h4"); title.textContent = "交付时间线"; box.append(title);
+  const help = el("p", "tiny muted"); help.textContent = rev.id === o.current_revision_id
+    ? "按交付轮次排列；参考日期来自时间节点，未记录的日期显示待定。"
+    : "按历史版本的交付轮次排列；未记录交付日期。"; box.append(help);
+  const milestones = DATA.objects.find((x) => x.project_id === o.project_id && x.type_key === "milestones");
+  const dates = rev.id === o.current_revision_id ? (headRev(milestones)?.payload.items || []) : [];
+  const rounds = [...new Set(rev.payload.items.filter((it) => it.data.deliverable).map((it) => it.data.round_key || "待安排"))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
+  const list = el("ol");
+  for (const round of rounds) {
+    const row = el("li");
+    const heading = el("h5"); heading.textContent = /^r\d+$/.test(round) ? `第 ${round.slice(1)} 轮` : round; row.append(heading);
+    for (const it of rev.payload.items.filter((it) => it.data.deliverable && (it.data.round_key || "待安排") === round)) {
+      const d = it.data; const entry = el("div", "delivery-entry");
+      const name = el("b"); name.textContent = `${d.deliverable} · ${d.granularity || "交付内容待明确"}`;
+      // Date references are suggestions from D09, never asserted as committed delivery deadlines.
+      const match = dates.find((m) => d.granularity && m.data.event?.includes(d.granularity) && Number.isFinite(milestoneDates(m).from));
+      const time = el("p", "small");
+      if (d.date) time.textContent = d.date;
+      else if (match) {
+        const span = milestoneDates(match);
+        time.textContent = `参考：${span.start}${span.end !== span.start ? " — " + span.end : ""} · ${DATA.EPISTEMIC[match.epistemic_kind]?.label || "时间节点"}`;
+      } else time.textContent = "交付日期待定";
+      const summary = el("p", "tiny muted"); summary.textContent = [d.spec, d.note, match?.data.source_note || match?.data.basis].filter(Boolean).join(" · ");
+      entry.append(name, time, summary); row.append(entry);
+    }
+    list.append(row);
+  }
+  box.append(list); return box;
 }
 
 /* 单条 draft 条目 */
@@ -1065,11 +1222,12 @@ function itemCard(o, rev, it, hue) {
   const moneyKeys = new Set(["min_minor", "max_minor"]);
   const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status"]);
   const fields = Object.keys(dd).filter((k) => !skip.has(k) && dd[k] !== null && dd[k] !== undefined && dd[k] !== "");
-  const proseLike = dd.text || dd.requirement || dd.risk || dd.answer;
+  const plainValue = ["venue", "brand_assets"].includes(o.type_key);
+  const proseLike = dd.text || dd.requirement || dd.risk || dd.answer || (plainValue && dd.value);
 
   if (proseLike) {
     const p = el("div", "prose");
-    p.textContent = dd.text || dd.requirement || dd.risk || dd.answer;
+    p.textContent = proseLike;
     d.append(p);
     if (dd.answer && dd.answer_basis) {
       const b = el("p", "tiny muted"); b.style.marginTop = "6px";
@@ -1078,7 +1236,7 @@ function itemCard(o, rev, it, hue) {
     }
   }
 
-  const rest = fields.filter((k) => !["text", "requirement", "risk", "answer", "answer_basis"].includes(k));
+  const rest = fields.filter((k) => !["text", "requirement", "risk", "answer", "answer_basis"].includes(k) && !(plainValue && k === "value"));
   if (rest.length) {
     const dl = el("dl", "field");
     dl.style.marginTop = proseLike ? "12px" : "0";
@@ -1087,6 +1245,8 @@ function itemCard(o, rev, it, hue) {
       let isMoney = false;
       if (moneyKeys.has(k)) { const m = money(v, dd.currency); if (m) { v = m; isMoney = true; } }
       if (k === "currency") continue;
+      if (k === "time_kind") v = { date: "单日节点", range: "时间区间" }[v] || v;
+      if (k === "related_object_ids" && Array.isArray(v)) v = v.map((id) => { const related = oOf(id); return related ? typeName(related.type_key) : "未找到关联对象"; });
       if (Array.isArray(v)) v = v.join("、");
       if (typeof v === "object") v = JSON.stringify(v);
       const dt = el("dt"); dt.textContent = FIELD_LABEL[k] || k; dl.append(dt);
@@ -1112,6 +1272,8 @@ function itemCard(o, rev, it, hue) {
     d.append(n);
   }
 
+  if (o.type_key === "resources" && dd.status === "confirmed") d.append(resourceScope(o, it));
+
   const footer = el("div", "item-footer");
   const sources = el("div", "item-sources");
   sources.append(sourceLinksOf(it));
@@ -1132,6 +1294,7 @@ function itemLabel(it, type_key) {
   const d = it.data || {};
   if (d.question) return "问题：" + d.question;
   if (d.topic) return d.topic;
+  if (type_key === "audience") return d.audience || d.kind || "受众说明";
   if (d.deliverable) return d.deliverable + (d.round_key ? " · 轮次 " + d.round_key : "");
   if (d.meeting) return d.meeting;
   if (d.event) return d.event;
@@ -1163,7 +1326,7 @@ const FIELD_LABEL = {
   related_object_ids: "关联对象", risk: "风险", trigger: "触发条件", impact: "影响", response: "应对",
   decision: "处理决定", to_verify: "待核实", meeting: "会议", meeting_at: "会议时间", focus: "议题",
   captures: "原话条目", block_ids: "作用段落", requirement: "要求", instruction_source: "指令来源",
-  capability: "能力", works: "作品", availability: "档期", participation: "参与情况", venue: "场地",
+  name: "姓名 / 名称", kind: "种类", capability: "能力", works: "作品", availability: "档期", participation: "参与情况", venue: "场地",
   address: "地址", pages: "页数", caption: "图注", statement: "决定内容", supersedes_note: "历史关系",
 };
 
@@ -2301,3 +2464,12 @@ document.addEventListener("keydown", (e) => {
 });
 render();
 if (S.route.view === "draft" && S.route.objId) scrollToDraft(S.route.objId);
+
+// Keep an open version menu attached to its trigger by dismissing it when the reading surface moves.
+const dismissVersionMenus = (event) => {
+  for (const menu of document.querySelectorAll(".version-menu:popover-open")) {
+    if (!(event.target instanceof Node) || !menu.contains(event.target)) menu.hidePopover();
+  }
+};
+document.addEventListener("scroll", dismissVersionMenus, { capture:true, passive:true });
+window.addEventListener("resize", dismissVersionMenus);
