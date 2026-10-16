@@ -91,6 +91,64 @@ function highlightMoney(root) {
   }
 }
 
+const proseWidths = new WeakMap();
+const proseObserver = new ResizeObserver(entries => {
+  for (const { target, contentRect } of entries) {
+    if (proseWidths.get(target) === contentRect.width) continue;
+    proseWidths.set(target, contentRect.width);
+    updateProseToggle(target);
+  }
+});
+function updateProseToggle(node) {
+  if (!node.getClientRects().length) return;
+  const lineHeight = parseFloat(getComputedStyle(node).lineHeight);
+  const long = node.scrollHeight > lineHeight * 3 + 1;
+  node.classList.toggle('is-collapsible', long);
+  if (long) {
+    node.tabIndex = 0;
+    node.setAttribute('role', 'button');
+    const expanded = node.classList.contains('is-expanded');
+    node.setAttribute('aria-expanded', String(expanded));
+    node.title = expanded ? '点击收起正文' : '点击展开全文';
+  } else {
+    node.classList.remove('is-expanded');
+    for (const attr of ['tabindex', 'role', 'aria-expanded', 'title']) node.removeAttribute(attr);
+  }
+}
+function initProseToggles() {
+  proseObserver.disconnect();
+  for (const node of document.querySelectorAll('.item .prose, .item .field dd, .resource-scope p, .timeline-note > p, .delivery-entry > p, .btext p, .tlrow > div:not(.t)')) {
+    if (node.querySelector('button, a, input, .tag')) continue;
+    node.classList.add('collapsible-prose');
+    updateProseToggle(node);
+    const toggle = () => {
+      if (!node.classList.contains('is-collapsible')) return;
+      node.classList.toggle('is-expanded');
+      updateProseToggle(node);
+    };
+    node.onclick = () => { if (!window.getSelection()?.toString()) toggle(); };
+    node.onkeydown = event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (!node.classList.contains('is-collapsible')) return;
+      event.preventDefault(); toggle();
+    };
+    proseObserver.observe(node);
+  }
+}
+
+function addSourceTypePopover(card, kind, id) {
+  const meta = DATA.EPISTEMIC[kind];
+  const label = el('span', 'source-type-popover');
+  label.id = id;
+  label.setAttribute('role', 'tooltip');
+  label.style.setProperty('--h', hueOf(meta?.hue || 'gray'));
+  label.textContent = meta?.label || kind;
+  card.classList.add('has-source-type');
+  card.tabIndex = 0;
+  card.setAttribute('aria-describedby', id);
+  card.append(label);
+}
+
 /* ── 小部件 ─────────────────────────────────────────────────────────────── */
 function setPanelToggleIcon(button, collapsed) {
   const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -1002,6 +1060,7 @@ function refreshDraftObject(o, pid) {
   const top = section.getBoundingClientRect().top;
   section.replaceChildren(objectBody(o, pid));
   highlightMoney(section);
+  initProseToggles();
   window.scrollBy(0, section.getBoundingClientRect().top - top);
 }
 function scrollToDraft(key) {
@@ -1232,7 +1291,9 @@ function milestoneChart(o, rev, hue) {
     const note = el("div", "timeline-note");
     const title = el("b"); title.textContent = it.data.event || "补充说明";
     const p = el("p"); p.textContent = it.data.text || it.data.note || "日期待明确";
-    note.append(title, p, sourceLinksOf(it), epistemicTag(it.epistemic_kind)); box.append(note);
+    note.append(title, p, sourceLinksOf(it));
+    addSourceTypePopover(note, it.epistemic_kind, `source-type-${rev.id}-${it.item_id}`);
+    box.append(note);
   }
   return box;
 }
@@ -1360,8 +1421,8 @@ function itemCard(o, rev, it, hue) {
     n.textContent = "此条是假设/未核实信息，不是事实依据。";
     sources.append(n);
   }
-  footer.append(sources, epistemicTag(it.epistemic_kind));
-  d.append(footer);
+  if (sources.textContent.trim()) { footer.append(sources); d.append(footer); }
+  addSourceTypePopover(d, it.epistemic_kind, `source-type-${rev.id}-${it.item_id}`);
   return d;
 }
 
@@ -2366,6 +2427,7 @@ function renderStage(updateChrome = true) {
   }
   renderInspectorExtra();
   highlightMoney(stage);
+  initProseToggles();
   const projectDock = document.querySelector(".project-create-dock");
   if (projectDock) projectDockObserver.observe(projectDock);
   restoreDraftAnchor(anchor);

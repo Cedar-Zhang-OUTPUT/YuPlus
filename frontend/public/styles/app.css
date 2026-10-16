@@ -202,6 +202,23 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .item .field dd.money { font-variant-numeric:tabular-nums; font-weight:600; }
 .money { color:var(--red); font-variant-numeric:tabular-nums; font-weight:600; }
 .item .prose { font-size:14.5px; line-height:1.68; }
+.collapsible-prose:not(.is-expanded) { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
+.collapsible-prose.is-collapsible { cursor:pointer; }
+.collapsible-prose:focus-visible { outline:2px solid var(--blue); outline-offset:3px; border-radius:4px; }
+.has-source-type { position:relative; }
+.source-type-popover {
+  position:absolute; left:-27px; top:12px; z-index:2;
+  width:24px; padding:9px 5px; border-radius:7px;
+  writing-mode:vertical-rl; text-orientation:upright; letter-spacing:2px;
+  font-size:11px; line-height:14px; color:var(--h);
+  background:var(--bg-elevated); border:1px solid color-mix(in srgb,var(--h) 25%,transparent);
+  box-shadow:0 3px 12px #0001; opacity:0; transform:translateX(5px);
+  pointer-events:none; transition:opacity .15s ease,transform .15s ease;
+}
+.has-source-type:hover > .source-type-popover,
+.has-source-type:focus-within > .source-type-popover { opacity:1; transform:translateX(0); }
+.draft-section > div > .card { overflow:visible; }
+@media (prefers-reduced-motion:reduce) { .source-type-popover { transition:none; } }
 .item .struck { color:var(--label-3); text-decoration:line-through; }
 .item-footer { display:flex; align-items:flex-end; flex-wrap:wrap; gap:8px 14px; margin-top:9px; }
 .item-sources { flex:1 1 280px; min-width:0; }
