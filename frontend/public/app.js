@@ -6,6 +6,7 @@
 
 import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
+import { reviewUpdatePrompt, reviewExportPrompt } from "./data/review-prompts.js";
 import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timeline.js";
 import { moneyMatches } from "./data/money-text.js";
 const pageLoadedAt = new Date();
@@ -1478,10 +1479,13 @@ function viewReview(pid) {
   const head = el("div");
   head.style.margin = "30px 0 6px";
   const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "整理与Review";
-  head.append(h);
+  const headingRow = el("div", "review-heading-row");
+  const exportPrompt = btn("复制飞书导出 Prompt", () => copyText(reviewExportPrompt(DATA, pid), exportPrompt), "primary");
+  exportPrompt.title = "复制后发送给 Agent，汇总全部成果与来源并新建飞书文档";
+  exportPrompt.setAttribute("aria-live", "polite");
+  headingRow.append(h, exportPrompt);
+  head.append(headingRow);
   const sub = el("p", "subtitle");
-  sub.textContent = "Agent 依据 draft 对象组织的完整成果。正文连贯阅读，段落可展开依据与原始来源。";
-  head.append(sub);
   c.append(head);
 
   const layout = el("div");
@@ -1568,6 +1572,7 @@ function viewReview(pid) {
       openDraft.style.marginLeft = "10px";
       sub.append(openDraft);
     }
+    head.append(sub);
     main.append(qaReviewView(pid, sel, kindMeta));
   } else if (sel) {
     main.append(reviewDocument(sel, pid, kindMeta));
@@ -1703,14 +1708,16 @@ function reviewDocument(o, pid, kindMeta) {
     bd.append(banner("orange", "↻", [
       (() => { const p = el("p"); p.style.margin = "0"; p.innerHTML = `<b>依据已变化 · 成果尚未同步</b>：${staleBlocks.length} 个段落的 draft 依据已有新版本，当前成果仍基于旧版本。`; return p; })(),
       (() => {
-        const d = el("div"); d.style.marginTop = "6px";
+        const d = el("div", "review-prompt-actions");
+        const updatePrompt = btn("复制更新 Prompt", () => copyText(reviewUpdatePrompt(DATA, pid, o.id), updatePrompt));
+        updatePrompt.setAttribute("aria-live", "polite");
+        d.append(updatePrompt);
         d.append(chipBtn("查看受影响段落", () => {
           const first = document.querySelector(`[data-block="${staleBlocks[0].block_id}"]`);
           if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
         }));
         return d;
       })(),
-      (() => { const p = el("p", "tiny"); p.style.margin = "8px 0 0"; p.textContent = "可以在 Codex 中让 Agent 根据新的 draft 依据更新这些段落。"; return p; })(),
     ]));
   }
 
@@ -1726,28 +1733,11 @@ function reviewDocument(o, pid, kindMeta) {
     const blk = el("div", "block" + (isStale ? " stale" : ""));
     blk.dataset.block = bid;
     const bh = el("div", "bhead");
-    const bt = el("span", "btitle"); bt.textContent = (intentLabel(kindMeta, bid) || bid);
+    const bt = el("h4", "btitle"); bt.textContent = (intentLabel(kindMeta, bid) || bid);
     bh.append(bt);
     const bg = el("span", "grow"); bh.append(bg);
     if (isStale) bh.append(tag("依据已变化", "orange", true));
 
-    // 段落依据标签：点击展开 draft 对象、使用的版本、原始来源
-    const basisChips = el("span");
-    basisChips.style.cssText = "display:flex;gap:5px;flex-wrap:wrap;";
-    for (const bs of (st.known ? st.lineage.basis : []).slice(0, 4)) {
-      const bo = oOf(bs.object_id);
-      if (!bo) continue;
-      const isThisStale = st.known && st.stale.some((s) => s.object_id === bs.object_id && s.item_id === bs.item_id);
-      const c2 = el("button", "cite");
-      c2.type = "button";
-      c2.style.setProperty("--h", hueOf(isThisStale ? "orange" : (themeOf(bo.type_key) || {}).hue || "gray"));
-      c2.textContent = (typeCode(bo.type_key) || "") + " " + typeName(bo.type_key) + (isThisStale ? " · 已变" : "");
-      c2.title = "查看该段落使用的 draft 依据";
-      c2.onclick = () => openInspector({ kind: "basis", object_id: bo.id, revision_id: bs.revision_id, item_id: bs.item_id, block_id: bid, review_id: o.id });
-      basisChips.append(c2);
-    }
-    if (!st.known) basisChips.append(tag("尚未记录依据", "gray"));
-    bh.append(basisChips);
     blk.append(bh);
 
     const txt = el("div", "btext");

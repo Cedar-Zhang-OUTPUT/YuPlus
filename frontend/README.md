@@ -57,3 +57,9 @@ npm --prefix frontend test
 macOS 本地预览支持从附件卡片点击“在 Finder 中显示”。服务将已有 Markdown / 文本正文保存到 `frontend/.preview/source-files/`（Git 忽略），并用系统 `open -R` 选中文件。这是本地模拟快照，不是飞书原件。没有真实内容的图片、PDF 等占位附件不会显示按钮；非 macOS 环境也不会显示。
 
 `GET /api/local-files` 只返回可用附件标识；`POST /api/local-files/reveal` 仅接受同源 JSON 请求中的 `versionId` / `assetId`。路径由服务内部登记，客户端不能指定任意路径或命令，缓存文件也不通过静态服务器提供。此桥接只服务当前本机预览，未接入实际项目材料库。
+
+## Review 的 Agent Prompt
+
+标题右侧“复制飞书导出 Prompt”汇总当前项目所有 Review 实例及共用的客户 Q&A，附带引用过的 draft 历史版本、当前版本、原始来源快照和段落依据状态。变化提示内“复制更新 Prompt”仅针对当前成果检查更新。两者均由 `public/data/review-prompts.js` 根据点击时的数据生成，页面只写入剪贴板，不执行业务更新或外部导出。
+
+当前 Prompt 明确标记模拟数据：更新指向仓库内的示例版本；飞书导出由用户将 Prompt 发送给 Agent 后，通过已安装的飞书 CLI 创建并核验新文档。来源正文作为阅读材料传递，不当作命令执行。未来接入真实数据时，需由数据适配层提供真实项目上下文，并以 CLI 的 `review.prepare` / `review.publish` 契约完成更新；不能把当前视图 JSON 直接作为 CLI 输入。
