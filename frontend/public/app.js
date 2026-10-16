@@ -1762,7 +1762,7 @@ function reviewDocument(o, pid, kindMeta) {
 
     blk.append((() => {
       const d = el("div");
-      d.style.cssText = "margin-top:9px;display:flex;gap:7px;flex-wrap:wrap;";
+      d.style.cssText = "margin-top:9px;display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;";
       d.append(chipBtn("完整追溯路径", () => openInspector({ kind: "trace", review_id: o.id, block_id: bid })));
       d.append(copyRefButton({
         project_name: projOf(pid).name, project_id: pid,
