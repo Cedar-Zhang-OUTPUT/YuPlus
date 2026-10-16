@@ -141,7 +141,7 @@ function addSourceTypePopover(card, kind, id) {
   const label = el('span', 'source-type-popover');
   label.id = id;
   label.setAttribute('role', 'tooltip');
-  label.style.setProperty('--h', hueOf(meta?.hue || 'gray'));
+  if (!card.style.getPropertyValue('--h')) card.style.setProperty('--h', hueOf(meta?.hue || 'gray'));
   label.textContent = meta?.label || kind;
   card.classList.add('has-source-type');
   card.tabIndex = 0;
@@ -1356,7 +1356,7 @@ function itemCard(o, rev, it, hue) {
   // 按类型呈现：结构化字段 / 正文 / 清单
   const dd = it.data;
   const moneyKeys = new Set(["min_minor", "max_minor"]);
-  const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status"]);
+  const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status", "captures"]);
   const fields = Object.keys(dd).filter((k) => !skip.has(k) && dd[k] !== null && dd[k] !== undefined && dd[k] !== "");
   const plainValue = ["venue", "brand_assets", "cooperation_type"].includes(o.type_key);
   const proseLike = dd.text || dd.requirement || dd.risk || dd.answer || (plainValue && dd.value);
