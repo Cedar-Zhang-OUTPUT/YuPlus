@@ -6,6 +6,7 @@
 
 import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
+import { compareBasisItems } from "./data/basis-diff.js";
 import { reviewUpdatePrompt, reviewExportPrompt } from "./data/review-prompts.js";
 import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timeline.js";
 import { moneyMatches } from "./data/money-text.js";
@@ -1455,7 +1456,7 @@ const FIELD_LABEL = {
   requirement: "要求", original_position: "原文位置", deliverable: "交付物", granularity: "颗粒度",
   spec: "规格", quantity: "数量", limits: "修改次数", external_dependencies: "外部依赖", note: "说明",
   round_key: "轮次", budget_kind: "口径", currency: "币种", min_minor: "金额下限", max_minor: "金额上限",
-  scope: "适用范围", raw: "原文金额", decided_by: "决定者", rationale: "理由", event: "事件",
+  applies_to: "适用范围", scope: "适用范围", raw: "原文金额", decided_by: "决定者", rationale: "理由", event: "事件",
   time_kind: "时间类型", date: "日期", start: "开始", end: "结束", source_note: "时间来源",
   question: "问题", status: "状态", follow_up: "跟进人", answer: "答复", answer_basis: "答复依据",
   related_object_ids: "关联对象", risk: "风险", trigger: "触发条件", impact: "影响", response: "应对",
@@ -1756,13 +1757,17 @@ function reviewDocument(o, pid, kindMeta) {
       });
       nt.textContent = parts.join("；");
       note.append(nt);
-      note.append(chipBtn("查看差异", () => openInspector({ kind: "basis", object_id: st.stale[0].object_id, revision_id: st.stale[0].revision_id, item_id: st.stale[0].item_id, block_id: bid, review_id: o.id })));
       blk.append(note);
     }
 
     blk.append((() => {
       const d = el("div");
-      d.style.cssText = "margin-top:9px;display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;";
+      d.className = "review-block-actions";
+      if (isStale) {
+        const diff = chipBtn("查看差异", () => openInspector({ kind: "basis", object_id: st.stale[0].object_id, revision_id: st.stale[0].revision_id, item_id: st.stale[0].item_id, block_id: bid, review_id: o.id }));
+        diff.classList.add("diff-trigger");
+        d.append(diff);
+      }
       d.append(chipBtn("完整追溯路径", () => openInspector({ kind: "trace", review_id: o.id, block_id: bid })));
       d.append(copyRefButton({
         project_name: projOf(pid).name, project_id: pid,
@@ -2433,7 +2438,7 @@ function renderInspectorExtra() {
   head.replaceChildren();
   const h3 = el("h3");
   const close = el("button", "close"); close.setAttribute("aria-label", "关闭详情"); close.type = "button"; close.textContent = "✕"; close.onclick = closeInspector;
-  h3.textContent = spec.kind === "basis" ? "段落依据" : "完整追溯路径";
+  h3.textContent = spec.kind === "basis" ? "依据版本对比" : "完整追溯路径";
   head.append(h3, close);
 
   if (spec.kind === "basis") {
@@ -2442,47 +2447,100 @@ function renderInspectorExtra() {
     const cur = headRev(ro);
     const comparison = basisStatus(DATA, spec);
     const isStale = comparison === "changed";
-    const sec = el("section");
-    const t = el("h4"); t.textContent = "此段落依据的 draft 内容"; sec.append(t);
-    const card = el("div", "relrow");
-    const g = el("div", "grow");
-    const top = el("div");
-    top.style.cssText = "display:flex;gap:7px;align-items:center;flex-wrap:wrap;";
-    top.append(codeChip(typeCode(ro.type_key) || "", (themeOf(ro.type_key) || {}).hue || "gray"));
-    const nm = el("b"); nm.textContent = typeName(ro.type_key); top.append(nm);
-    top.append(tag("v" + (rev ? rev.version : "?"), isStale ? "orange" : "green"));
-    if (isStale) top.append(tag("已有新版本 v" + cur.version, "orange", true));
-    g.append(top);
-    const item = rev && rev.payload.items ? rev.payload.items.find((x) => x.item_id === spec.item_id) : null;
-    if (item) {
-      const v = el("div", "small"); v.style.marginTop = "7px";
-      v.textContent = item.data.topic || item.data.question || item.data.deliverable || item.data.requirement || item.item_id;
-      g.append(v);
-      const k = el("div"); k.style.marginTop = "6px"; k.append(epistemicTag(item.epistemic_kind)); g.append(k);
-    } else {
-      const v = el("div", "small muted"); v.style.marginTop = "7px";
-      v.textContent = spec.item_id ? "条目 " + spec.item_id : "（整对象依据）";
-      g.append(v);
+    if (!ro) {
+      const missing = el("p", "muted"); missing.textContent = "依据对象不存在，无法比较。"; body.append(missing); return;
     }
-    card.append(g);
-    sec.append(card);
-    body.append(sec);
-
-    if (item) {
-      const s2 = el("section");
-      const t2 = el("h4"); t2.textContent = "原始来源"; s2.append(t2);
-      s2.append(sourceLinksOf(item));
-      body.append(s2);
+    const review = headRev(oOf(spec.review_id));
+    const changedBases = review ? blockBasisStatus(spec.block_id, review).stale : [];
+    if (changedBases.length > 1) {
+      const choices = el("div", "review-prompt-actions");
+      for (const basis of changedBases) {
+        const object = oOf(basis.object_id);
+        const revision = revOf(basis.revision_id);
+        const item = revision?.payload.items?.find(i => i.item_id === basis.item_id);
+        const choice = chipBtn(`${object ? typeName(object.type_key) : basis.object_id} · ${item ? itemLabel(item, object.type_key) : "整对象"}`,
+          () => openInspector({ ...spec, ...basis, kind: "basis" }));
+        choice.setAttribute("aria-pressed", String(basis.object_id === spec.object_id && basis.item_id === spec.item_id));
+        choices.append(choice);
+      }
+      body.append(choices);
     }
-
-    const s3 = el("section");
-    const t3 = el("h4"); t3.textContent = "版本对照"; s3.append(t3);
-    s3.append(kv([
-      ["段落使用的版本", rev ? `v${rev.version}（${rev.id}）` : "尚未记录"],
-      ["对象当前版本", cur ? `v${cur.version}（${cur.id}）` : "尚未建立内容"],
-      ["状态", isStale ? "依据已变化，成果尚未同步" : comparison === "unknown" ? "缺少依据，无法比较" : "引用内容与当前一致"],
-    ]));
-    body.append(s3);
+    const comparisonData = compareBasisItems(rev, cur, spec.item_id);
+    const intro = el("p", "small");
+    intro.textContent = `${typeCode(ro.type_key)} ${typeName(ro.type_key)} · ${isStale ? "依据已变化，成果尚未同步" : comparison === "unknown" ? "缺少依据，无法比较" : "引用内容与当前一致"}`;
+    body.append(intro);
+    if (comparisonData.removedReference) {
+      const note = el("p", "tiny muted");
+      note.textContent = "原引用条目已移除；以下展示同一对象的新旧版本变化，新增条目单独标记。";
+      body.append(note);
+    }
+    const pair = el("div", "basis-diff-pair");
+    for (const side of ["before", "after"]) {
+      const version = side === "before" ? rev : cur;
+      const card = el("section", `basis-diff-card ${side}`);
+      const header = el("div", "basis-diff-heading");
+      const title = el("h4"); title.textContent = side === "before" ? "当前成果采用的依据" : "最新版本的依据";
+      header.append(title, tag(version ? `v${version.version}` : "版本缺失", side === "before" ? "red" : "green"));
+      card.append(header);
+      if (version) {
+        const date = el("p", "tiny muted"); date.textContent = `更新于 ${fullTime(version.created_at)}`; card.append(date);
+      } else {
+        const missing = el("p", "small muted"); missing.textContent = "版本未记录，无法读取内容。"; card.append(missing);
+      }
+      const sideEntries = (version?.payload.items || []).map(item => comparisonData.items.find(entry => entry.id === item.item_id)).filter(Boolean);
+      for (const entry of sideEntries) {
+        const item = entry[side];
+        if (!item) continue;
+        const unchanged = entry.status === "same";
+        const itemBox = el(unchanged ? "details" : "div", `basis-diff-item ${unchanged ? "unchanged" : ""}`);
+        const label = el(unchanged ? "summary" : "h5");
+        const marker = !comparisonData.available ? "无法比较" : entry.status === "added" ? "+ 新增" : entry.status === "removed" ? "− 移除" : unchanged ? "未变化" : "已修改";
+        label.textContent = `${marker} · ${itemLabel(item, ro.type_key)}`;
+        itemBox.append(label);
+        const fields = el("div", "basis-diff-fields");
+        for (const field of entry.fields) {
+          const value = field[side];
+          if (value === undefined) continue;
+          const row = el("div", "basis-diff-row" + (field.changed ? " changed" : ""));
+          const key = el("span", "basis-diff-key"); key.textContent = FIELD_LABEL[field.key] || field.key;
+          const content = el("span", "basis-diff-value");
+          content.textContent = value === null ? "未填写" : typeof value === "object" ? JSON.stringify(value, null, 2) : String(value);
+          if (["min_minor", "max_minor"].includes(field.key) && value != null) {
+            content.textContent = money(value, item.data.currency) || String(value);
+            content.classList.add("money");
+          }
+          if (field.changed) {
+            const sign = el("span", "diff-sign"); sign.textContent = side === "before" ? "−" : "+"; sign.setAttribute("aria-hidden", "true");
+            row.append(sign);
+          }
+          row.append(key, content); fields.append(row);
+        }
+        itemBox.append(fields);
+        const kind = el("div", "basis-diff-meta" + (entry.kindChanged ? " changed" : ""));
+        kind.append(epistemicTag(item.epistemic_kind)); itemBox.append(kind);
+        if (item.source_refs?.length || entry.sourceChanged) {
+          const refs = el("div", "basis-diff-meta" + (entry.sourceChanged ? " changed" : ""));
+          refs.append(sourceLinksOf(item));
+          if (!item.source_refs?.length) { const p = el("span", "tiny muted"); p.textContent = "此版本未记录来源"; refs.append(p); }
+          itemBox.append(refs);
+        }
+        if (entry.dependenciesChanged && item.dependencies?.length) {
+          const deps = el("div", "basis-diff-meta changed");
+          for (const dependency of item.dependencies) {
+            const p = el("p", "tiny"); const producer = oOf(dependency.producer_object_id);
+            p.textContent = `依赖：${producer ? typeName(producer.type_key) : dependency.producer_object_id} · ${dependency.producer_item_id} · ${dependency.producer_revision_id}`;
+            deps.append(p);
+          }
+          itemBox.append(deps);
+        }
+        card.append(itemBox);
+      }
+      if (version && !comparisonData.items.some(entry => entry[side])) {
+        const p = el("p", "small muted"); p.textContent = "此版本没有对应条目。"; card.append(p);
+      }
+      pair.append(card);
+    }
+    body.append(pair);
 
     const s4 = el("section");
     const t4 = el("h4"); t4.textContent = "操作"; s4.append(t4);
