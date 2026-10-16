@@ -1,0 +1,12 @@
+{
+  "name": "yuplus-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Yu+ 本地只读前端，独立模拟数据预览",
+  "engines": { "node": ">=20.11" },
+  "scripts": {
+    "dev": "node server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

@@ -1,0 +1,53 @@
+# Yu+ 前端预览
+
+根据用户提供的 `yuplus-handoff.zip` 设计和源码落地的可交互页面。沿用交付包的浅色材质、字号、四类主题色、圆角卡片和按需检查器；不是之前的两种视觉概念图。
+
+## 启动
+
+Node.js ≥ 20.11，无第三方依赖，无需 npm install。在仓库根目录：
+
+```sh
+npm --prefix frontend run dev
+# http://127.0.0.1:7801
+
+# 指定其他端口
+npm --prefix frontend run dev -- --port 7802
+
+npm --prefix frontend test
+```
+
+浏览器刷新后读取更新后的源码/数据；服务代码修改需要重启进程。服务仅绑定本机，只提供 `public/` 中的静态文件，拒绝写入方法，不读取真实项目数据库、凭证或本地材料目录。
+
+## 可调试的页面
+
+- 项目列表：`/#/`，包含同名项目、空项目和归档项目。
+- 交付细节：`/#/p/prj_city/draft/obj_deliv`。
+- 预算与采用决定：`/#/p/prj_city/draft/obj_budget`。
+- 创作者 Brief：`/#/p/prj_city/review/obj_r04`；另有视觉设计师实例。
+- Debrief 与历史版本：`/#/p/prj_city/review/obj_r01`。
+- Q&A：`/#/p/prj_city/review/obj_qa`，读取同一个 D15 对象。
+- 材料：`/#/p/prj_city/sources`；变更与决定：`/#/p/prj_city/history`。
+- 23 类对象说明：`/#/types`。
+
+城市记忆展厅有 17 类带内容的 draft、23 类对象目录、4 类持久化 review 的 5 份成果以及共用 D15 的 R05 视图。页面支持来源快照/原文分流、反向引用、历史版本、完整段落追溯、复制引用和项目内导航。浏览不会改变项目工作场景。
+
+## 文件职责
+
+- `public/styles/tokens.css`：交付包提供的设计 token。
+- `public/styles/app.css`：页面/组件样式与自适应规则。
+- `public/app.js`：只读视图、交互及 hash 路由。
+- `public/data/demo.js`：稳定的模拟视图数据，可修改后刷新页面调试。
+- `public/data/selectors.js`：条目级依据比较。以后接入服务时，以 `review.prepare` 的权威受影响信息替代。
+- `public/source.html`、`source.js`：模拟原文的新标签页。
+- `server.mjs`：独立前端预览服务，不是 `yu serve`，不改变 Python CLI。
+- `tests/preview.test.mjs`：引用完整性、依据变化与只读服务边界测试。
+
+## 与交付包的调整
+
+修复了搜索丢焦、历史 draft 不能切换、R05 路由未读取共用对象、跨项目对象地址可能展示其他项目内容、空项目“全部 23 类”目录不全、窄窗口缺少导航和搜索框溢出等问题。依据比较落到具体条目，避免同一对象中的无关条目一起提示变更。
+
+按既有 spec 的能力边界，不预置未实现的远端扫描、审核确认或飞书导出状态。飞书标题仍是新标签页链接，但本轮指向本地示例原文，避免访问交付包内虚构的域名。接真实来源时需恢复真实规范地址。
+
+素材列表保留交付包提供的文件信息和预览占位；交付包没有这些业务图片/PDF/音视频的真实文件。当前不承诺实际多媒体预览或实时同步。这是前端视图模型，不是可直接提交给 CLI 的 JSON 契约，也不代表所有示例字段已在后端实现。
+
+设计参考保存在 `../docs/design/handoff/`，本轮浏览器截图在 `../docs/design/qa-2026-10-16/`。检查记录见 `design-qa.md`。
