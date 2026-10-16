@@ -206,12 +206,19 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .collapsible-prose.is-collapsible { cursor:pointer; }
 .collapsible-prose:focus-visible { outline:2px solid var(--blue); outline-offset:3px; border-radius:4px; }
 .has-source-type {
-  position:relative; border-left:3px solid var(--h);
-  transition:margin-left .18s cubic-bezier(.22,1,.36,1),border-left-width .18s cubic-bezier(.22,1,.36,1);
+  position:relative; isolation:isolate;
+  --source-surface:var(--bg-page);
 }
-/* Expand the actual rounded border; equal negative margin keeps the text in place. */
-.has-source-type:hover,
-.has-source-type:focus-within { margin-left:-24px; border-left-width:27px; }
+/* Keep the content box fixed. Only the decorative rounded frame expands. */
+.item.has-source-type { background:transparent; border-color:transparent; }
+.has-source-type::before {
+  content:""; position:absolute; z-index:-1; inset:-1px -1px -1px -3px;
+  border:1px solid var(--separator); border-left:3px solid var(--h);
+  border-radius:inherit; background:var(--source-surface);
+  transition:left .18s cubic-bezier(.22,1,.36,1),border-left-width .18s cubic-bezier(.22,1,.36,1);
+}
+.has-source-type:hover::before,
+.has-source-type:focus-within::before { left:-27px; border-left-width:27px; }
 .source-type-popover {
   position:absolute; right:calc(100% + 3px); top:0; bottom:0; z-index:2;
   width:24px; display:flex; align-items:center; justify-content:center;
@@ -223,7 +230,7 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .has-source-type:hover > .source-type-popover,
 .has-source-type:focus-within > .source-type-popover { opacity:1; transform:translateX(0); }
 .draft-section > div > .card { overflow:visible; }
-@media (prefers-reduced-motion:reduce) { .source-type-popover, .has-source-type { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .source-type-popover, .has-source-type::before { transition:none; } }
 .item .struck { color:var(--label-3); text-decoration:line-through; }
 .item-footer { display:flex; align-items:flex-end; flex-wrap:wrap; gap:8px 14px; margin-top:9px; }
 .item-sources { flex:1 1 280px; min-width:0; }
@@ -587,6 +594,7 @@ html.reading-draft { overflow-anchor:none; }
 .gantt-details { padding:0 16px 16px; }
 .gantt-details[hidden] { display:none; }
 .timeline-note { padding:16px; margin-top:14px; border-radius:12px; background:var(--bg-fill); font-size:13px; }
+.timeline-note.has-source-type { --source-surface:var(--bg-fill); background:transparent; }
 .timeline-note p { margin:8px 0; }
 .timeline-note > .tag { margin-top:10px; }
 .delivery-timeline { border:1px solid var(--separator); border-radius:14px; padding:18px; margin-bottom:20px; }
