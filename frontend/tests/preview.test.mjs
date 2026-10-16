@@ -68,3 +68,39 @@ test('preview serves public assets only and refuses write methods', async () => 
     assert.equal((await call('/%ZZ')).status,400);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
+
+test('design preview has content for every business object and every review kind', () => {
+  const objects = DATA.objects.filter(o=>o.project_id==='prj_city');
+  for (const type of DATA.catalog) {
+    const object = objects.find(o=>o.type_key===type.type_key);
+    assert.ok(object, type.name);
+    const revision = DATA.indexes.revById[object.current_revision_id];
+    assert.ok(revision?.payload.items.length>0, type.name);
+    assert.deepEqual(new Set(revision.payload.item_order),new Set(revision.payload.items.map(i=>i.item_id)));
+  }
+  for (const kind of DATA.REVIEW_KINDS.filter(k=>k.persistable)) {
+    const object = objects.find(o=>o.type_key===kind.type_key);
+    assert.ok(DATA.indexes.revById[object.current_revision_id]?.payload.blocks.length>0,kind.name);
+  }
+  for (const list of [DATA.objects,DATA.object_revisions,DATA.sources,DATA.source_versions,DATA.changes]) {
+    assert.equal(new Set(list.map(x=>x.id)).size,list.length,'fixture identities must remain unique');
+  }
+  for (const revision of DATA.object_revisions.filter(r=>r.change_id.startsWith('chg_design_'))) {
+    assert.ok(DATA.changes.some(c=>c.id===revision.change_id));
+    for (const item of revision.payload.items) for (const id of item.data.related_object_ids || []) {
+      assert.equal(DATA.indexes.objById[id]?.project_id,'prj_city',id);
+    }
+  }
+});
+
+test('minute examples preserve existing cited timeline items and have readable sources', () => {
+  const current = DATA.indexes.revById[DATA.indexes.objById.obj_timeline.current_revision_id];
+  assert.ok(current.payload.items.some(i=>i.data.date?.includes('T')));
+  assert.ok(current.payload.items.some(i=>i.data.start?.includes('T')));
+  for (const item of DATA.indexes.revById.rev_timeline_1.payload.items) {
+    assert.equal(basisStatus(DATA,{object_id:'obj_timeline',revision_id:'rev_timeline_1',item_id:item.item_id}),'same');
+  }
+  for (const source of DATA.sources.filter(s=>s.id.startsWith('src_design_'))) {
+    assert.ok(DATA.indexes.svById[source.latest_snapshot_id].body_text.length>100);
+  }
+});

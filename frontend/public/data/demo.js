@@ -9,10 +9,12 @@
    review payload = { title, blocks:[{block_id, markdown}] }
    ID 稳定、版本追加不可变；无真实飞书/文件访问。
    ═══════════════════════════════════════════════════════════════════════════ */
+import { DESIGN_FIXTURES } from "./design-fixtures.js";
+
 const DATA = (() => {
   "use strict";
 
-  const NOW = "2026-10-13T09:20:00Z";
+  const NOW = "2026-10-16T06:30:00Z";
 
   /* ── 便捷构造 ──────────────────────────────────────────────────────────── */
 
@@ -842,6 +844,58 @@ const DATA = (() => {
     // 一次真正没有变化的提交：noop 回执，不产生新版本
     change("chg_032", 32, "source.import", "noop", "品牌资产清单远端 revision 未变化，快照复用", dt("13T08:02:30Z"), []),
   ];
+
+  /* ── 展示优化用模拟记录：补齐全部 23 类业务对象 ───────────────────────── */
+  const fixtureTime = "2026-10-16T06:30:00Z";
+  for (const [index, fixture] of DESIGN_FIXTURES.entries()) {
+    const sourceId = `src_design_${fixture.key}`;
+    const snapshotId = `sv_design_${fixture.key}_1`;
+    const revisionId = `rev_${fixture.key}_1`;
+    const changeId = `chg_design_${fixture.key}`;
+    const source = {
+      id:sourceId, project_id:"prj_city", provider:fixture.provider, resource_type:fixture.provider === "web" ? "link" : "docx",
+      provider_key:`demo:${fixture.key}`, canonical_url:`./source.html?id=${sourceId}`,
+      cached_title:fixture.sourceTitle, latest_snapshot_id:snapshotId,
+      last_checked_at:null, created_at:fixtureTime, archived_at:null,
+    };
+    sources.push(source);
+    source_versions.push({
+      id:snapshotId, source_id:sourceId, version:1, provider_revision:null,
+      capture_scope:{mode:"full"}, title_at_capture:fixture.sourceTitle,
+      captured_at:fixtureTime, recorded_at:fixtureTime, change_id:changeId,
+      body_format:"text", body_text:"【模拟材料，仅供页面展示优化】\n\n" + fixture.body,
+      assets:[],
+    });
+    const items = fixture.items.map((entry) => {
+      const evidence = entry.kind === "source_statement" ? "quote" : entry.kind === "adopted_decision" ? "instruction" : entry.kind === "reported" ? "reported" : "supports";
+      const refs = entry.noSource ? [] : [ref(`ev_design_${entry.id}`, snapshotId, evidence)];
+      if (entry.extraSource) refs.push(ref(`ev_design_${entry.id}_extra`, entry.extraSource, "supports"));
+      return item(entry.id, entry.kind, entry.data, refs);
+    });
+    object_revisions.push({id:revisionId,object_id:fixture.objectId,version:1,created_at:fixtureTime,change_id:changeId,
+      payload:{title:fixture.title,item_order:items.map((it)=>it.item_id),items}});
+    objects.find((o)=>o.id===fixture.objectId).current_revision_id = revisionId;
+    changes.push(change(changeId, 33 + index, "draft.apply", "changed", `补充${fixture.title}模拟记录`, fixtureTime, [], [{layer:"draft",object_id:fixture.objectId}]));
+  }
+
+  // Preserve the existing day-level revision while adding minute-level examples.
+  const scheduleSourceId = "src_design_schedule";
+  sources.push({id:scheduleSourceId,project_id:"prj_city",provider:"feishu",resource_type:"docx",provider_key:"demo:schedule",
+    canonical_url:`./source.html?id=${scheduleSourceId}`,cached_title:"项目评审与素材交接安排（模拟）",latest_snapshot_id:"sv_design_schedule_1",last_checked_at:null,created_at:fixtureTime,archived_at:null});
+  source_versions.push({id:"sv_design_schedule_1",source_id:scheduleSourceId,version:1,provider_revision:null,capture_scope:{mode:"full"},title_at_capture:"项目评审与素材交接安排（模拟）",
+    captured_at:fixtureTime,recorded_at:fixtureTime,change_id:"chg_design_schedule",body_format:"text",
+    body_text:"【模拟材料，仅供页面展示优化】\n方向评审讨论安排在 2026-12-20 14:30 至 16:00，议题为叙事结构与历史断面。\n第一批口述史素材交接截止为 2027-01-05 10:00，主策核对音频、转写和授权状态。\n这些时分记录与原有按天安排并存，不改变原有交付范围。",assets:[]});
+  const timelineBase = object_revisions.find((r)=>r.id==="rev_timeline_1");
+  const minuteItems = [
+    item("ms_direction_meeting","user_supplement",{event:"方向评审讨论",time_kind:"range",start:"2026-12-20T14:30",end:"2026-12-20T16:00",source_note:"讨论叙事结构与历史断面"},[ref("ev_design_schedule_meeting","sv_design_schedule_1","supports")]),
+    item("ms_material_handoff","user_supplement",{event:"首批口述史素材交接",time_kind:"datetime",date:"2027-01-05T10:00",source_note:"核对音频、转写和授权状态"},[ref("ev_design_schedule_handoff","sv_design_schedule_1","supports")]),
+  ];
+  object_revisions.push({id:"rev_timeline_2",object_id:"obj_timeline",version:2,created_at:fixtureTime,change_id:"chg_design_schedule",
+    payload:{...timelineBase.payload,item_order:[...timelineBase.payload.item_order,...minuteItems.map((it)=>it.item_id)],items:[...timelineBase.payload.items,...minuteItems]}});
+  objects.find((o)=>o.id==="obj_timeline").current_revision_id="rev_timeline_2";
+  changes.push(change("chg_design_schedule",39,"draft.apply","changed","补齐 23 类对象展示数据，并补充分钟级时间安排",fixtureTime,[],[{layer:"draft",object_id:"obj_timeline"}]));
+  projects.find((p)=>p.id==="prj_city").updated_at=fixtureTime;
+  project_activity.prj_city={change_id:"chg_design_schedule",summary:"23 类业务对象模拟内容已齐备，可逐项优化展示",at:fixtureTime};
 
   const decisions = [
     {

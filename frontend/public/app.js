@@ -1314,6 +1314,11 @@ const FIELD_LABEL = {
   related_object_ids: "关联对象", risk: "风险", trigger: "触发条件", impact: "影响", response: "应对",
   decision: "处理决定", to_verify: "待核实", meeting: "会议", meeting_at: "会议时间", focus: "议题",
   captures: "原话条目", block_ids: "作用段落", requirement: "要求", instruction_source: "指令来源",
+  procurement_method: "采购方式", document_version: "文件版本", criteria: "评分标准", required_materials: "提交材料",
+  submission_at: "截止时间", format: "格式", channel: "提交渠道", evidence_status: "信息状态",
+  project_name: "历史项目", partner: "合作方", period: "时间", expression: "表达特点", feedback: "反馈",
+  assessment: "评估判断", condition: "前置条件", capacity: "资源配置", gap: "待补缺口", rating: "评级",
+  effective_at: "采用时间", participants: "参与人", action: "行动项", owner: "负责人", due_at: "截止时间", progress: "进展",
   name: "姓名 / 名称", kind: "种类", capability: "能力", works: "作品", availability: "档期", participation: "参与情况", venue: "场地",
   address: "地址", pages: "页数", caption: "图注", statement: "决定内容", supersedes_note: "历史关系",
 };
