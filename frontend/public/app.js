@@ -1103,7 +1103,7 @@ function milestoneChart(o, rev, hue) {
     const scale = timelineScale(dated.map(milestoneDates));
     const { min, max } = scale;
     const percent = (n) => (n - min) / (max - min) * 100;
-    const legend = el("p", "tiny muted"); legend.textContent = `${scale.first} — ${scale.last}　· ◆ 时间节点　━ 时间区间　· 点击查看详情`; box.append(legend);
+    const legend = el("p", "tiny muted"); legend.textContent = `${scale.first} — ${scale.last}　· ◆ 时间节点　━ 时间区间`; box.append(legend);
     const scroll = el("div", "gantt-scroll"); const chart = el("div", "gantt-grid");
     const axis = el("div", "gantt-axis"); const axisLabel = el("span"); axisLabel.textContent = "节点 / 区间";
     const ticks = el("div", "gantt-ticks" + (scale.minuteScale ? " has-time" : ""));
