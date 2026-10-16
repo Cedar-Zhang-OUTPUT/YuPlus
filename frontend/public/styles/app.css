@@ -205,15 +205,13 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .collapsible-prose:not(.is-expanded) { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
 .collapsible-prose.is-collapsible { cursor:pointer; }
 .collapsible-prose:focus-visible { outline:2px solid var(--blue); outline-offset:3px; border-radius:4px; }
-.has-source-type { position:relative; }
-.item.has-source-type { border-left-color:transparent; }
-.has-source-type::before {
-  content:""; position:absolute; right:100%; top:-1px; bottom:-1px;
-  width:3px; background:var(--h); border-radius:var(--r) 0 0 var(--r);
-  pointer-events:none; transition:width .18s cubic-bezier(.22,1,.36,1);
+.has-source-type {
+  position:relative; border-left:3px solid var(--h);
+  transition:margin-left .18s cubic-bezier(.22,1,.36,1),border-left-width .18s cubic-bezier(.22,1,.36,1);
 }
-.has-source-type:hover::before,
-.has-source-type:focus-within::before { width:27px; }
+/* Expand the actual rounded border; equal negative margin keeps the text in place. */
+.has-source-type:hover,
+.has-source-type:focus-within { margin-left:-24px; border-left-width:27px; }
 .source-type-popover {
   position:absolute; right:calc(100% + 3px); top:0; bottom:0; z-index:2;
   width:24px; display:flex; align-items:center; justify-content:center;
@@ -225,7 +223,7 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .has-source-type:hover > .source-type-popover,
 .has-source-type:focus-within > .source-type-popover { opacity:1; transform:translateX(0); }
 .draft-section > div > .card { overflow:visible; }
-@media (prefers-reduced-motion:reduce) { .source-type-popover, .has-source-type::before { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .source-type-popover, .has-source-type { transition:none; } }
 .item .struck { color:var(--label-3); text-decoration:line-through; }
 .item-footer { display:flex; align-items:flex-end; flex-wrap:wrap; gap:8px 14px; margin-top:9px; }
 .item-sources { flex:1 1 280px; min-width:0; }
