@@ -1080,10 +1080,9 @@ function objectBody(o, pid) {
     return wrap;
   }
 
-  const ch = DATA.changes.find((x) => x.id === rev.change_id);
   const metaLine = el("div", "tiny muted");
   metaLine.style.marginBottom = "18px";
-  metaLine.textContent = `v${rev.version} · 更新于 ${fullTime(rev.created_at)}` + (ch ? ` · ${ch.reason}` : "");
+  metaLine.textContent = `v${rev.version} · 更新于 ${fullTime(rev.created_at)}`;
   bd.append(metaLine);
 
   if (isOld) {
@@ -1241,9 +1240,6 @@ function milestoneChart(o, rev, hue) {
 function deliveryTimeline(o, rev) {
   const box = el("section", "delivery-timeline");
   const title = el("h4"); title.textContent = "交付时间线"; box.append(title);
-  const help = el("p", "tiny muted"); help.textContent = rev.id === o.current_revision_id
-    ? "按交付轮次排列；参考日期来自时间节点，未记录的日期显示待定。"
-    : "按历史版本的交付轮次排列；未记录交付日期。"; box.append(help);
   const milestones = DATA.objects.find((x) => x.project_id === o.project_id && x.type_key === "milestones");
   const dates = rev.id === o.current_revision_id ? (headRev(milestones)?.payload.items || []) : [];
   const rounds = [...new Set(rev.payload.items.filter((it) => it.data.deliverable).map((it) => it.data.round_key || "待安排"))].sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
@@ -1508,6 +1504,12 @@ function viewReview(pid) {
   }
 
   if (kindMeta && !kindMeta.persistable) {
+    sub.textContent = "客户 Q&A 与「信息收集」中的 D15 客户 Q&A 问题表共用同一份内容。";
+    if (sel?.current_revision_id) {
+      const openDraft = chipBtn("在信息收集中打开", () => go(`#/p/${pid}/draft/${sel.id}`));
+      openDraft.style.marginLeft = "10px";
+      sub.append(openDraft);
+    }
     main.append(qaReviewView(pid, sel, kindMeta));
   } else if (sel) {
     main.append(reviewDocument(sel, pid, kindMeta));
@@ -1615,7 +1617,7 @@ function reviewDocument(o, pid, kindMeta) {
   const meta = el("div");
   meta.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;";
   const mt = el("span", "tiny muted");
-  mt.textContent = `更新于 ${fullTime(shown.created_at)}`;
+  mt.textContent = `v${shown.version} · 更新于 ${fullTime(shown.created_at)}`;
   meta.append(mt);
   const checks = DATA.review_checks.filter((x) => x.review_revision_id === shown.id);
   for (const ck of checks) {
@@ -1797,10 +1799,10 @@ function qaReviewView(pid, qaObj, kindMeta) {
     wrap.append(card);
     return wrap;
   }
-  bd.append(banner("teal", "≡", [
-    (() => { const p = el("p"); p.style.margin = "0"; p.innerHTML = "这是 <b>D15 客户 Q&A 问题表</b> 在 review 场景下的同一份数据，不是另建的问题记录。在 draft 中看到的是同一份内容。"; return p; })(),
-    (() => { const d = el("div"); d.style.marginTop = "8px"; d.append(chipBtn("在 draft 中打开 D15", () => go(`#/p/${pid}/draft/${qaObj.id}`))); return d; })(),
-  ]));
+  const meta = el("div", "tiny muted");
+  meta.style.marginBottom = "18px";
+  meta.textContent = `v${rev.version} · 更新于 ${fullTime(rev.created_at)}`;
+  bd.append(meta);
 
   const items = rev.payload.items || [];
   const answered = items.filter((i) => i.data.status === "已答复").length;
