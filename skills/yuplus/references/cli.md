@@ -84,6 +84,24 @@ Expression-guide sequence: record the instruction source → draft.apply with ty
 - A failed batch commits no partial object changes. A successful earlier draft stays saved when a later review fails; report that distinction and continue the remaining authorized work.
 - Stop retrying when the same unresolved error recurs; explain the concrete missing permission, material or environment requirement instead of looping or bypassing the CLI.
 
+## Local browser and copied references
+
+`yu --data-dir DATA_DIR serve --port 0 --json` runs a foreground loopback-only gateway and reports its actual address. Reuse a healthy service only when `/api/health` reports `mode: live` and the intended absolute `data_dir`; another directory or the Node demo is not interchangeable. Port 0 allocates a free port. Keep the managed session alive; do not kill an existing listener to claim its port. The separate `yuplus-visualization` Skill explains actual routes and controls. CLI writes appear after “刷新页面” or browser reload; they are not live-pushed.
+
+A copied reference/Prompt is navigation context, not a write payload. Bind its data directory, project, object/item/block and viewed revision, then reread the current target. If the user wants synchronization after an existing draft change, reuse the genuine unconsumed draft cause and run prepare/publish; do not invent another draft edit. New facts or wording instructions first update their draft basis. Never overwrite newer content from a stale copied snapshot. Check all affected instances within the requested scope and refresh the browser after successful writes.
+
+## Prepare a complete local export
+
+Use the Python environment in which Yu+ is installed:
+
+```sh
+PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output OUTPUT_DIR
+```
+
+This module reads one consistent saved snapshot and writes `review.md` plus `manifest.json` outside the business data directory. It does not mutate project records or publish remotely. The bundle contains all current Review instances, the same D15 Q&A, cited/current draft versions, provenance, source text and registered asset metadata. Inspect `references_complete`, warnings, missing references, and basis freshness. Resolve incomplete/stale content as authorized, or explicitly preserve and report it; never silently label it synchronized. Asset metadata does not upload media or verify that an external original is still available.
+
+Use the manifest's version IDs and hashes for remote readback. A later project change does not change this fixed export snapshot. A prepared bundle is not a successful Feishu export or a persisted export-history record. Follow the materials reference for external publication.
+
 ## Not implemented in this release
 
-`source check`, `project context`, project update/archive, diff/history/show helpers beyond those listed, relations queries, review check, exports, backup/GC and the browser gateway are not callable. Do not prescribe them as working commands. For today's task use existing show/list/read_basis/history receipts, or honestly state the limitation. Do not treat a user's acceptance as a persisted review-check record until that capability exists.
+`source check`, `project context`, project update/archive, diff/history/show helpers beyond those listed, relations queries, review check, exports, backup/GC are not callable. Do not prescribe them as working commands. For today's task use existing show/list/read_basis/history receipts, or honestly state the limitation. Do not treat a user's acceptance as a persisted review-check record until that capability exists.

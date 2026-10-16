@@ -14,3 +14,11 @@ export function moneyMatches(text) {
   }
   return matches.sort((a,b) => a.index-b.index);
 }
+
+// CLI amounts are integer strings; never lose cents through Number coercion.
+export function formatMinor(minor, currency) {
+  if (minor === null || minor === undefined || !/^-?\d+$/.test(String(minor))) return null;
+  const amount=BigInt(minor), absolute=amount<0n ? -amount : amount;
+  const fraction=String(absolute%100n).padStart(2,'0').replace(/0+$/,'');
+  return `${amount<0n?'-':''}${(absolute/100n).toLocaleString('zh-CN')}${fraction?'.'+fraction:''} ${currency==='CNY'?'元':currency||''}`.trim();
+}

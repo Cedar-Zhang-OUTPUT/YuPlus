@@ -1,16 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Yu+ 只读浏览界面
-   本文件只读取示例数据并渲染。没有任何写入路径：没有编辑、批准、删除、上传，
+   本文件只读取服务提供的数据并渲染，模拟预览必须由服务明确声明。没有任何写入路径：没有编辑、批准、删除、上传，
    没有页面内聊天或评论。业务写入一律在 Codex 中由 Agent 通过 Yu+ CLI 完成。
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import DATA from "./data/demo.js";
-import { basisStatus } from "./data/selectors.js";
+import { loadView } from "./data/runtime.js";
+let DATA;
+import { basisStatus, qaState } from "./data/selectors.js";
+import { expandBasis, changedBasisDetails } from "./data/provenance.js";
 import { compareBasisItems } from "./data/basis-diff.js";
 import { reviewUpdatePrompt, reviewExportPrompt } from "./data/review-prompts.js";
 import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timeline.js";
-import { moneyMatches } from "./data/money-text.js";
-const pageLoadedAt = new Date();
+import { moneyMatches, formatMinor } from "./data/money-text.js";
+let pageLoadedAt = new Date();
 const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, versionOf: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
@@ -64,14 +66,7 @@ const fullTime = (iso) => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 // 金额以最小货币单位保存：分 → 可读金额，保留币种；未知不显示为零
-function money(minor, currency) {
-  if (minor === null || minor === undefined || minor === "") return null;
-  const n = Number(minor);
-  if (!Number.isFinite(n)) return null;
-  const major = n / 100;
-  const s = major.toLocaleString("zh-CN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-  return `${s} 万元`.replace("万元", "") && `${s} ${currency === "CNY" ? "元" : currency || ""}`.trim();
-}
+const money = formatMinor;
 
 function highlightMoney(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -193,7 +188,7 @@ function chipBtn(label, onclick) {
 }
 let localFileCapabilities;
 function addFinderAction(container, version, asset) {
-  localFileCapabilities ||= fetch("/api/local-files").then((response) => response.ok ? response.json() : null).catch(() => null);
+  localFileCapabilities ||= fetch("/api/local-files" + (DATA.meta.demo ? "" : "?project=" + encodeURIComponent(S.route.pid))).then((response) => response.ok ? response.json() : null).catch(() => null);
   localFileCapabilities.then((capabilities) => {
     if (!capabilities?.supported || !capabilities.files.some((file) => file.versionId === version.id && file.assetId === asset.asset_id)) return;
     const status = el("div", "tiny muted"); status.setAttribute("role", "status");
@@ -202,7 +197,7 @@ function addFinderAction(container, version, asset) {
       try {
         const response = await fetch("/api/local-files/reveal", {
           method:"POST", headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({versionId:version.id,assetId:asset.asset_id}),
+          body:JSON.stringify({...(!DATA.meta.demo ? {projectId:S.route.pid} : {}),versionId:version.id,assetId:asset.asset_id}),
         });
         const result = await response.json();
         status.textContent = result.message || (response.ok ? "已在 Finder 中显示" : "无法定位本地文件");
@@ -254,6 +249,7 @@ function copyRefButton(spec) {
     `项目：${spec.project_name}（${spec.project_id}）`,
     `对象：${spec.object_label}`,
   ];
+  if (DATA.meta?.demo === false) lines.push(`数据目录：${DATA.meta.data_dir}`);
   if (spec.item_label) lines.push(`条目：${spec.item_label}`);
   if (spec.block_label) lines.push(`段落：${spec.block_label}`);
   lines.push(`版本：${spec.version_label}`);
@@ -345,7 +341,7 @@ function blockBasisStatus(block_id, rev) {
   const lg = rev.block_lineage && rev.block_lineage[block_id];
   if (!lg) return { known: false, stale: [], lineage: null };
   const stale = (lg.basis || []).filter((b) => basisStatus(DATA, b) === "changed");
-  return { known: true, stale, lineage: lg };
+  return { known: (lg.basis || []).every(b => basisStatus(DATA,b) !== "unknown"), stale, lineage: lg };
 }
 
 /* 反向索引：某来源被哪些 draft 条目引用 */
@@ -540,11 +536,26 @@ function renderInspector() {
           f.style.setProperty("--h", hueOf(prov.hue));
           const im = el("div", "img");
           im.textContent = a.mime_type.startsWith("image") ? "🖼" : a.mime_type.includes("pdf") ? "📄" : a.mime_type.startsWith("video") ? "🎬" : a.mime_type.includes("presentation") ? "📊" : "📎";
+          if (a.url && a.availability === 'available') {
+            if (/^image\/(png|jpeg|gif|webp|avif)$/.test(a.mime_type)) {
+              const image = el('img'); image.src=a.url; image.alt=a.display_name; image.loading='lazy';
+              image.style.cssText='width:100%;height:100%;object-fit:contain'; im.replaceChildren(image);
+            } else if (/^(video|audio)\//.test(a.mime_type)) {
+              const media = el(a.mime_type.startsWith('video')?'video':'audio'); media.src=a.url; media.controls=true; media.preload='metadata';
+              media.style.width='100%'; im.replaceChildren(media);
+            }
+          }
           f.append(im);
           const cap = el("figcaption");
           cap.textContent = a.display_name;
           const sz = el("div", "tiny muted"); sz.textContent = (a.size_bytes / 1048576).toFixed(1) + " MB";
           cap.append(sz);
+          if (a.url && a.availability === 'available') {
+            const open = el('a','chipbtn'); open.href=a.url; open.target='_blank'; open.rel='noopener noreferrer'; open.textContent='打开文件'; cap.append(open);
+          }
+          if (['missing','unavailable','changed'].includes(a.availability)) {
+            const state=el('div','tiny avail'); state.textContent=a.availability==='changed'?'文件内容已变化，不能作为此历史快照读取':'登记文件当前不可用'; cap.append(state);
+          }
           addFinderAction(cap, v, a);
           if (a.availability === "external_missing") {
             const w = el("div", "tiny avail"); w.textContent = "外部原件当前不可访问";
@@ -1238,7 +1249,7 @@ function resourceScope(o, it) {
   if (it.data.scope) { const p = el("p"); p.textContent = it.data.scope; box.append(p); }
   else if (!assignments.length) { const p = el("p", "muted"); p.textContent = "尚未记录职责与工作范围"; box.append(p); }
   for (const assignment of assignments) {
-    const p = el("p"); p.textContent = assignment.data.duty; box.append(p);
+    const p = el("p"); p.textContent = (assignment.data.responsibility || assignment.data.duty); box.append(p);
     const note = el("p", "tiny muted");
     note.textContent = [DATA.EPISTEMIC[assignment.epistemic_kind]?.label, assignment.data.note].filter(Boolean).join(" · ");
     box.append(note);
@@ -1356,7 +1367,7 @@ function itemCard(o, rev, it, hue) {
 
   // 按类型呈现：结构化字段 / 正文 / 清单
   const dd = it.data;
-  const moneyKeys = new Set(["min_minor", "max_minor"]);
+  const moneyKeys = new Set(["min_minor", "max_minor", "amount_minor"]);
   const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status", "captures", "time_kind"]);
   const fields = Object.keys(dd).filter((k) => !skip.has(k) && dd[k] !== null && dd[k] !== undefined && dd[k] !== "");
   const plainValue = ["venue", "brand_assets", "cooperation_type"].includes(o.type_key);
@@ -1380,8 +1391,14 @@ function itemCard(o, rev, it, hue) {
       let v = dd[k];
       let isMoney = false;
       if (moneyKeys.has(k)) { const m = money(v, dd.currency); if (m) { v = m; isMoney = true; } }
-      if (k === "currency") continue;
+      if (k === "currency" && fields.some(field => moneyKeys.has(field))) continue;
+      if (k === "participation") v = ({candidate:"候选",verified_available:"已核实可用",confirmed:"已确认参与"})[v] || v;
       if (o.type_key === "milestones" && ["date", "start", "end"].includes(k)) v = parseScheduleTime(v)?.label || v;
+      if (k === "resource_item_id") {
+        const resourceObject=DATA.objects.find(x=>x.project_id===o.project_id && x.type_key==='resources');
+        const resource=headRev(resourceObject)?.payload.items?.find(x=>x.item_id===v);
+        v=resource?.data.name || v;
+      }
       if (k === "related_object_ids" && Array.isArray(v)) v = v.map((id) => { const related = oOf(id); return related ? typeName(related.type_key) : "未找到关联对象"; });
       if (Array.isArray(v)) v = v.join("、");
       if (typeof v === "object") v = JSON.stringify(v);
@@ -1393,7 +1410,7 @@ function itemCard(o, rev, it, hue) {
         dv.replaceChildren();
         dv.append(dd.budget_kind === "adopted"
           ? tag("本轮采用口径", "indigo", true)
-          : tag("客户原始说法", "blue", true));
+          : tag(dd.budget_kind === "desired" ? "期望预算" : "客户原始说法", "blue", true));
       }
       dl.append(dv);
     }
@@ -1408,7 +1425,7 @@ function itemCard(o, rev, it, hue) {
     d.append(n);
   }
 
-  if (o.type_key === "resources" && dd.status === "confirmed") d.append(resourceScope(o, it));
+  if (o.type_key === "resources" && (dd.participation === "confirmed" || dd.status === "confirmed")) d.append(resourceScope(o, it));
 
   const footer = el("div", "item-footer");
   const sources = el("div", "item-sources");
@@ -1432,8 +1449,10 @@ function itemLabel(it, type_key) {
   if (d.topic) return d.topic;
   if (type_key === "audience") return d.audience || d.kind || "受众说明";
   if (d.deliverable) return d.deliverable + (d.round_key ? " · 轮次 " + d.round_key : "");
+  if (d.meeting_name) return d.meeting_name;
   if (d.meeting) return d.meeting;
   if (d.event) return d.event;
+  if (d.person_or_role) return d.person_or_role;
   if (d.role) return d.role + (d.who ? " · " + d.who : "");
   if (d.risk) return d.risk;
   if (d.name) return d.name;
@@ -1448,10 +1467,17 @@ function itemLabel(it, type_key) {
     deliverables: "交付条目",
   };
   if (byType[type_key]) return byType[type_key];
-  return "条目 " + it.item_id;
+  return typeName(type_key);
 }
 
 const FIELD_LABEL = {
+  background:'背景', why_now:'当前契机', goal:'目标', core_problem:'核心问题', decision_standard:'决策标准', preference:'偏好',
+  category:'类别', condition:'条件', measurements:'尺寸与测量', asset_use:'资产使用条件', audience_kind:'受众类型', profile:'受众描述', needs:'需求', touchpoints:'触达点',
+  area:'分配方向', priority:'投入重点', amount_minor:'分配金额', allocation_kind:'分配性质', restraint:'克制项', review_opinion:'审查意见', timezone:'时区', review_focus:'Review 关注内容',
+  person_or_role:'人员 / 角色', boundary:'边界', requires_confirmation:'待确认事项', competitor:'竞争对象', public_work:'公开作品', finding:'判断与发现', difference:'差异',
+  meeting_name:'会议', meeting_date:'会议日期', statement_kind:'陈述性质', follow_up_person:'跟进人', dimension:'评估维度', recommendation:'建议', strategy:'策略', research_finding:'研究发现', candidate:'方向候选', selection_reason:'取舍理由',
+  resource_item_id:'关联资源', specifications:'格式规格', exclusions:'不做范围', usage_limits:'使用限制', capabilities:'能力', portfolio:'作品依据', conditions:'参与条件', responsibility:'职责', interfaces:'协作接口', acceptance:'承接情况', needs_verification:'待核实', disposition:'处理决定', conclusion:'结论', action_items:'行动项', creator_value:'创作者价值', review_object_id:'相关成果', instruction:'编写要求', intent:'要求类型',
+
   topic: "主题", text: "正文", value: "值", role: "角色", who: "人员", duty: "职责", decides: "决定事项",
   requirement: "要求", original_position: "原文位置", deliverable: "交付物", granularity: "颗粒度",
   spec: "规格", quantity: "数量", limits: "修改次数", external_dependencies: "外部依赖", note: "说明",
@@ -1654,7 +1680,7 @@ function reviewDocument(o, pid, kindMeta) {
   if (!isOld) {
     for (const b of shown.payload.blocks || []) {
       const st = blockBasisStatus(b.block_id, shown);
-      if (st.known && st.stale.length) staleBlocks.push({ block_id: b.block_id, stale: st.stale });
+      if (st.stale.length) staleBlocks.push({ block_id: b.block_id, stale: st.stale });
     }
   }
 
@@ -1707,7 +1733,7 @@ function reviewDocument(o, pid, kindMeta) {
 
   if (staleBlocks.length) {
     bd.append(banner("orange", "↻", [
-      (() => { const p = el("p"); p.style.margin = "0"; p.innerHTML = `<b>依据已变化 · 成果尚未同步</b>：${staleBlocks.length} 个段落的 draft 依据已有新版本，当前成果仍基于旧版本。`; return p; })(),
+      (() => { const p = el("p"); p.style.margin = "0"; p.innerHTML = `<b>依据已变化 · 成果尚未同步</b>：${staleBlocks.length} 个段落的 draft 依据或其上游内容已有变化，当前成果尚未同步。`; return p; })(),
       (() => {
         const d = el("div", "review-prompt-actions");
         const updatePrompt = btn("复制更新 Prompt", () => copyText(reviewUpdatePrompt(DATA, pid, o.id), updatePrompt));
@@ -1729,20 +1755,23 @@ function reviewDocument(o, pid, kindMeta) {
     const b = shown.payload.blocks.find((x) => x.block_id === bid);
     if (!b) continue;
     const st = blockBasisStatus(bid, shown);
-    const isStale = !isOld && st.known && st.stale.length > 0;
+    const isStale = !isOld && st.stale.length > 0;
 
     const blk = el("div", "block" + (isStale ? " stale" : ""));
     blk.dataset.block = bid;
     const bh = el("div", "bhead");
-    const bt = el("h4", "btitle"); bt.textContent = (intentLabel(kindMeta, bid) || bid);
+    const bt = el("h4", "btitle"); bt.textContent = (intentLabel(kindMeta, bid) || b.markdown.match(/^#{1,6}\s+(.+)$/m)?.[1] || "成果段落");
     bh.append(bt);
     const bg = el("span", "grow"); bh.append(bg);
     if (isStale) bh.append(tag("依据已变化", "orange", true));
+    if (!st.known) bh.append(tag("依据无法完整核对", "orange", true));
 
     blk.append(bh);
 
     const txt = el("div", "btext");
-    txt.append(renderMarkdown(b.markdown));
+    const leadingTitle = b.markdown.match(/^\s*#{1,6}\s+([^\n]+)\n?/);
+    const displayBody = leadingTitle && leadingTitle[1].trim() === bt.textContent ? b.markdown.slice(leadingTitle[0].length) : b.markdown;
+    txt.append(renderMarkdown(displayBody));
     blk.append(txt);
 
     if (isStale) {
@@ -1753,7 +1782,8 @@ function reviewDocument(o, pid, kindMeta) {
       const parts = st.stale.map((s) => {
         const so = oOf(s.object_id);
         const nr = revOf(so && so.current_revision_id);
-        return `${typeCode(s.object_id ? so.type_key : "") || ""} ${so ? typeName(so.type_key) : s.object_id}：段落基于 v${(revOf(s.revision_id) || {}).version}，当前已是 v${nr ? nr.version : "?"}`;
+        const name = `${typeCode(so?.type_key) || ""} ${so ? typeName(so.type_key) : s.object_id}`;
+        return nr?.id === s.revision_id ? `${name}：其引用的上游依据已变化` : `${name}：段落基于 v${revOf(s.revision_id)?.version ?? "?"}，当前已是 v${nr?.version ?? "?"}`;
       });
       nt.textContent = parts.join("；");
       note.append(nt);
@@ -1772,7 +1802,7 @@ function reviewDocument(o, pid, kindMeta) {
       d.append(copyRefButton({
         project_name: projOf(pid).name, project_id: pid,
         object_label: (kindMeta ? kindMeta.code + " " : "") + (kindMeta ? kindMeta.name : shown.payload.title) + `（${o.id}）`,
-        block_label: bid + "（" + (intentLabel(kindMeta, bid) || bid) + "）",
+        block_label: bid + "（" + (intentLabel(kindMeta, bid) || b.markdown.match(/^#{1,6}\s+(.+)$/m)?.[1] || "成果段落") + "）",
         version_label: "v" + shown.version + "（" + shown.id + "）",
         excerpt: b.markdown.replace(/[*#\-]/g, "").slice(0, 80),
       }));
@@ -1858,21 +1888,21 @@ function qaReviewView(pid, qaObj, kindMeta) {
   bd.append(meta);
 
   const items = rev.payload.items || [];
-  const answered = items.filter((i) => i.data.status === "已答复").length;
+  const answered = items.filter((i) => qaState(i.data.status).answered).length;
   const stats = el("div", "grid g3");
   stats.style.marginBottom = "18px";
   const st = (v, l) => { const d = el("div", "stat"); const b = el("b"); b.textContent = v; d.append(b); const s = el("span"); s.textContent = l; d.append(s); return d; };
-  stats.append(st(items.length, "问题总数"), st(answered, "已答复"), st(items.length - answered, "待答复或不适用"));
+  stats.append(st(items.length, "问题总数"), st(answered, "已答复"), st(items.length - answered, DATA.meta.demo === false ? "其他状态" : "待答复或不适用"));
   bd.append(stats);
 
   const tl = el("div", "tl");
   for (const it of items) {
     const row = el("div", "tlrow");
-    const st2 = it.data.status;
-    row.style.setProperty("--h", hueOf(st2 === "已答复" ? "green" : st2 === "不适用" ? "gray" : "orange"));
+    const st2 = qaState(it.data.status);
+    row.style.setProperty("--h", hueOf(st2.hue));
     const top = el("div", "t");
-    top.append(tag(st2, st2 === "已答复" ? "green" : st2 === "不适用" ? "gray" : "orange", true));
-    if (it.data.follow_up) { const f = el("span", "when"); f.textContent = "跟进：" + it.data.follow_up; top.append(f); }
+    top.append(tag(st2.label, st2.hue, true));
+    if (it.data.follow_up_person || it.data.follow_up) { const f = el("span", "when"); f.textContent = "跟进：" + (it.data.follow_up_person || it.data.follow_up); top.append(f); }
     row.append(top);
     const q = el("div"); q.style.cssText = "font-weight:600;font-size:14.5px;"; q.textContent = it.data.question; row.append(q);
     if (it.data.answer) {
@@ -2216,32 +2246,53 @@ function viewCatalog() {
   return c;
 }
 
-/* ── 极简 Markdown 渲染（只处理已保存的标题/列表/加粗，不执行 HTML） ──── */
+/* Saved Markdown only: DOM text rendering, no HTML or executable URLs. */
 function renderMarkdown(md) {
-  const box = el("div");
-  const lines = String(md || "").split("\n");
-  let list = null;
-  const inline = (s) => {
-    const span = el("span");
-    const parts = String(s).split(/(\*\*[^*]+\*\*)/g);
-    for (const p of parts) {
-      if (p.startsWith("**") && p.endsWith("**")) { const b = el("strong"); b.textContent = p.slice(2, -2); span.append(b); }
-      else span.append(document.createTextNode(p));
+  const box = el('div');
+  const lines=String(md||'').split('\n');
+  const inline=(text)=>{
+    const span=el('span');
+    const pattern=/(\*\*[^*]+\*\*|`[^`]+`|!?\[[^\]]*\]\([^\s)]+\))/g;
+    let at=0;
+    for(const match of String(text).matchAll(pattern)){
+      span.append(document.createTextNode(text.slice(at,match.index)));
+      const token=match[0];
+      if(token.startsWith('**')){const strong=el('strong');strong.textContent=token.slice(2,-2);span.append(strong);}
+      else if(token.startsWith('`')){const code=el('code');code.textContent=token.slice(1,-1);span.append(code);}
+      else {
+        const link=token.match(/^!?\[([^\]]*)\]\(([^)]+)\)$/);
+        let safe=false;
+        try {const url=new URL(link[2],location.href); safe=['http:','https:'].includes(url.protocol) && (!link[2].startsWith('/') || url.origin===location.origin);}catch{}
+        if(safe){const a=el('a');a.textContent=link[1]||link[2];a.href=link[2];a.target='_blank';a.rel='noopener noreferrer';span.append(a);}
+        else span.append(document.createTextNode(token));
+      }
+      at=match.index+token.length;
     }
-    return span;
+    span.append(document.createTextNode(text.slice(at)));return span;
   };
-  for (const line of lines) {
-    const li = line.match(/^\s*[-*]\s+(.*)$/);
-    if (li) {
-      if (!list) { list = el("ul"); box.append(list); }
-      const l = el("li"); l.append(inline(li[1])); list.append(l);
-      continue;
+  let list=null;
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i];
+    if(/^\s*(```+|~~~+)/.test(line)){
+      list=null;const fence=line.trim().match(/^(`+|~+)/)[0];const content=[];
+      while(++i<lines.length && !lines[i].trim().startsWith(fence))content.push(lines[i]);
+      const pre=el('pre');pre.textContent=content.join('\n');box.append(pre);continue;
     }
-    list = null;
-    const hd = line.match(/^(#{1,4})\s+(.*)$/);
-    if (hd) { const h = el("h" + Math.min(6, hd[1].length + 1)); h.append(inline(hd[2])); box.append(h); continue; }
-    if (!line.trim()) continue;
-    const p = el("p"); p.append(inline(line)); box.append(p);
+    if(line.includes('|') && /^\s*\|?\s*:?-{3,}:?\s*\|/.test(lines[i+1]||'')){
+      list=null;const table=el('table');table.style.cssText='width:100%;border-collapse:collapse';
+      const cells=text=>text.trim().replace(/^\||\|$/g,'').split('|').map(v=>v.trim());
+      const add=(text,header)=>{const tr=el('tr');for(const cell of cells(text)){const td=el(header?'th':'td');td.style.cssText='padding:8px;text-align:left;border-bottom:1px solid var(--separator)';td.append(inline(cell));tr.append(td);}table.append(tr);};
+      add(line,true);i++;
+      while(i+1<lines.length && lines[i+1].trim() && lines[i+1].includes('|'))add(lines[++i],false);
+      box.append(table);continue;
+    }
+    const li=line.match(/^\s*(?:([-*])|\d+[.)])\s+(.*)$/);
+    if(li){const kind=li[1]?'ul':'ol';if(!list || list.tagName.toLowerCase()!==kind){list=el(kind);box.append(list);}const item=el('li');item.append(inline(li[2]));list.append(item);continue;}
+    list=null;
+    const heading=line.match(/^(#{1,6})\s+(.*)$/);
+    if(heading){const h=el('h'+Math.min(6,heading[1].length+1));h.append(inline(heading[2]));box.append(h);continue;}
+    if(!line.trim())continue;
+    const p=el(line.startsWith('> ')?'blockquote':'p');p.append(inline(line.replace(/^> /,'')));box.append(p);
   }
   return box;
 }
@@ -2332,8 +2383,8 @@ function renderChrome() {
   refreshedAt.dateTime = pageLoadedAt.toISOString();
   refreshedAt.textContent = fullTime(pageLoadedAt) + ":" + String(pageLoadedAt.getSeconds()).padStart(2, "0");
   const refreshLabel = el("span");
-  refreshLabel.append("页面刷新于 ", refreshedAt);
-  const refreshButton = chipBtn("", () => location.reload());
+  refreshLabel.append(DATA.meta.demo ? "模拟预览 · 刷新于 " : "本地数据 · 刷新于 ", refreshedAt);
+  const refreshButton = chipBtn("", () => { S.inspector = null; loadRoute(true); });
   refreshButton.classList.add("page-refresh");
   refreshButton.setAttribute("aria-label", "刷新页面");
   refreshButton.title = "刷新页面";
@@ -2428,7 +2479,7 @@ function renderStage(updateChrome = true) {
 
 // 「依据详情」检查器的补充分支挂到 renderInspector 里
 function renderInspectorExtra() {
-  const spec = S.inspector;
+  let spec = S.inspector;
   if (!spec || !["basis", "trace"].includes(spec.kind)) return;
   const box = document.querySelector(".inspector");
   if (!box) return;
@@ -2442,6 +2493,17 @@ function renderInspectorExtra() {
   head.append(h3, close);
 
   if (spec.kind === "basis") {
+    const reviewObject = oOf(spec.review_id);
+    const selectedVersion = reviewObject && S.versionOf[reviewObject.id];
+    const review = selectedVersion ? revsOf(reviewObject.id).find(r => r.version === selectedVersion) : headRev(reviewObject);
+    const changedBases = changedBasisDetails(DATA, review?.block_lineage?.[spec.block_id]?.basis || [spec]);
+    // An unchanged intermediary can be stale because of its own historical basis.
+    // Select an actual changed upstream item in the existing difference inspector.
+    const matching = changedBases.find(b=>b.object_id===spec.object_id && b.revision_id===spec.revision_id && b.item_id===spec.item_id);
+    if (!matching && changedBases.length) spec = {...spec,...changedBases[0]};
+    if (spec.path?.length) {
+      const via=el("p", "tiny muted"); via.textContent="沿已保存依赖追溯："+spec.path.map(p=>typeName(oOf(p.object_id)?.type_key) || p.object_id).join(" → "); body.append(via);
+    }
     const ro = oOf(spec.object_id);
     const rev = revOf(spec.revision_id);
     const cur = headRev(ro);
@@ -2450,8 +2512,6 @@ function renderInspectorExtra() {
     if (!ro) {
       const missing = el("p", "muted"); missing.textContent = "依据对象不存在，无法比较。"; body.append(missing); return;
     }
-    const review = headRev(oOf(spec.review_id));
-    const changedBases = review ? blockBasisStatus(spec.block_id, review).stale : [];
     if (changedBases.length > 1) {
       const choices = el("div", "review-prompt-actions");
       for (const basis of changedBases) {
@@ -2488,6 +2548,14 @@ function renderInspectorExtra() {
         const missing = el("p", "small muted"); missing.textContent = "版本未记录，无法读取内容。"; card.append(missing);
       }
       const sideEntries = (version?.payload.items || []).map(item => comparisonData.items.find(entry => entry.id === item.item_id)).filter(Boolean);
+      for (const field of comparisonData.structureFields.filter(f=>f.changed)) {
+        const row=el("div", "basis-diff-row changed");
+        const sign=el("span", "diff-sign"); sign.textContent=side === "before" ? "−" : "+";
+        const key=el("span", "basis-diff-key"); key.textContent=field.key === "title" ? "对象标题" : "条目顺序";
+        const content=el("span", "basis-diff-value");
+        content.textContent=field.key === "item_order" ? (field[side] || []).map(id=>{const it=version?.payload.items?.find(i=>i.item_id===id);return it?itemLabel(it,ro.type_key):id;}).join(" → ") : field[side] ?? "未记录";
+        row.append(sign,key,content); card.append(row);
+      }
       for (const entry of sideEntries) {
         const item = entry[side];
         if (!item) continue;
@@ -2505,7 +2573,7 @@ function renderInspectorExtra() {
           const key = el("span", "basis-diff-key"); key.textContent = FIELD_LABEL[field.key] || field.key;
           const content = el("span", "basis-diff-value");
           content.textContent = value === null ? "未填写" : typeof value === "object" ? JSON.stringify(value, null, 2) : String(value);
-          if (["min_minor", "max_minor"].includes(field.key) && value != null) {
+          if (["min_minor", "max_minor", "amount_minor"].includes(field.key) && value != null) {
             content.textContent = money(value, item.data.currency) || String(value);
             content.classList.add("money");
           }
@@ -2578,24 +2646,29 @@ function renderInspectorExtra() {
   if (!lg || !(lg.basis || []).length) {
     const x = el("p", "small muted"); x.textContent = "尚未记录依据。"; s2.append(x);
   }
-  for (const b of (lg ? lg.basis : [])) {
+  for (const b of expandBasis(DATA, lg?.basis || [])) {
     const o = oOf(b.object_id);
-    if (!o) continue;
+    if (!o) {
+      const missing = el("p", "small muted"); missing.textContent = `依据对象缺失，无法核对：${b.object_id}`; s2.append(missing); continue;
+    }
     const cur = headRev(o);
-    const stale = basisStatus(DATA, b) === "changed";
+    const status = basisStatus(DATA, b);
+    const stale = status === "changed";
     const row = el("div", "relrow");
     const g = el("div", "grow");
     const top = el("div");
     top.style.cssText = "display:flex;gap:7px;align-items:center;flex-wrap:wrap;";
     top.append(codeChip(typeCode(o.type_key) || "", (themeOf(o.type_key) || {}).hue || "gray"));
     const nm = el("b"); nm.textContent = typeName(o.type_key); top.append(nm);
-    top.append(tag("用 v" + (revOf(b.revision_id) || {}).version + (stale ? " → 现 v" + cur.version : ""), stale ? "orange" : "green"));
+    if (b.path.length) { const via=el("span", "tiny muted"); via.textContent="经 "+b.path.map(p=>typeName(oOf(p.object_id)?.type_key) || p.object_id).join(" → "); top.append(via); }
+    const cited = revOf(b.revision_id);
+    top.append(tag(status === "unknown" ? "依据无法核对" : `用 v${cited?.version ?? "?"}` + (stale ? cur?.id === cited?.id ? " · 上游依据已变化" : ` → 现 v${cur?.version ?? "?"}` : ""), status === "unknown" ? "gray" : stale ? "orange" : "green"));
     g.append(top);
     const r2 = revOf(b.revision_id);
     const item = r2 && r2.payload.items ? r2.payload.items.find((x) => x.item_id === b.item_id) : null;
     if (item) {
       const v = el("div", "small"); v.style.marginTop = "6px";
-      v.textContent = item.data.topic || item.data.question || item.data.deliverable || item.data.requirement || item.item_id;
+      v.textContent = itemLabel(item, o.type_key);
       g.append(v);
     }
     row.append(g);
@@ -2607,12 +2680,11 @@ function renderInspectorExtra() {
   const s3 = el("section");
   const t3 = el("h4"); t3.textContent = "③ 原始来源"; s3.append(t3);
   const seen = new Set();
-  for (const b of (lg ? lg.basis : [])) {
+  for (const b of expandBasis(DATA, lg?.basis || [])) {
     const r2 = revOf(b.revision_id);
     if (!r2 || !r2.payload.items) continue;
-    const item = r2.payload.items.find((x) => x.item_id === b.item_id);
-    if (!item) continue;
-    for (const ref of item.source_refs || []) {
+    const items = !b.item_id || b.item_id === "*" ? r2.payload.items : r2.payload.items.filter((x) => x.item_id === b.item_id);
+    for (const ref of items.flatMap(item => item.source_refs || [])) {
       if (seen.has(ref.source_version_id)) continue;
       seen.add(ref.source_version_id);
       const row = el("div", "relrow");
@@ -2640,14 +2712,45 @@ function renderInspectorExtra() {
   body.append(foot);
 }
 
-function render() { renderStage(); }
+function render() { if (DATA) renderStage(); }
+
+let loadGeneration = 0;
+async function loadRoute(force=false) {
+  const generation = ++loadGeneration;
+  const route = parseRoute();
+  if (DATA && !force && (DATA.meta.demo || DATA.meta.project_id === route.pid)) {
+    render();
+  } else {
+    const content = el('div','content');
+    content.append(empty('◷','正在读取项目内容',['从本机 Yu+ 数据目录读取已保存内容。']));
+    $('stage').replaceChildren(content);
+    try {
+      const loaded = await loadView(route.pid);
+      if (generation !== loadGeneration || parseRoute().pid !== route.pid) return;
+      DATA = loaded;
+      DATA.meta.project_id = route.pid;
+      localFileCapabilities = undefined;
+      pageLoadedAt = new Date();
+      render();
+    } catch (error) {
+      if (generation !== loadGeneration) return;
+      const failure = el('div','content');
+      failure.append(empty('!','无法读取项目内容',[error.message,'请确认本地服务地址及数据目录；读取失败不表示项目为空。']));
+      failure.append(btn('重新读取',()=>loadRoute(true)));
+      $('stage').replaceChildren(failure);
+      // Retain navigation, but never render a different project's cached data.
+      DATA = undefined;
+      return;
+    }
+  }
+  if (S.route?.view === 'draft' && S.route.objId) scrollToDraft(S.route.objId);
+  else window.scrollTo({top:0});
+}
 
 window.addEventListener("hashchange", () => {
   S.inspector = null;
   document.body.classList.remove("navigation-open");
-  render();
-  if (S.route.view === "draft" && S.route.objId) scrollToDraft(S.route.objId);
-  else window.scrollTo({ top: 0 });
+  loadRoute();
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
@@ -2656,8 +2759,7 @@ document.addEventListener("keydown", (e) => {
     if (S.inspector) closeInspector();
   }
 });
-render();
-if (S.route.view === "draft" && S.route.objId) scrollToDraft(S.route.objId);
+loadRoute();
 
 // Keep an open version menu attached to its trigger by dismissing it when the reading surface moves.
 const dismissVersionMenus = (event) => {

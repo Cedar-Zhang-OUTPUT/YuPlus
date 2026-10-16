@@ -9,3 +9,12 @@ test('monetary values include currencies, ranges and contextual budget shorthand
   assert.deepEqual(values('2026-10-16 14:30，8 分钟，3 面，40%，受众 100 万人'), []);
   assert.deepEqual(values('客户希望吸引 100 万人，预算 60 万元'), ['60 万元']);
 });
+
+test('integer minor units retain cents beyond JavaScript safe integers',async()=>{
+  const {formatMinor}=await import('../public/data/money-text.js');
+  assert.equal(formatMinor('9007199254740993','CNY'),'90,071,992,547,409.93 元');
+  assert.equal(formatMinor('60000000','CNY'),'600,000 元');
+  assert.equal(formatMinor('-1','USD'),'-0.01 USD');
+  assert.equal(formatMinor(null,'CNY'),null);
+  assert.equal(formatMinor('','CNY'),null);
+});

@@ -2,16 +2,21 @@
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
-每个数据目录使用一份 SQLite 数据库和一个按 SHA-256 寻址的本地文件池，无需运行数据库或对象存储服务。前端已有使用独立模拟数据的可交互预览，尚未连接真实项目数据库。
+每个数据目录使用一份 SQLite 数据库和一个按 SHA-256 寻址的本地文件池，无需运行数据库或对象存储服务。已提供仅绑定本机的 Python 只读网关，沿用已交付 UI，读取真实项目及文件；正式运行无需 Node.js。
 
-## 前端设计预览
+## 打开真实项目界面
+
+完成下方安装后，在本仓库根目录运行：
 
 ```sh
-# Node.js ≥ 20.11，无需安装 npm 依赖
-npm --prefix frontend run dev
+.venv/bin/yu --data-dir .local/work serve --port 0 --json
 ```
 
-打开 http://127.0.0.1:7801 。页面覆盖多项目、draft、review、来源追溯和决定历史，沿用提供的设计交付包。当前仅使用模拟数据，适合界面调试；不读写真实项目或调用飞书。详细入口和文件说明见 [frontend/README.md](frontend/README.md)。
+这是前台服务，保持终端运行；启动 JSON 返回实际 URL、端口和绝对数据目录。在 Codex 内置浏览器打开该 URL。端口 `0` 自动分配空闲端口，也可指定空闲端口。复用已有服务前核对 `/api/health` 的 `mode: live` 与 `data_dir`，不要结束占用端口的其他程序。
+
+页面查看真实多项目、draft、review、来源、历史版本和决定记录。通过 CLI 保存后，点击侧栏底部“刷新页面”或重载浏览器；页面不会写业务数据，也不推测 Agent 工作状态。`/api/view?project=PROJECT_ID` 只读取该项目的内容。真实服务故障不回退到示例。
+
+`npm --prefix frontend run dev` 保留为**独立模拟预览**（需要 Node ≥20.11）；它不读取真实数据库。两种运行方式详见 [frontend/README.md](frontend/README.md)。
 
 ## 安装
 
@@ -36,7 +41,9 @@ SQLite 版本不满足时，需选择带有较新 SQLite 的 Python 后重新建
 
 - [完整中文审阅版](docs/skills/yuplus/SKILL.zh-CN.md)：主文件、材料处理和 CLI 参考的中文译文。
 - [对象属性与成果关系](skills/yuplus/references/objects.md)：23 类 draft、内部编写依据，以及五类成果的依赖和回改位置。
-- [验证记录](docs/skills/yuplus/validation.md)：实际执行范围及尚未验证的边界。
+- [业务 Skill 验证记录](docs/skills/yuplus/validation.md)。
+- [可视化使用 Skill](skills/yuplus-visualization/SKILL.md) 及[完整中文版本](docs/skills/yuplus-visualization/SKILL.zh-CN.md)：启动服务、导航、来源/版本/差异、复制 Prompt 和故障处理。
+- [本次完整集成验收](docs/validation/2026-10-16-live-integration.md)。
 
 在本仓库根目录执行以下命令可将 Skill 链接到本机 Codex 的 skills 目录；目标已存在时命令会停止，避免覆盖其他版本：
 
@@ -44,9 +51,10 @@ SQLite 版本不满足时，需选择带有较新 SQLite 的 Python 后重新建
 python3 - <<'PY'
 import os
 from pathlib import Path
-source = (Path.cwd() / 'skills' / 'yuplus').resolve()
+skill_name = 'yuplus'  # 另一次改为 yuplus-visualization 安装可视化 Skill
+source = (Path.cwd() / 'skills' / skill_name).resolve()
 assert (source / 'SKILL.md').is_file(), '请在 YuPlus 仓库根目录运行'
-destination = Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex'))) / 'skills' / 'yuplus'
+destination = Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex'))) / 'skills' / skill_name
 destination.parent.mkdir(parents=True, exist_ok=True)
 destination.symlink_to(source, target_is_directory=True)
 print(destination)
@@ -132,9 +140,28 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - review 更新校验相关 draft 变更、段落因果履历和依赖有效性；CLI 不判断自然语言的分析是否正确。
 - 一个 draft 批次或一次 review 发布分别原子提交。draft 已保存而 review 发布失败时，保留 draft，读取新的依据后继续。
 
-当前未包含可视化界面/浏览器网关、飞书后台自动读取与启动版本扫描、导出、备份/GC 命令。Skill 指导 Agent 使用外部飞书 CLI 读取材料和做首次环境检查，应用本身不提供这些服务。原契约中列出的其他辅助命令（如 archive、diff、relations、review check）也不应视为已经提供；实际命令以 `./yu --help` 为准。
+已包含可视化界面/只读网关、本地完整导出准备，以及由 Agent 按 Skill 调用飞书 CLI 创建并回读文档的流程。尚无飞书后台自动读取与启动版本扫描、导出历史写入、review 确认记录、备份/GC 命令。Skill 指导 Agent 做首次飞书环境检查，应用不后台执行飞书操作。原契约中列出的其他辅助命令（如 archive、diff、relations、review check）也不应视为已经提供；实际命令以 `./yu --help` 为准。
 
 数据库文件与对象池共同组成项目数据。当前没有在线备份命令；不要只复制运行中的 SQLite 主文件来当作完整项目备份。
+
+## 完整导出与真实集成验收
+
+```sh
+.venv/bin/python -m yuplus.export_bundle --data-dir .local/work --project PROJECT_ID --output .local/export
+```
+
+输出 `review.md` 和 `manifest.json`，包括全部当前成果实例、共用 Q&A、引用/当前 draft 版本及来源全文。输出目录必须在业务数据目录之外。该步骤只准备本地文件，不上传媒体，也不创建飞书文档。按 Skill 调飞书 CLI 创建新文档并回读验证后，才能报告远端导出成功。
+
+可重复的合成资料验收（全部业务写入经过真实 CLI）：
+
+```sh
+.venv/bin/python scripts/live_acceptance.py seed --root .preview/my-acceptance
+.venv/bin/yu --data-dir .preview/my-acceptance/data serve --port 0 --json
+# 在另一终端填写启动结果的实际 URL；此时可先在浏览器检查旧/新依据差异
+.venv/bin/python scripts/live_acceptance.py finish --root .preview/my-acceptance --url http://127.0.0.1:ACTUAL_PORT
+```
+
+每次选择新的验收目录；脚本不访问飞书、不读个人项目。覆盖两个项目隔离、真实文本/图片、日/分钟时间、5 个成果实例、同源 Q&A、拒绝跳过 draft、条目级影响、更新与历史留存、完整本地导出。远端飞书验证是另行执行的外部验收，详见验证记录。
 
 ## 开发和验证
 
@@ -153,4 +180,4 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - [数据库与 CLI 契约](docs/superpowers/specs/2026-10-13-yuplus-data-cli-contract.md)
 - [最小链路实施计划](docs/superpowers/plans/2026-10-13-yuplus-minimal-cli.md)
 
-当前实现仍是最小链路版本，适合本地试用和继续开发；尚未验证跨机器分发安装或异常断电恢复。
+当前实现仍是最小链路版本，适合本地试用和继续开发；已在本机验证脱离源码目录运行 wheel 安装包；尚未验证跨操作系统分发或异常断电恢复。

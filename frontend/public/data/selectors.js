@@ -9,6 +9,11 @@ const canonical = (value) => {
 };
 const equal = (a, b) => JSON.stringify(canonical(a)) === JSON.stringify(canonical(b));
 export function basisStatus(data, basis) {
+  if (data.meta?.demo === false) {
+    const key = `${basis.object_id}:${basis.revision_id}:${basis.item_id || '*'}`;
+    const status = data.basis_status_by_key?.[key];
+    return ['same','changed','unknown'].includes(status) ? status : 'unknown';
+  }
   const object = data.indexes.objById[basis.object_id];
   const old = data.indexes.revById[basis.revision_id];
   const current = data.indexes.revById[object?.current_revision_id];
@@ -21,4 +26,13 @@ export function basisStatus(data, basis) {
   // Evidence identities may be regenerated when an unchanged citation is carried forward.
   const content = (item) => ({ ...item, source_refs: (item.source_refs || []).map(({ evidence_id, ...ref }) => ref) });
   return equal(content(before), content(after)) ? 'same' : 'changed';
+}
+
+// Canonical CLI statuses and legacy demo labels share one presentation mapping.
+export function qaState(status) {
+  if (status === 'answered' || status === '已答复') return {label:'已答复',hue:'green',answered:true};
+  if (status === 'closed') return {label:'已关闭',hue:'gray',answered:false};
+  if (status === '不适用') return {label:'不适用',hue:'gray',answered:false};
+  if (status === 'open' || status === '待答复') return {label:'待答复',hue:'orange',answered:false};
+  return {label:status || '未记录状态',hue:'gray',answered:false};
 }

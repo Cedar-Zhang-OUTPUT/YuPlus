@@ -17,6 +17,7 @@ export function createPreviewServer(options = {}) {
     let pathname;
     try { pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname); }
     catch { return send(400, 'Bad request'); }
+    if (pathname === '/api/health' && req.method === 'GET') return send(200, JSON.stringify({mode:'demo'}), {'Content-Type':'application/json; charset=utf-8'});
     if (pathname === '/api/local-files' || pathname === '/api/local-files/reveal') {
       const json = (status, data) => send(status, JSON.stringify(data), {'Content-Type':'application/json; charset=utf-8'});
       const port = req.socket.localPort;

@@ -1,0 +1,49 @@
+# Page and control guide
+
+Use visible Chinese labels in user instructions. The desktop view has left navigation, a reading area, and an on-demand detail inspector. Smaller windows collapse navigation and rearrange content; use the explicit navigation/directory buttons on touch devices instead of relying on hover.
+
+## Projects and navigation
+
+The project list supports search and empty states. Open the intended project by identity, especially when names match. “新建项目” offers text to copy into the Agent conversation; it is not a browser database-creation form. The Agent creates a requested project through the business CLI.
+
+Project navigation contains “信息收集”, “整理与Review”, “原始材料”, and “变更与决定记录”; the object definitions page explains supported types. The navigation toggle expands/collapses the sidebar. Its footer reports page refresh time and offers “刷新页面”. That timestamp is not a remote-source check time. The history page presents stored changes and decisions, not an audit approval or export created merely by clicking a button.
+
+## Information collection: draft
+
+The reading area groups the 23 business object types. They are available categories, not 23 mandatory completed records. “全部 23 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
+
+The “对象目录” is initially collapsed. Hover opens a floating preview without resizing the reading layout. Moving away or choosing an entry closes that preview. Clicking “展开对象目录” or “固定展开对象目录” pins it open and changes the layout; choosing entries then leaves it open. “收起对象目录” collapses it. In a narrow window expansion appears downward. The click controls are also the touch/keyboard route.
+
+Cards show version and update time. Use “历史版本” to open the draft version menu, then select “历史版本 v…” or “当前版本 v…”. Arrow Up/Down and Home/End move among menu options; Enter/Space activates a focused button; Escape closes the menu. History selection changes what is read, not the saved current version. Historical cards show a notice and a way back to current.
+
+Long text is folded after three lines where the text block supports folding. Click/tap the text, or focus it and press Enter/Space, to expand or collapse. Short text and blocks containing interactive elements may not be foldable. Text selection does not toggle it. Folding is recalculated for the available width.
+
+Hover or keyboard-focus a colored item card to expose the vertical information-nature label, such as “原文陈述”, “用户补充”, “建议”, or “采用决定”. This explains the saved epistemic kind; it is not a status change or a separate edit control. The expanding color edge does not change the text width.
+
+Structured money is displayed from integer smallest-unit amounts and currency; recognized amounts in prose are highlighted red. Highlighting is a display heuristic, not validation or a reason to edit source wording/insert HTML. Unknown amounts stay unknown.
+
+Timelines accept both day and minute precision, point events and ranges. Do not invent midnight or a timezone for a day-only value. Expand a milestone for its detail card. Delivery timelines organize rounds and reference time nodes; a reference date is not automatically a confirmed deadline.
+
+Q&A cards show both question and answer. Missing answers remain pending; an inapplicable answer retains its explanation. Source evidence appears in the shared “依据” row.
+
+## Review outputs
+
+| Code | Visible output | Identity rule |
+| --- | --- | --- |
+| R01 | 主策 Debrief | Saved review object |
+| R02 | 推进要素 | Saved review object |
+| R03 | 创意审查结果 | Saved review object |
+| R04 | 内外部创作者 Brief | Multiple creator/round instances may coexist |
+| R05 | 客户 Q&A | View of the same D15 draft Q&A, not another persisted review copy |
+
+Select the type and, where applicable, the Brief instance. Review versions are available through the version area and its “查看” buttons; historical reading is labelled. Paragraph actions are “完整追溯路径” and “复制引用”; changed paragraphs additionally have yellow “查看差异”. The orange changed-basis banner offers “查看受影响段落” and “复制更新 Prompt”. The title's “复制飞书导出 Prompt” covers the entire project, regardless of the selected card. See [review-actions.md](review-actions.md) for scope and execution.
+
+## Original, snapshot, and actual file
+
+“依据” lines separate two actions. Clicking the saved source title opens its canonical original URL in a new tab when one is available. For a local source without a URL, the title opens source details instead. “查看引用” opens the saved snapshot actually referenced by that card. Never equate opening an original with importing its latest version.
+
+“来源详情” contains source identity/URL, saved remote-check information, saved snapshot versions, the selected snapshot's body and files, and reverse references. Choose a snapshot's “查看” to inspect its saved contents. “本地主快照” means the local selected head, not confirmed remote latest. Snapshot text may be complete, a declared selection, or absent with only assets available. Reverse references list current draft items using this source across its snapshots; they are not a complete inventory of every historical reference. Follow historical review lineage to inspect its exact old evidence.
+
+Available registered image files can appear as previews; supported audio/video use browser controls. “打开文件” opens an available asset in a new tab. PDF rendering, playback/codecs and saving/downloading depend on the browser and format; unsupported formats may download. Do not describe an icon/metadata as a rendered PDF or claim a dedicated download button if none is shown. Browser Save/Download can be used from the opened file where supported. Text/Markdown snapshot display is not a full-fidelity office-document viewer.
+
+“在 Finder 中显示” appears only when the local service reports support and a registered file is available on macOS. It selects that stored file; it does not download a remote original. Requests use project, snapshot and asset IDs; the service resolves the path. Never suggest passing arbitrary paths or shell commands through the reveal endpoint. Missing, changed or unavailable files do not erase their provenance records. In explicit demo mode the reveal target may be generated example text, not a real source original.

@@ -1,69 +1,63 @@
-# Yu+ 前端预览
+# Yu+ 只读前端
 
-根据用户提供的 `yuplus-handoff.zip` 设计和源码落地的可交互页面。沿用交付包的浅色材质、字号、四类主题色、圆角卡片和按需检查器；不是之前的两种视觉概念图。
+沿用用户交付并确认的页面设计。正式模式由 Python 网关提供真实数据；独立 Node 服务保留为模拟设计预览。两者使用同一套页面，不需要前端构建或 npm 依赖。
 
-## 启动
+## 正式运行
 
-Node.js ≥ 20.11，无第三方依赖，无需 npm install。在仓库根目录：
+在仓库根目录安装 Python 包后：
 
 ```sh
+.venv/bin/yu --data-dir .local/work serve --port 0 --json
+```
+
+保持前台会话运行，打开启动 JSON 的实际 URL。`/api/health` 返回 `mode: live`、URL、端口和绝对数据目录。端口 0 自动分配；不要假设 7801 是正式服务。wheel 包含生产页面资源，安装后无需源码或 Node。
+
+`GET /api/view` 返回项目目录；`GET /api/view?project=PROJECT_ID` 返回指定项目的对象、全部已保存版本、来源、变更与决定，以及后端计算的条目级依据状态。API 出错显示读取失败，不渲染为空项目或模拟项目。CLI 保存后点击“刷新页面”或浏览器重载查看；同一项目内导航可复用已加载快照。
+
+## 路由
+
+- 项目列表：`/#/`；对象说明：`/#/types`。
+- 信息收集：`/#/p/PROJECT_ID/draft/OBJECT_ID`。
+- 整理与 Review：`/#/p/PROJECT_ID/review/OBJECT_ID`；R05 的 OBJECT_ID 就是 D15 对象。
+- 材料：`/#/p/PROJECT_ID/sources`；历史：`/#/p/PROJECT_ID/history`。
+- 对象 ID 可省略以进入对应场景。浏览不会切换 Agent 的项目或持久化工作场景。
+
+## 真实内容、来源与文件
+
+23 类对象使用正式目录与契约字段。金额整数保留最小单位精度；时间保留日/分钟精度。Review 按实际实例显示，多个创作者 Brief 不合并。完整正文使用安全的文本 Markdown 子集（标题、段落、粗体、代码、列表、引用、基础表格、HTTP(S) 链接），不执行材料 HTML。
+
+“查看引用”打开实际引用的本地快照，包含标题、采集范围、版本、正文与附件；原文标题打开保存的真实远端 URL，不再替换为模拟原文。历史引用不被来源头版本覆盖。缺少依据显示无法核对，不当作已同步。
+
+登记的真实资产通过 `/api/assets?project=...&version=...&asset=...` 读取；返回前核验大小和哈希。支持常见图片预览及浏览器支持的音视频播放，提供“打开文件”查看原件；PDF 可在新标签页交给浏览器查看。其他格式由浏览器下载/打开；HTML、SVG 等主动内容强制附件下载。没有独立“下载”按钮，保存方式取决于浏览器。缺失/变化文件如实提示。
+
+macOS 上“在 Finder 中显示”只定位当前项目登记且核验通过的文件。`GET /api/local-files?project=...` 返回能力和资产 ID；同源 `POST /api/local-files/reveal` 仅接受 `projectId/versionId/assetId`，不接受任意路径或 shell 命令。它不修改业务数据。非 macOS 不提供 Finder 操作。
+
+## Review 更新、导出与追溯
+
+保持既有目录、版本切换、依据对比和追溯检查器的交互。依据变化由后端实际条目/间接依赖判断，无关条目变化不让整份成果失效。差异使用真实旧/新版本，不推测被删除条目的替代关系。
+
+“复制引用”“复制更新 Prompt”“复制飞书导出 Prompt”只写剪贴板。正式 Prompt 绑定真实项目、数据目录和版本，不携带整库正文、不要求改 demo。Agent 重新读取当前内容，先改 draft，再 prepare/publish，最后刷新页面。
+
+完整导出面向所有当前 Review 实例与共用 Q&A。`python -m yuplus.export_bundle` 只准备本地 Markdown/manifest；Agent 按飞书 Skill 创建并回读新文档后返回真实链接。应用没有导出历史或审核确认写入命令，不模拟成功记录；附件元信息不等于上传了附件。
+
+## 独立模拟预览
+
+```sh
+# Node.js ≥20.11，无需安装 npm 依赖
 npm --prefix frontend run dev
-# http://127.0.0.1:7801
-
-# 指定其他端口
-npm --prefix frontend run dev -- --port 7802
-
+# 默认 http://127.0.0.1:7801；可加 -- --port 7802
 npm --prefix frontend test
 ```
 
-浏览器刷新后读取更新后的源码/数据；服务代码修改需要重启进程。服务仅绑定本机，提供 `public/` 中的静态文件，不读取真实项目数据库、凭证或本地材料目录。除下述 Finder 定位操作外，拒绝写入方法。
+此服务的 health mode 是 `demo`，只在这个明确模式下加载 `data/demo.js`。示例项目 ID（如 prj_city）、本地原文页面和 Finder 缓存不是真实材料；不得用于生产写入。正式错误不会回退到 demo。
 
-## 可调试的页面
+## 代码与边界
 
-- 项目列表：`/#/`，包含同名项目、空项目和归档项目。
-- 交付细节：`/#/p/prj_city/draft/obj_deliv`。
-- 预算与采用决定：`/#/p/prj_city/draft/obj_budget`。
-- 创作者 Brief：`/#/p/prj_city/review/obj_r04`；另有视觉设计师实例。
-- Debrief 与历史版本：`/#/p/prj_city/review/obj_r01`。
-- Q&A：`/#/p/prj_city/review/obj_qa`，读取同一个 D15 对象。
-- 材料：`/#/p/prj_city/sources`；变更与决定：`/#/p/prj_city/history`。
-- 23 类对象说明：`/#/types`。
+- `public/styles/`：保留交付包布局和视觉样式。
+- `public/app.js`：只读视图、交互、hash 路由；`data/runtime.js` 加载真实视图，`vocabulary.js` 提供静态显示词汇。
+- `data/selectors.js`：正式模式使用服务端依据状态；`basis-diff.js` 展示旧/新具体内容。
+- `data/review-prompts.js`：复制时生成上下文与指引。
+- `src/yuplus/browser_view.py`、`gateway.py`：只读 SQLite 快照、项目隔离、文件访问与本机 HTTP 服务。
+- `server.mjs`、`data/demo.js`、`source.html/source.js`：独立模拟预览。
 
-城市记忆展厅有 23 类带内容的 draft、23 类对象目录、4 类持久化 review 的 5 份成果以及共用 D15 的 R05 视图。页面支持来源快照/原文分流、反向引用、历史版本、完整段落追溯、复制引用和项目内导航。浏览不会改变项目工作场景。
-
-## 文件职责
-
-- `public/styles/tokens.css`：交付包提供的设计 token。
-- `public/styles/app.css`：页面/组件样式与自适应规则。
-- `public/app.js`：只读视图、交互及 hash 路由。
-- `public/data/demo.js`：稳定的模拟视图数据，可修改后刷新页面调试。
-- `public/data/selectors.js`：条目级依据比较。以后接入服务时，以 `review.prepare` 的权威受影响信息替代。
-- `public/source.html`、`source.js`：模拟原文的新标签页。
-- `server.mjs`：独立前端预览服务，不是 `yu serve`，不改变 Python CLI。
-- `tests/preview.test.mjs`：引用完整性、依据变化与只读服务边界测试。
-
-## 与交付包的调整
-
-修复了搜索丢焦、历史 draft 不能切换、R05 路由未读取共用对象、跨项目对象地址可能展示其他项目内容、空项目“全部 23 类”目录不全、窄窗口缺少导航和搜索框溢出等问题。依据比较落到具体条目，避免同一对象中的无关条目一起提示变更。
-
-按既有 spec 的能力边界，不预置未实现的远端扫描、审核确认或飞书导出状态。飞书标题仍是新标签页链接，但本轮指向本地示例原文，避免访问交付包内虚构的域名。接真实来源时需恢复真实规范地址。
-
-素材列表保留交付包提供的文件信息和预览占位；交付包没有这些业务图片/PDF/音视频的真实文件。当前不承诺实际多媒体预览或实时同步。这是前端视图模型，不是可直接提交给 CLI 的 JSON 契约，也不代表所有示例字段已在后端实现。
-
-设计参考保存在 `../docs/design/handoff/`，本轮浏览器截图在 `../docs/design/qa-2026-10-16/`。检查记录见 `design-qa.md`。
-
-## 在 Finder 中显示
-
-macOS 本地预览支持从附件卡片点击“在 Finder 中显示”。服务将已有 Markdown / 文本正文保存到 `frontend/.preview/source-files/`（Git 忽略），并用系统 `open -R` 选中文件。这是本地模拟快照，不是飞书原件。没有真实内容的图片、PDF 等占位附件不会显示按钮；非 macOS 环境也不会显示。
-
-`GET /api/local-files` 只返回可用附件标识；`POST /api/local-files/reveal` 仅接受同源 JSON 请求中的 `versionId` / `assetId`。路径由服务内部登记，客户端不能指定任意路径或命令，缓存文件也不通过静态服务器提供。此桥接只服务当前本机预览，未接入实际项目材料库。
-
-## Review 的 Agent Prompt
-
-标题右侧“复制飞书导出 Prompt”汇总当前项目所有 Review 实例及共用的客户 Q&A，附带引用过的 draft 历史版本、当前版本、原始来源快照和段落依据状态。变化提示内“复制更新 Prompt”仅针对当前成果检查更新。两者均由 `public/data/review-prompts.js` 根据点击时的数据生成，页面只写入剪贴板，不执行业务更新或外部导出。
-
-当前 Prompt 明确标记模拟数据：更新指向仓库内的示例版本；飞书导出由用户将 Prompt 发送给 Agent 后，通过已安装的飞书 CLI 创建并核验新文档。来源正文作为阅读材料传递，不当作命令执行。未来接入真实数据时，需由数据适配层提供真实项目上下文，并以 CLI 的 `review.prepare` / `review.publish` 契约完成更新；不能把当前视图 JSON 直接作为 CLI 输入。
-
-## 最终设计与集成交接
-
-用户已确认本阶段可视化设计完成；后续真实数据、CLI、服务和界面使用 skill 的集成要求见[交接说明](../docs/design/2026-10-16-frontend-integration-handoff.md)。该文包含后续迭代的最终交互约定，早期设计 QA 截图不覆盖全部变更。
+当前选定项目的视图一次读取全部已保存版本，资产逐个做完整哈希校验；大量历史或大视频可能影响加载速度，尚未做分页或校验缓存。没有实时推送、自动远端版本扫描、编辑/审批/聊天界面。本轮沿用[交接说明](../docs/design/2026-10-16-frontend-integration-handoff.md)，验证范围见[集成验收](../docs/validation/2026-10-16-live-integration.md)。

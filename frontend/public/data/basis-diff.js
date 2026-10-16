@@ -16,7 +16,10 @@ export function compareBasisItems(beforeRevision, afterRevision, itemId) {
   // replacement from titles; show the object changes with their actual IDs.
   const wholeObject = !itemId || itemId === '*' || (!newItem && !!oldItem);
   const ids = wholeObject ? [...new Set([...before.map(i => i.item_id), ...after.map(i => i.item_id)])] : [itemId];
-  return { wholeObject, removedReference: !!oldItem && !newItem, available,
+  const structureFields = wholeObject ? ['title','item_order'].map(key => ({key,
+    before:beforeRevision?.payload[key],after:afterRevision?.payload[key],
+    changed:available && !equal(beforeRevision?.payload[key],afterRevision?.payload[key])})) : [];
+  return { wholeObject, removedReference: !!oldItem && !newItem, available, structureFields,
     items: ids.map(id => {
       const old = before.find(i => i.item_id === id);
       const current = after.find(i => i.item_id === id);

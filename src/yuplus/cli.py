@@ -11,7 +11,7 @@ from .core import YuError
 COMMANDS={
     'project.create','project.list','project.show','source.import','source.list','source.show',
     'draft.apply','draft.list','draft.show','review.prepare','review.publish','review.list','review.show',
-    'changes.list','decisions.list','types.show','doctor',
+    'changes.list','decisions.list','types.show','doctor','serve',
 }
 INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
 
@@ -45,6 +45,7 @@ def main(argv=None):
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
     parser.add_argument('--data-dir',default=os.environ.get('YUPLUS_DATA_DIR',str(Path.home()/'.local/share/yuplus')))
+    parser.add_argument('--port',type=int,default=7801,help='serve 本地端口（0 自动分配）')
     parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
     parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
     parser.add_argument('--include-body',action='store_true',help='source show 显式读取来源正文')
@@ -76,6 +77,10 @@ def main(argv=None):
             if command=='source.show' and not args.source:raise YuError('INVALID_INPUT','需要 --source。')
             if command in {'changes.list','decisions.list'}:payload.update(limit=args.limit,after_cursor=args.after_cursor)
         app=App(args.data_dir)
+        if command=='serve':
+            app.close();app=None
+            from .gateway import serve
+            return serve(args.data_dir,args.port)
         result=app.execute(command,payload,project_id=args.project,request_id=args.request_id)
         print(json.dumps(result,ensure_ascii=False,allow_nan=False));return 0
     except YuError as exc:error=exc
