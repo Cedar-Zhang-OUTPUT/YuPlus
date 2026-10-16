@@ -819,17 +819,39 @@ function objectBody(o, pid) {
   const head = el("header");
   head.style.padding = "18px 22px";
   if (code) head.append(codeChip(code, (themeOf(o.type_key) || {}).hue || "gray"));
-  const h = el("h3"); h.style.fontSize = "19px"; h.textContent = typeName(o.type_key); head.append(h);
+  const titleGroup = el("div", "object-title");
+  const h = el("h3"); h.style.fontSize = "19px"; h.textContent = typeName(o.type_key);
+  const help = el("button", "object-help");
+  help.type = "button"; help.textContent = "?";
+  help.setAttribute("aria-label", "对象说明");
+  help.title = "查看对象说明";
+  help.onclick = () => openInspector({ kind: "object", id: o.id });
+  titleGroup.append(h, help); head.append(titleGroup);
   const grow = el("span", "grow"); head.append(grow);
 
   if (rev) {
-    const vtag = tag((isOld ? "历史 v" : "当前 v") + rev.version, isOld ? "orange" : "green");
-    head.append(vtag);
+    const versionArea = el("label", "version-control");
+    const label = el("span"); label.textContent = "版本";
+    const select = el("select"); select.id = "draftVersion";
+    select.setAttribute("aria-label", "历史版本");
+    for (const version of revsOf(o.id).slice().reverse()) {
+      const option = el("option"); option.value = String(version.version);
+      option.textContent = (version.id === current.id ? "当前 v" : "历史 v") + version.version;
+      option.title = fullTime(version.created_at);
+      select.append(option);
+    }
+    select.value = String(rev.version);
+    select.onchange = () => {
+      if (Number(select.value) === current.version) delete S.versionOf[o.id];
+      else S.versionOf[o.id] = Number(select.value);
+      S.inspector = null;
+      render();
+      $("draftVersion")?.focus({ preventScroll: true });
+    };
+    versionArea.append(label, select); head.append(versionArea);
   } else {
     head.append(tag("尚未建立内容", "gray"));
   }
-  const du = chipBtn("对象说明", () => openInspector({ kind: "object", id: o.id }));
-  head.append(du);
   head.append(copyRefButton({
     project_name: projOf(pid).name, project_id: pid,
     object_label: (code ? code + " " : "") + typeName(o.type_key) + `（${o.id}）`,
@@ -877,59 +899,6 @@ function objectBody(o, pid) {
   card.append(bd);
   wrap.append(card);
 
-  // 历史版本
-  const allRevs = revsOf(o.id);
-  if (allRevs.length > 1) {
-    const hc = el("div", "card");
-    const hh = el("header");
-    const hh3 = el("h3"); hh3.textContent = "历史版本"; hh.append(hh3);
-    const hg = el("span", "grow"); hh.append(hg);
-    hh.append(tag(allRevs.length + " 版", "gray"));
-    hc.append(hh);
-    const hb = el("div", "body tight");
-    const tl = el("div", "tl");
-    for (const r of allRevs.slice().reverse()) {
-      const row = el("div", "tlrow");
-      row.style.setProperty("--h", r.id === o.current_revision_id ? hueOf("green") : hueOf("gray"));
-      const top = el("div", "t");
-      const vt = tag("v" + r.version, r.id === o.current_revision_id ? "green" : "gray");
-      top.append(vt);
-      if (r.id === o.current_revision_id) top.append(tag("当前", "green"));
-      const w = el("span", "when"); w.textContent = fullTime(r.created_at); top.append(w);
-      row.append(top);
-      const change = DATA.changes.find((x) => x.id === r.change_id);
-      const rs = el("div", "reason"); rs.textContent = change ? change.reason : "尚未记录变更说明"; row.append(rs);
-      const cmd = el("div", "cmd"); cmd.textContent = (change ? change.command : "") + " · " + r.id; row.append(cmd);
-      // 前后对照：条目集的差异
-      const prev = allRevs.find((x) => x.version === r.version - 1);
-      if (prev && prev.payload.items) {
-        const prevIds = prev.payload.items.map((i) => i.item_id);
-        const curIds = r.payload.items.map((i) => i.item_id);
-        const added = curIds.filter((x) => !prevIds.includes(x));
-        const removed = prevIds.filter((x) => !curIds.includes(x));
-        const changedItems = curIds.filter((x) => {
-          const a = prev.payload.items.find((y) => y.item_id === x);
-          const b2 = r.payload.items.find((y) => y.item_id === x);
-          return a && b2 && JSON.stringify(a.data) !== JSON.stringify(b2.data);
-        });
-        if (added.length || removed.length || changedItems.length) {
-          const d = el("div", "tiny");
-          d.style.cssText = "margin-top:7px;display:flex;gap:8px;flex-wrap:wrap;";
-          if (changedItems.length) d.append(tag("改动 " + changedItems.length + " 条", "orange"));
-          if (added.length) d.append(tag("新增 " + added.length + " 条", "green"));
-          if (removed.length) d.append(tag("移除 " + removed.length + " 条", "gray"));
-          row.append(d);
-        }
-      }
-      if (r.id !== rev.id) {
-        row.append(chipBtn("查看此版本", () => { S.versionOf[o.id] = r.version; render(); }));
-      }
-      tl.append(row);
-    }
-    hb.append(tl);
-    hc.append(hb);
-    wrap.append(hc);
-  }
   return wrap;
 }
 
@@ -1076,7 +1045,7 @@ function viewReview(pid) {
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
-  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "信息整理";
+  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "整理与Review";
   head.append(h);
   const sub = el("p", "subtitle");
   sub.textContent = "Agent 依据 draft 对象组织的完整成果。正文连贯阅读，段落可展开依据与原始来源。";
@@ -1511,7 +1480,7 @@ function viewSources(pid) {
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
-  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "项目材料";
+  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "原始材料";
   head.append(h);
   const sub = el("p", "subtitle");
   sub.textContent = "飞书、本地文件与用户补充统一在这里。对象里的来源引用与这里是同一份来源身份，不是两个材料库。";
@@ -1595,7 +1564,7 @@ function viewHistory(pid) {
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
-  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "变更与决定";
+  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "变更与决定记录";
   head.append(h);
   const sub = el("p", "subtitle");
   sub.textContent = "这里是已保存的变更记录与正式决定，不是聊天全文，也不是 Agent 的执行过程日志。";
@@ -1852,18 +1821,11 @@ function renderChrome() {
   const tb = $("toolbar"); tb.replaceChildren();
   const r = S.route;
   tb.classList.toggle("project-toolbar", r.view === "projects");
+  tb.classList.toggle("catalog-toolbar", r.view === "types");
 
   const crumbs = el("div", "crumbs");
-  const crumbBtn = (label, hash) => {
-    const b = el("button", "chipbtn");
-    b.type = "button"; b.textContent = label;
-    if (hash) b.onclick = () => go(hash);
-    return b;
-  };
-  crumbs.append(crumbBtn("项目", "#/"));
   const proj = r.pid ? projOf(r.pid) : null;
   if (proj) {
-    const sep = el("span", "sep"); sep.textContent = "›"; crumbs.append(sep);
     const pb = el("span", "projectbadge");
     const dot = el("span", "dot");
     dot.style.background = hueOf(themeHueForProject(proj.id));
@@ -1871,7 +1833,7 @@ function renderChrome() {
     pb.title = "当前浏览项目：" + proj.name + "（" + proj.id + "）";
     crumbs.append(pb);
     const sep2 = el("span", "sep"); sep2.textContent = "›"; crumbs.append(sep2);
-    const sec = r.view === "review" ? "信息整理" : r.view === "sources" ? "项目材料" : r.view === "history" ? "变更与决定" : "信息收集";
+    const sec = r.view === "review" ? "整理与Review" : r.view === "sources" ? "原始材料" : r.view === "history" ? "变更与决定记录" : "信息收集";
     const b = el("b"); b.textContent = sec; crumbs.append(b);
   }
   const menu = btn("☰", () => {
@@ -1889,18 +1851,6 @@ function renderChrome() {
     tb.append(crumbs);
   }
   tb.append((() => { const s = el("span", "grow"); return s; })());
-
-  if (proj) {
-    const seg = el("div", "seg");
-    for (const [v, label] of [["draft", "信息收集"], ["review", "信息整理"]]) {
-      const b = el("button");
-      b.type = "button"; b.textContent = label;
-      b.setAttribute("aria-selected", String(r.view === v));
-      b.onclick = () => go(`#/p/${proj.id}/${v}`);
-      seg.append(b);
-    }
-    tb.append(seg);
-  }
 
   const search = el("div", "search");
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -1932,17 +1882,13 @@ function renderChrome() {
   const sp = $("sideProject"); sp.replaceChildren();
   if (proj) {
     addNav(sp, "信息收集", `#/p/${proj.id}/draft`, { icon: "✎", current: S.route.view === "draft" });
-    addNav(sp, "信息整理", `#/p/${proj.id}/review`, { icon: "▤", current: S.route.view === "review" });
-    addNav(sp, "项目材料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
-    addNav(sp, "变更与决定", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
-    const info = el("div");
-    info.style.cssText = "padding:12px 10px 0;font-size:11px;color:var(--label-3);line-height:1.7;";
-    info.textContent = `项目标识 ${proj.id} · 可复制给 Agent 指定目标`;
-    sp.append(info);
+    addNav(sp, "整理与Review", `#/p/${proj.id}/review`, { icon: "▤", current: S.route.view === "review" });
+    addNav(sp, "原始材料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
+    addNav(sp, "变更与决定记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
   } else {
     const info = el("div");
     info.style.cssText = "padding:6px 10px;font-size:12px;color:var(--label-3);line-height:1.6;";
-    info.textContent = "进入一个项目后，这里显示它的信息收集、信息整理、材料与历史。";
+    info.textContent = "进入一个项目后，这里显示它的信息收集、整理与Review、材料与历史。";
     sp.append(info);
   }
 
