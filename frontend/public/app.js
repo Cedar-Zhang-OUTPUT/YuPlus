@@ -110,6 +110,29 @@ function chipBtn(label, onclick) {
   b.type = "button"; b.textContent = label; b.onclick = onclick;
   return b;
 }
+let localFileCapabilities;
+function addFinderAction(container, version, asset) {
+  localFileCapabilities ||= fetch("/api/local-files").then((response) => response.ok ? response.json() : null).catch(() => null);
+  localFileCapabilities.then((capabilities) => {
+    if (!capabilities?.supported || !capabilities.files.some((file) => file.versionId === version.id && file.assetId === asset.asset_id)) return;
+    const status = el("div", "tiny muted"); status.setAttribute("role", "status");
+    const button = chipBtn("在 Finder 中显示", async () => {
+      button.disabled = true; status.textContent = "";
+      try {
+        const response = await fetch("/api/local-files/reveal", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({versionId:version.id,assetId:asset.asset_id}),
+        });
+        const result = await response.json();
+        status.textContent = result.message || (response.ok ? "已在 Finder 中显示" : "无法定位本地文件");
+      } catch { status.textContent = "无法连接本地文件服务"; }
+      finally { button.disabled = false; }
+    });
+    button.classList.add("reveal-file");
+    button.title = "在 Finder 中显示本地快照文件";
+    container.append(button, status);
+  });
+}
 function kv(pairs) {
   const dl = el("dl", "kv");
   for (const [k, v] of pairs) {
@@ -442,6 +465,7 @@ function renderInspector() {
           cap.textContent = a.display_name;
           const sz = el("div", "tiny muted"); sz.textContent = (a.size_bytes / 1048576).toFixed(1) + " MB";
           cap.append(sz);
+          addFinderAction(cap, v, a);
           if (a.availability === "external_missing") {
             const w = el("div", "tiny avail"); w.textContent = "外部原件当前不可访问";
             cap.append(w);

@@ -561,3 +561,8 @@ html.reading-draft { overflow-anchor:none; }
 }
 
 .cites:empty, .item-sources:has(> .cites:only-child:empty) { display:none; }
+
+.thumb { margin:0; }
+.thumb .reveal-file { margin-top:8px; padding:5px 7px; font-size:11px; max-width:100%; box-sizing:border-box; }
+.reveal-file:disabled { opacity:.5; cursor:wait; }
+.reveal-file:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
