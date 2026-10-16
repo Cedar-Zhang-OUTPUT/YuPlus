@@ -591,7 +591,8 @@ html.reading-draft { overflow-anchor:none; }
 .gantt-mark { all:unset; position:absolute; box-sizing:border-box; cursor:pointer; top:12px; height:22px; min-width:12px; border-radius:6px; background:color-mix(in srgb,var(--h) 25%,var(--bg-elevated)); border:1px solid var(--h); transition:filter .15s; }
 .gantt-mark:hover { filter:brightness(.9); }
 .gantt-mark.is-point { width:14px; height:14px; min-width:14px; top:16px; border-radius:3px; transform:translateX(-50%) rotate(45deg); background:var(--h); }
-.gantt-details { padding:0 16px 16px; }
+/* Reserve the expanded border's full width inside the chart's scroll viewport. */
+.gantt-details { padding:0 16px 16px 32px; }
 .gantt-details[hidden] { display:none; }
 .timeline-note { padding:16px; margin-top:14px; border-radius:12px; background:var(--bg-fill); font-size:13px; }
 .timeline-note.has-source-type { --source-surface:var(--bg-fill); background:transparent; }

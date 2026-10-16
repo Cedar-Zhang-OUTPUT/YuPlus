@@ -1270,7 +1270,7 @@ function milestoneChart(o, rev, hue) {
       const label = el("div", "gantt-label");
       const name = el("b"); name.textContent = it.data.event;
       const date = el("small"); date.textContent = dates.start === dates.end ? dates.start : `${dates.start} — ${dates.end}`;
-      label.append(name, date, epistemicTag(it.epistemic_kind));
+      label.append(name, date);
       const track = el("div", "gantt-track");
       for (const position of tickPositions) { const line = el("span", "gantt-gridline"); line.style.left = position + "%"; track.append(line); }
       const mark = chipBtn("", () => { details.hidden = !details.hidden; mark.setAttribute("aria-expanded", String(!details.hidden)); });
@@ -1356,14 +1356,18 @@ function itemCard(o, rev, it, hue) {
   // 按类型呈现：结构化字段 / 正文 / 清单
   const dd = it.data;
   const moneyKeys = new Set(["min_minor", "max_minor"]);
-  const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status", "captures"]);
+  const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status", "captures", "time_kind"]);
   const fields = Object.keys(dd).filter((k) => !skip.has(k) && dd[k] !== null && dd[k] !== undefined && dd[k] !== "");
   const plainValue = ["venue", "brand_assets", "cooperation_type"].includes(o.type_key);
-  const proseLike = dd.text || dd.requirement || dd.risk || dd.answer || (plainValue && dd.value);
+  const isQa = o.type_key === "qa";
+  const proseLike = isQa
+    ? (dd.answer || (dd.status === "不适用" ? ["不适用", dd.note].filter(Boolean).join("。") : "待答复"))
+    : dd.text || dd.requirement || dd.risk || dd.answer || (plainValue && dd.value);
 
   if (proseLike) {
     const p = el("div", "prose");
-    p.textContent = proseLike;
+    p.textContent = (isQa ? "回答：" : "") + proseLike;
+    if (isQa && !dd.answer) p.classList.add("muted");
     d.append(p);
     if (dd.answer && dd.answer_basis) {
       const b = el("p", "tiny muted"); b.style.marginTop = "6px";
@@ -1381,7 +1385,6 @@ function itemCard(o, rev, it, hue) {
       let isMoney = false;
       if (moneyKeys.has(k)) { const m = money(v, dd.currency); if (m) { v = m; isMoney = true; } }
       if (k === "currency") continue;
-      if (k === "time_kind") v = { date: "时间节点", datetime: "时间节点", range: "时间区间" }[v] || v;
       if (o.type_key === "milestones" && ["date", "start", "end"].includes(k)) v = parseScheduleTime(v)?.label || v;
       if (k === "related_object_ids" && Array.isArray(v)) v = v.map((id) => { const related = oOf(id); return related ? typeName(related.type_key) : "未找到关联对象"; });
       if (Array.isArray(v)) v = v.join("、");
