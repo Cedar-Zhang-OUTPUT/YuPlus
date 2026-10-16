@@ -528,7 +528,8 @@ html.reading-draft { overflow-anchor:none; }
 .gantt-axis, .gantt-row { display:grid; grid-template-columns:220px minmax(0,1fr); }
 .gantt-axis { font-size:11px; color:var(--label-3); padding:12px 16px; background:var(--bg-fill); }
 .gantt-ticks { position:relative; min-height:16px; margin-right:40px; }
-.gantt-ticks > span { position:absolute; white-space:nowrap; }
+.gantt-ticks > span { position:absolute; white-space:pre; }
+.gantt-ticks.has-time { min-height:30px; }
 .gantt-row { border-top:1px solid var(--separator); padding:16px; gap:0; }
 .gantt-label { padding-right:16px; }
 .gantt-label b, .gantt-label small { display:block; }
@@ -558,3 +559,5 @@ html.reading-draft { overflow-anchor:none; }
 @media (prefers-reduced-motion:reduce) {
   .version-menu, .version-chevron { transition:none; }
 }
+
+.cites:empty, .item-sources:has(> .cites:only-child:empty) { display:none; }

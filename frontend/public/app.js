@@ -6,6 +6,7 @@
 
 import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
+import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timeline.js";
 const pageLoadedAt = new Date();
 const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: false, mainNavCollapsed: false, versionOf: {} };
 
@@ -220,13 +221,7 @@ function sourceLink(sv_id, opts) {
 function sourceLinksOf(item) {
   const box = el("div", "cites");
   const refs = item.source_refs || [];
-  if (!refs.length) {
-    const s = el("span", "tiny muted");
-    s.textContent = DATA.EPISTEMIC[item.epistemic_kind] && item.epistemic_kind === "hypothesis"
-      ? "假设类内容不要求来源" : "尚未记录来源依据";
-    box.append(s);
-    return box;
-  }
+  if (!refs.length) return box;
   for (const r of refs) {
     const ev = DATA.EVIDENCE[r.evidence_kind] || { label: r.evidence_kind };
     const lbl = el("span", "tiny muted");
@@ -1100,28 +1095,22 @@ function resourceScope(o, it) {
   return box;
 }
 
-const dateNumber = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? Date.parse(date + "T00:00:00Z") : NaN;
-const milestoneDates = (item) => {
-  const d = item.data; const start = d.date || d.start; const end = d.date || d.end || start;
-  return { start, end, from: dateNumber(start), to: dateNumber(end) };
-};
 function milestoneChart(o, rev, hue) {
   const box = el("div", "milestone-chart");
   const dated = rev.payload.items.filter((it) => { const d = milestoneDates(it); return Number.isFinite(d.from) && d.to >= d.from; })
     .sort((a,b) => milestoneDates(a).from - milestoneDates(b).from);
   if (dated.length) {
-    const min = Math.min(...dated.map((it) => milestoneDates(it).from)) - 7 * 86400000;
-    const max = Math.max(...dated.map((it) => milestoneDates(it).to)) + 7 * 86400000;
+    const scale = timelineScale(dated.map(milestoneDates));
+    const { min, max } = scale;
     const percent = (n) => (n - min) / (max - min) * 100;
-    const legend = el("p", "tiny muted"); legend.textContent = `${milestoneDates(dated[0]).start} — ${new Date(max - 7 * 86400000).toISOString().slice(0,10)}　· ◆ 单日节点　━ 时间区间　· 点击查看详情`; box.append(legend);
+    const legend = el("p", "tiny muted"); legend.textContent = `${scale.first} — ${scale.last}　· ◆ 时间节点　━ 时间区间　· 点击查看详情`; box.append(legend);
     const scroll = el("div", "gantt-scroll"); const chart = el("div", "gantt-grid");
     const axis = el("div", "gantt-axis"); const axisLabel = el("span"); axisLabel.textContent = "节点 / 区间";
-    const ticks = el("div", "gantt-ticks");
+    const ticks = el("div", "gantt-ticks" + (scale.minuteScale ? " has-time" : ""));
     const tickPositions = [];
-    for (let m = new Date(min); m.getTime() <= max; m = new Date(Date.UTC(m.getUTCFullYear(), m.getUTCMonth()+1,1))) {
-      const tick = el("span"); tick.textContent = `${m.getUTCMonth()+1}月`;
-      tick.title = `${m.getUTCFullYear()}年${m.getUTCMonth()+1}月`;
-      const position = percent(m.getTime());
+    for (const entry of scale.ticks) {
+      const tick = el("span"); tick.textContent = entry.label; tick.title = entry.title;
+      const position = percent(entry.value);
       tickPositions.push(position);
       tick.style.left = position + "%"; ticks.append(tick);
     }
@@ -1144,8 +1133,6 @@ function milestoneChart(o, rev, hue) {
       const details = el("div", "gantt-details"); details.id = `milestone-${o.id}-${it.item_id}`; details.hidden = true;
       mark.setAttribute("aria-controls", details.id);
       details.append(itemCard(o, rev, it, hue));
-      const note = it.data.source_note || it.data.basis;
-      if (note) { const p = el("p", "tiny muted"); p.textContent = note; label.append(p); }
       track.append(mark); row.append(label, track); chart.append(row, details);
     }
     scroll.append(chart); box.append(scroll);
@@ -1178,7 +1165,7 @@ function deliveryTimeline(o, rev) {
       // Date references are suggestions from D09, never asserted as committed delivery deadlines.
       const match = dates.find((m) => d.granularity && m.data.event?.includes(d.granularity) && Number.isFinite(milestoneDates(m).from));
       const time = el("p", "small");
-      if (d.date) time.textContent = d.date;
+      if (d.date) time.textContent = parseScheduleTime(d.date)?.label || d.date;
       else if (match) {
         const span = milestoneDates(match);
         time.textContent = `参考：${span.start}${span.end !== span.start ? " — " + span.end : ""} · ${DATA.EPISTEMIC[match.epistemic_kind]?.label || "时间节点"}`;
@@ -1245,7 +1232,8 @@ function itemCard(o, rev, it, hue) {
       let isMoney = false;
       if (moneyKeys.has(k)) { const m = money(v, dd.currency); if (m) { v = m; isMoney = true; } }
       if (k === "currency") continue;
-      if (k === "time_kind") v = { date: "单日节点", range: "时间区间" }[v] || v;
+      if (k === "time_kind") v = { date: "时间节点", datetime: "时间节点", range: "时间区间" }[v] || v;
+      if (o.type_key === "milestones" && ["date", "start", "end"].includes(k)) v = parseScheduleTime(v)?.label || v;
       if (k === "related_object_ids" && Array.isArray(v)) v = v.map((id) => { const related = oOf(id); return related ? typeName(related.type_key) : "未找到关联对象"; });
       if (Array.isArray(v)) v = v.join("、");
       if (typeof v === "object") v = JSON.stringify(v);
