@@ -6,6 +6,7 @@
 
 import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
+const pageLoadedAt = new Date();
 const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: false, mainNavCollapsed: false, versionOf: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
@@ -2025,11 +2026,10 @@ function renderChrome() {
     sp.append(info);
   }
 
-  $("railFoot").replaceChildren();
-  const l1 = el("div"); l1.textContent = "只读业务视图 · 不会写入";
-  const l2 = el("div"); l2.textContent = DATA.meta.demo ? "示例数据 · 非真实客户材料" : "本地数据目录 " + DATA.meta.data_dir;
-  const l3 = el("div"); l3.textContent = "新建、修改与决定请在 Codex 中进行";
-  $("railFoot").append(l1, l2, l3);
+  const refreshedAt = el("time");
+  refreshedAt.dateTime = pageLoadedAt.toISOString();
+  refreshedAt.textContent = fullTime(pageLoadedAt) + ":" + String(pageLoadedAt.getSeconds()).padStart(2, "0");
+  $("railFoot").replaceChildren("页面刷新于 ", refreshedAt);
 }
 
 /* ═══════════════════════════ 路由 ═════════════════════════════════════ */
