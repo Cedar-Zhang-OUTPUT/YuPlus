@@ -7,6 +7,7 @@
 import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
 import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timeline.js";
+import { moneyMatches } from "./data/money-text.js";
 const pageLoadedAt = new Date();
 const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, versionOf: {} };
 
@@ -68,6 +69,26 @@ function money(minor, currency) {
   const major = n / 100;
   const s = major.toLocaleString("zh-CN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return `${s} 万元`.replace("万元", "") && `${s} ${currency === "CNY" ? "元" : currency || ""}`.trim();
+}
+
+function highlightMoney(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    if (node.parentElement.closest('.money, code, script, style, textarea, select')) continue;
+    const matches = moneyMatches(node.data);
+    if (!matches.length) continue;
+    const fragment = document.createDocumentFragment();
+    let offset = 0;
+    for (const match of matches) {
+      fragment.append(document.createTextNode(node.data.slice(offset, match.index)));
+      const span = el('span', 'money'); span.textContent = match.text; fragment.append(span);
+      offset = match.index + match.text.length;
+    }
+    fragment.append(document.createTextNode(node.data.slice(offset)));
+    node.replaceWith(fragment);
+  }
 }
 
 /* ── 小部件 ─────────────────────────────────────────────────────────────── */
@@ -980,6 +1001,7 @@ function refreshDraftObject(o, pid) {
   if (!section) { render(); return; }
   const top = section.getBoundingClientRect().top;
   section.replaceChildren(objectBody(o, pid));
+  highlightMoney(section);
   window.scrollBy(0, section.getBoundingClientRect().top - top);
 }
 function scrollToDraft(key) {
@@ -1279,7 +1301,7 @@ function itemCard(o, rev, it, hue) {
   const moneyKeys = new Set(["min_minor", "max_minor"]);
   const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status"]);
   const fields = Object.keys(dd).filter((k) => !skip.has(k) && dd[k] !== null && dd[k] !== undefined && dd[k] !== "");
-  const plainValue = ["venue", "brand_assets"].includes(o.type_key);
+  const plainValue = ["venue", "brand_assets", "cooperation_type"].includes(o.type_key);
   const proseLike = dd.text || dd.requirement || dd.risk || dd.answer || (plainValue && dd.value);
 
   if (proseLike) {
@@ -2341,6 +2363,7 @@ function renderStage(updateChrome = true) {
     stage.append(view);
   }
   renderInspectorExtra();
+  highlightMoney(stage);
   const projectDock = document.querySelector(".project-create-dock");
   if (projectDock) projectDockObserver.observe(projectDock);
   restoreDraftAnchor(anchor);

@@ -200,6 +200,7 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .item .field dt { color:var(--label-3); font-size:13px; }
 .item .field dd { margin:0; overflow-wrap:anywhere; }
 .item .field dd.money { font-variant-numeric:tabular-nums; font-weight:600; }
+.money { color:var(--red); font-variant-numeric:tabular-nums; font-weight:600; }
 .item .prose { font-size:14.5px; line-height:1.68; }
 .item .struck { color:var(--label-3); text-decoration:line-through; }
 .item-footer { display:flex; align-items:flex-end; flex-wrap:wrap; gap:8px 14px; margin-top:9px; }
