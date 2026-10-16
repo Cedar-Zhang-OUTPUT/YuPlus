@@ -156,27 +156,31 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 /* ── 飞书标题链接组件 ──────────────────────────────────────────────────── */
 .flink {
   display:inline-flex; align-items:stretch; border-radius:11px; overflow:hidden;
-  background:color-mix(in srgb, var(--h) 8%, transparent); border:1px solid color-mix(in srgb, var(--h) 20%, transparent);
+  background:var(--bg-grouped); border:1px solid var(--separator);
   max-width:100%; min-width:0; vertical-align:middle;
 }
 .flink .type {
   display:flex; align-items:center; flex:none; white-space:nowrap; padding:0 9px;
   font-size:11px; font-weight:400; letter-spacing:.02em;
-  background:color-mix(in srgb, var(--h) 16%, transparent); color:color-mix(in srgb, var(--h) 88%, #000 6%);
+  background:var(--bg-fill); color:var(--label);
 }
 .flink .title {
   display:flex; align-items:center; gap:6px; padding:6px 11px; font-size:13px; font-weight:400;
-  color:color-mix(in srgb, var(--h) 88%, #000 8%); min-width:0; max-width:44ch;
+  color:var(--label); min-width:0; max-width:44ch;
+  transition:color .14s, background .14s;
 }
-.flink .title:hover { background:color-mix(in srgb, var(--h) 12%, transparent); text-decoration:none; }
+.flink .title:hover, .flink .title:focus-visible {
+  color:var(--blue); background:var(--bg-fill); text-decoration:none;
+}
 .flink .title span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .flink .xref {
   all:unset; box-sizing:border-box; display:flex; align-items:center; gap:4px; padding:0 10px;
   flex:none; white-space:nowrap; font-size:11.5px; font-weight:400; cursor:pointer;
-  border-left:1px solid color-mix(in srgb, var(--h) 20%, transparent);
-  color:color-mix(in srgb, var(--h) 82%, #000 8%);
+  border-left:1px solid var(--separator);
+  color:var(--label); transition:color .14s, background .14s;
 }
-.flink .xref:hover { background:color-mix(in srgb, var(--h) 15%, transparent); }
+.flink .xref:hover, .flink .xref:focus-visible { color:var(--blue); background:var(--bg-fill); }
+.flink .title:focus-visible, .flink .xref:focus-visible { outline:2px solid var(--blue); outline-offset:-2px; }
 .flink.untitled .title { font-style:italic; }
 
 /* ── 引用与依据 ────────────────────────────────────────────────────────── */
