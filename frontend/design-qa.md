@@ -45,3 +45,11 @@ Real database/API integration, real Feishu source opening and multimedia playbac
 Implementation checklist: [x] preserve supplied language; [x] primary read-only flows; [x] desktop comparisons; [x] narrow viewport fix/recheck; [x] console checks; [x] independent mock data; [x] preview kept running.
 
 final result: passed
+
+## 用户批注修订：项目列表（2026-10-16）
+
+用户的 12 条页面批注覆盖原始交付图中对应内容。本次移除品牌副标题、项目列表面包屑按钮、标题说明、项目 ID 和归档说明；将搜索与标题放在同一行；项目行增加“复制项目名称”，摘要改为“最新更新”，时间改为基于 `created_at` 的“创建于”；新建提示改为“复制到Agent会话框”并固定在视口底部；目录标题改为“信息收集对象”。项目内部的返回面包屑仍保留。
+
+证据：`../docs/design/qa-2026-10-16/projects-refinement.png`，1499 × 1164。实际标题与搜索中心纵坐标分别约 55.27/55.27px。390 × 844 下未横向溢出；滚动 457px 后底栏底边仍为 832px，最后一行底边 609px 小于底栏顶边 657px，内容可完整滚动到固定区域上方。ResizeObserver 根据底栏实际高度保留滚动空间。
+
+复制按钮鼠标/Enter 操作不触发项目导航；点击第二个按钮后粘贴到搜索框，实际文本为 `YU+ Dev`。搜索保留焦点并能筛选两个同名项目。对象说明新标题在浏览器中可见。浏览器未记录 error/warn。未改动 Skill、CLI 或后端契约。

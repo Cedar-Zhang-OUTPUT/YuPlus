@@ -612,27 +612,20 @@ function renderInspector() {
 
 /* ── 项目列表 ──────────────────────────────────────────────────────────── */
 function viewProjects() {
-  const c = el("div", "content wide");
-  const t = el("h1", "largetitle"); t.textContent = "项目";
-  c.append(t);
-  const st = el("p", "subtitle");
-  st.textContent = "在本机维护的策展项目。这里展示 Agent 已保存的内容；新建、修改与决定都在 Codex 中进行。";
-  c.append(st);
+  const c = el("div", "content wide projects-content");
 
   const q = S.q.trim().toLowerCase();
   const match = (p) => !q || p.name.toLowerCase().includes(q) || (p.client_summary || "").toLowerCase().includes(q);
   const active = DATA.projects.filter((p) => p.lifecycle === "active" && match(p));
   const archived = DATA.projects.filter((p) => p.lifecycle === "archived" && match(p));
 
-  const group = (title, list, note) => {
+  const group = (title, list) => {
     if (!list.length) return;
     const gh = el("div");
     gh.style.cssText = "display:flex;align-items:baseline;gap:10px;margin:30px 0 10px;";
     const h = el("h2"); h.style.cssText = "font-size:13px;font-weight:660;letter-spacing:.05em;text-transform:uppercase;color:var(--label-3);";
     h.textContent = title;
     gh.append(h);
-    const n = el("span", "tiny muted"); n.textContent = note || "";
-    gh.append(n);
     c.append(gh);
 
     const g = el("div", "listgroup");
@@ -640,7 +633,7 @@ function viewProjects() {
       const row = el("div", "lrow clickable");
       row.onclick = () => go(`#/p/${p.id}/${p.working_scene}`);
       row.tabIndex = 0; row.setAttribute("role", "link");
-      row.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); row.click(); } };
+      row.onkeydown = (e) => { if (e.target === row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); row.click(); } };
       const dot = el("span"); dot.style.cssText = `width:9px;height:9px;border-radius:50%;margin-top:7px;flex:none;background:${hueOf(themeHueForProject(p.id))};`;
       row.append(dot);
       const g2 = el("div", "grow");
@@ -650,7 +643,7 @@ function viewProjects() {
       const a = el("div", "sub");
       a.style.marginTop = "6px";
       if (act) {
-        a.textContent = `最近保存：${act.summary}`;
+        a.textContent = `最新更新：${act.summary}`;
       } else {
         a.textContent = "该项目尚无已保存内容。";
         a.style.color = "var(--label-3)";
@@ -660,10 +653,11 @@ function viewProjects() {
       const right = el("div");
       right.style.cssText = "text-align:right;flex:none;display:flex;flex-direction:column;gap:6px;align-items:flex-end;";
       const tm = el("div", "tiny muted"); tm.style.fontVariantNumeric = "tabular-nums";
-      tm.textContent = act ? when(act.at) : when(p.updated_at);
+      tm.textContent = `创建于 ${fullTime(p.created_at)}`;
       right.append(tm);
-      const code2 = el("code", "tiny"); code2.style.color = "var(--label-4)"; code2.textContent = p.id;
-      right.append(code2);
+      const copyName = chipBtn("复制项目名称", () => {});
+      copyName.onclick = (e) => { e.stopPropagation(); copyText(p.name, copyName); };
+      right.append(copyName);
       row.append(right);
       g.append(row);
     }
@@ -674,11 +668,11 @@ function viewProjects() {
     c.append(empty("🔍", "没有匹配的项目", ["清空搜索可以看到全部项目。"]));
   }
   group("当前项目", active);
-  group("过往项目", archived, "分类来自实际归档记录，不按时间推断项目是否结束");
+  group("过往项目", archived);
 
   // 新建项目：只给可复制的意图，不在页面提交写入
-  const nc = el("div", "card");
-  nc.style.marginTop = "28px";
+  const nc = el("section", "card project-create-dock");
+  nc.setAttribute("aria-label", "新建项目");
   const nh = el("header");
   const nh3 = el("h3"); nh3.textContent = "新建项目"; nh.append(nh3);
   const ng = el("span", "grow"); nh.append(ng);
@@ -686,7 +680,7 @@ function viewProjects() {
   nc.append(nh);
   const nb = el("div", "body");
   const np = el("p", "small muted");
-  np.textContent = "Yu+ 页面不创建项目。把下面这句话交给 Codex，由 Agent 通过 Yu+ CLI 建立，当前预览使用独立示例数据。";
+  np.textContent = "复制到Agent会话框";
   nb.append(np);
   const intent = "用 Yu+ 新建一个项目，名称：______；客户/简述：______。建立后把 project_id 告诉我。";
   const box = el("div", "copyable");
@@ -1727,7 +1721,7 @@ function viewCatalog() {
 
   const card = el("div", "card");
   const head = el("header");
-  const h3 = el("h3"); h3.textContent = "draft 业务对象"; head.append(h3);
+  const h3 = el("h3"); h3.textContent = "信息收集对象"; head.append(h3);
   const g = el("span", "grow"); head.append(g);
   head.append(tag("23 类", "blue"));
   card.append(head);
@@ -1857,6 +1851,7 @@ function renderMarkdown(md) {
 function renderChrome() {
   const tb = $("toolbar"); tb.replaceChildren();
   const r = S.route;
+  tb.classList.toggle("project-toolbar", r.view === "projects");
 
   const crumbs = el("div", "crumbs");
   const crumbBtn = (label, hash) => {
@@ -1886,7 +1881,13 @@ function renderChrome() {
   menu.setAttribute("aria-label", "展开或收起导航");
   menu.setAttribute("aria-controls", "navigation");
   menu.setAttribute("aria-expanded", String(document.body.classList.contains("navigation-open")));
-  tb.append(menu, crumbs);
+  tb.append(menu);
+  if (r.view === "projects") {
+    const heading = el("h1", "largetitle"); heading.textContent = "项目";
+    tb.append(heading);
+  } else {
+    tb.append(crumbs);
+  }
   tb.append((() => { const s = el("span", "grow"); return s; })());
 
   if (proj) {
@@ -1970,7 +1971,14 @@ function parseRoute() {
 }
 function go(hash) { if (location.hash === hash) { render(); } else { location.hash = hash; } }
 
+const projectDockObserver = new ResizeObserver(entries => {
+  for (const { target } of entries) {
+    document.documentElement.style.setProperty("--project-dock-height", `${target.getBoundingClientRect().height}px`);
+  }
+});
+
 function renderStage(updateChrome = true) {
+  projectDockObserver.disconnect();
   S.route = parseRoute();
   if (updateChrome) renderChrome();
   const stage = $("stage");
@@ -2003,6 +2011,8 @@ function renderStage(updateChrome = true) {
     stage.append(view);
   }
   renderInspectorExtra();
+  const projectDock = document.querySelector(".project-create-dock");
+  if (projectDock) projectDockObserver.observe(projectDock);
 
 }
 
