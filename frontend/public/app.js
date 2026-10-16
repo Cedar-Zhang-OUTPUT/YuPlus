@@ -723,6 +723,7 @@ function viewDraft(pid) {
   const head = el("div");
   head.style.margin = "30px 0 6px";
   const h = el("h1", "largetitle");
+  h.id = "draft-title";
   h.style.margin = "0 0 6px";
   h.textContent = "信息收集";
   head.append(h);
@@ -861,6 +862,7 @@ function animatePanelToggle(layout, directory, changeState) {
   const before = directory.getBoundingClientRect();
   const beforeGrid = getComputedStyle(layout).gridTemplateColumns;
   const beforeGap = getComputedStyle(layout).columnGap;
+  const beforeRowGap = getComputedStyle(layout).rowGap;
   const dock = layout === document.body ? document.querySelector(".project-create-dock") : null;
   const dockLeft = dock?.getBoundingClientRect().left;
   panelTransitions.get(layout)?.();
@@ -875,6 +877,7 @@ function animatePanelToggle(layout, directory, changeState) {
     layout.animate({
       gridTemplateColumns: [beforeGrid, getComputedStyle(layout).gridTemplateColumns],
       columnGap: [beforeGap, getComputedStyle(layout).columnGap],
+      rowGap: [beforeRowGap, getComputedStyle(layout).rowGap],
     }, timing),
     directory.animate({ width: [before.width + "px", after.width + "px"], height: [before.height + "px", after.height + "px"] }, timing),
   ];
@@ -919,6 +922,12 @@ function draftReadingLine() {
   return 100;
 }
 function draftReadingAnchor() {
+  // At the top of the reader, let a stacked directory push content downward.
+  // Anchoring a card below it would scroll the visible page title out of view.
+  const title = $("draft-title");
+  const toolbarBottom = $("toolbar")?.getBoundingClientRect().bottom || 0;
+  if (title && title.getBoundingClientRect().bottom > toolbarBottom)
+    return { id: title.id, top: title.getBoundingClientRect().top };
   const line = draftReadingLine();
   const sections = [...document.querySelectorAll(".draft-section")];
   const section = sections.find(s => s.getBoundingClientRect().bottom > line);
