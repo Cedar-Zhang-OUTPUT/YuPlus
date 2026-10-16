@@ -743,11 +743,11 @@ function viewDraft(pid) {
   toggle.setAttribute("aria-pressed", String(S.showAllTypes));
   navh.append(toggle);
   const collapse = chipBtn("", () => {
-    const anchor = draftReadingAnchor();
-    S.directoryCollapsed = !S.directoryCollapsed;
-    layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
-    updateDirectoryToggle();
-    restoreDraftAnchor(anchor);
+    animateDirectoryToggle(layout, nav, () => {
+      S.directoryCollapsed = !S.directoryCollapsed;
+      layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
+      updateDirectoryToggle();
+    });
   });
   collapse.classList.add("directory-toggle");
   function updateDirectoryToggle() {
@@ -852,6 +852,58 @@ function viewDraft(pid) {
 
   body.append(layout);
   return c;
+}
+
+// Animate measured sizes so both side-by-side and stacked directories transition smoothly.
+const directoryTransitions = new WeakMap();
+function animateDirectoryToggle(layout, directory, changeState) {
+  let anchor = draftReadingAnchor();
+  const before = directory.getBoundingClientRect();
+  const beforeGrid = getComputedStyle(layout).gridTemplateColumns;
+  const beforeGap = getComputedStyle(layout).columnGap;
+  directoryTransitions.get(layout)?.();
+  changeState();
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    restoreDraftAnchor(anchor);
+    return;
+  }
+  const after = directory.getBoundingClientRect();
+  const timing = { duration: 260, easing: "cubic-bezier(.22, 1, .36, 1)" };
+  const animations = [
+    layout.animate({
+      gridTemplateColumns: [beforeGrid, getComputedStyle(layout).gridTemplateColumns],
+      columnGap: [beforeGap, getComputedStyle(layout).columnGap],
+    }, timing),
+    directory.animate({ width: [before.width + "px", after.width + "px"], height: [before.height + "px", after.height + "px"] }, timing),
+  ];
+  if (!S.directoryCollapsed) animations.push(directory.querySelector(".body").animate(
+    { opacity: [0, 1], transform: ["translateX(-6px)", "translateX(0)"] },
+    { duration: 180, delay: 60, fill: "backwards", easing: "ease-out" },
+  ));
+  directory.style.overflow = "hidden";
+  const input = new AbortController();
+  for (const event of ["wheel", "touchstart", "keydown"]) window.addEventListener(event, () => { anchor = null; }, { passive: true, signal: input.signal });
+  let frame;
+  const keepPosition = () => {
+    if (!layout.isConnected) { cleanup(); return; }
+    restoreDraftAnchor(anchor);
+    frame = requestAnimationFrame(keepPosition);
+  };
+  const cleanup = () => {
+    cancelAnimationFrame(frame);
+    input.abort();
+    animations.forEach(animation => animation.cancel());
+    directory.style.overflow = "";
+    directoryTransitions.delete(layout);
+  };
+  directoryTransitions.set(layout, cleanup);
+  keepPosition();
+  Promise.all(animations.map(animation => animation.finished)).then(() => {
+    if (directoryTransitions.get(layout) !== cleanup) return;
+    cleanup();
+    restoreDraftAnchor(anchor);
+    updateDraftDirectory();
+  }).catch(() => {}); // A second click replaces the in-flight transition from its current size.
 }
 
 // Directory navigation never rebuilds the document. Scroll tracking only updates navigation state.
