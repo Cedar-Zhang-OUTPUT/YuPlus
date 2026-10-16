@@ -325,9 +325,8 @@ function sourceLinksOf(item) {
   const refs = item.source_refs || [];
   if (!refs.length) return box;
   for (const r of refs) {
-    const ev = DATA.EVIDENCE[r.evidence_kind] || { label: r.evidence_kind };
     const lbl = el("span", "tiny muted");
-    lbl.textContent = ev.label;
+    lbl.textContent = "依据";
     lbl.style.marginRight = "-2px";
     const row = el("div", "source-row");
     row.append(lbl, sourceLink(r.source_version_id, { inline: true }));
@@ -1369,11 +1368,6 @@ function itemCard(o, rev, it, hue) {
     p.textContent = (isQa ? "回答：" : "") + proseLike;
     if (isQa && !dd.answer) p.classList.add("muted");
     d.append(p);
-    if (dd.answer && dd.answer_basis) {
-      const b = el("p", "tiny muted"); b.style.marginTop = "6px";
-      b.textContent = "答复依据：" + dd.answer_basis;
-      d.append(b);
-    }
   }
 
   const rest = fields.filter((k) => !["text", "requirement", "risk", "answer", "answer_basis"].includes(k) && !(plainValue && k === "value"));
@@ -1888,7 +1882,6 @@ function qaReviewView(pid, qaObj, kindMeta) {
     const q = el("div"); q.style.cssText = "font-weight:600;font-size:14.5px;"; q.textContent = it.data.question; row.append(q);
     if (it.data.answer) {
       const a = el("div"); a.style.cssText = "font-size:14px;margin-top:6px;color:var(--label-2);"; a.textContent = "答复：" + it.data.answer; row.append(a);
-      if (it.data.answer_basis) { const b2 = el("div", "tiny muted"); b2.textContent = "依据：" + it.data.answer_basis; row.append(b2); }
     } else if (it.data.note) {
       const a = el("div", "small muted"); a.style.marginTop = "6px"; a.textContent = it.data.note; row.append(a);
     } else {
