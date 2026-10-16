@@ -2029,7 +2029,19 @@ function renderChrome() {
   const refreshedAt = el("time");
   refreshedAt.dateTime = pageLoadedAt.toISOString();
   refreshedAt.textContent = fullTime(pageLoadedAt) + ":" + String(pageLoadedAt.getSeconds()).padStart(2, "0");
-  $("railFoot").replaceChildren("页面刷新于 ", refreshedAt);
+  const refreshLabel = el("span");
+  refreshLabel.append("页面刷新于 ", refreshedAt);
+  const refreshButton = chipBtn("", () => location.reload());
+  refreshButton.classList.add("page-refresh");
+  refreshButton.setAttribute("aria-label", "刷新页面");
+  refreshButton.title = "刷新页面";
+  const refreshIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  refreshIcon.setAttribute("viewBox", "0 0 24 24");
+  refreshIcon.setAttribute("width", "16"); refreshIcon.setAttribute("height", "16");
+  refreshIcon.setAttribute("aria-hidden", "true");
+  refreshIcon.innerHTML = '<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 1 0-2.3 5.7"/></g>';
+  refreshButton.append(refreshIcon);
+  $("railFoot").replaceChildren(refreshLabel, refreshButton);
 }
 
 /* ═══════════════════════════ 路由 ═════════════════════════════════════ */
