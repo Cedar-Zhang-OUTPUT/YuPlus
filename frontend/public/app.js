@@ -742,21 +742,27 @@ function viewDraft(pid) {
   toggle.title = "切换全部对象与已有内容";
   toggle.setAttribute("aria-pressed", String(S.showAllTypes));
   navh.append(toggle);
-  const collapse = chipBtn("‹", () => {
+  const collapse = chipBtn("", () => {
     const anchor = draftReadingAnchor();
     S.directoryCollapsed = !S.directoryCollapsed;
     layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
-    collapse.textContent = S.directoryCollapsed ? "›" : "‹";
-    collapse.setAttribute("aria-expanded", String(!S.directoryCollapsed));
-    collapse.setAttribute("aria-label", S.directoryCollapsed ? "展开对象目录" : "收起对象目录");
-    collapse.title = S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
+    updateDirectoryToggle();
     restoreDraftAnchor(anchor);
   });
   collapse.classList.add("directory-toggle");
-  collapse.textContent = S.directoryCollapsed ? "›" : "‹";
-  collapse.setAttribute("aria-expanded", String(!S.directoryCollapsed));
-  collapse.setAttribute("aria-label", S.directoryCollapsed ? "展开对象目录" : "收起对象目录");
-  collapse.title = S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
+  function updateDirectoryToggle() {
+    const label = S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
+    collapse.setAttribute("aria-expanded", String(!S.directoryCollapsed));
+    collapse.setAttribute("aria-label", label);
+    collapse.title = label;
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("width", "20"); icon.setAttribute("height", "20");
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = `<g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/><path d="${S.directoryCollapsed ? "m13 9 3 3-3 3" : "m16 9-3 3 3 3"}"/></g>`;
+    collapse.replaceChildren(icon);
+  }
+  updateDirectoryToggle();
   collapse.setAttribute("aria-controls", "draftDirectoryList");
   navh.append(collapse);
   nav.append(navh);

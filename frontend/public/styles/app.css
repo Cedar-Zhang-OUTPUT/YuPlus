@@ -177,9 +177,9 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
   all:unset; box-sizing:border-box; display:flex; align-items:center; gap:4px; padding:0 10px;
   flex:none; white-space:nowrap; font-size:11.5px; font-weight:400; cursor:pointer;
   border-left:1px solid var(--separator);
-  color:var(--label); transition:color .14s, background .14s;
+  color:var(--label-2); transition:background .15s var(--ease);
 }
-.flink .xref:hover, .flink .xref:focus-visible { color:var(--blue); background:var(--bg-fill); }
+.flink .xref:hover, .flink .xref:focus-visible { background:var(--separator); }
 .flink .title:focus-visible, .flink .xref:focus-visible { outline:2px solid var(--blue); outline-offset:-2px; }
 .flink.untitled .title { font-style:italic; }
 
@@ -444,12 +444,13 @@ body { height:auto; min-height:100vh; }
 .draft-directory > header h3 { white-space:nowrap; }
 .draft-directory > .body { overflow-y:auto; min-height:0; overscroll-behavior:contain; }
 .switch-icon { display:inline-block; margin-right:5px; font-size:15px; line-height:1; vertical-align:-1px; }
-.directory-toggle { flex:none; font-size:20px; line-height:1; width:26px; height:28px; padding:0; }
+.directory-toggle { flex:none; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; width:32px; height:30px; padding:0; border-radius:8px; }
+.directory-toggle svg { display:block; flex:none; }
 .draft-stream { display:flex; flex-direction:column; gap:24px; min-width:0; }
 .draft-section { scroll-margin-top:calc(var(--toolbar-height, 70px) + 20px); min-width:0; }
 .draft-object-content { contain:layout style; }
 .draft-layout.directory-collapsed { grid-template-columns:44px minmax(0,1fr) !important; gap:18px; }
-.directory-collapsed .draft-directory > header { padding:12px 8px; justify-content:center; }
+.directory-collapsed .draft-directory > header { padding:6px; justify-content:center; border-bottom:0; }
 .directory-collapsed .draft-directory > header > :not(.directory-toggle),
 .directory-collapsed .draft-directory > .body { display:none; }
 @media (max-width:980px) {
