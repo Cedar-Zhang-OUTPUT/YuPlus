@@ -8,7 +8,7 @@ import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
 import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timeline.js";
 const pageLoadedAt = new Date();
-const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: false, mainNavCollapsed: false, versionOf: {} };
+const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, versionOf: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
 const $ = (id) => document.getElementById(id);
@@ -740,6 +740,34 @@ function viewDraft(pid) {
 
   /* 目录：按阅读主题分组 */
   const nav = el("div", "card draft-directory");
+  let directoryPreview = false;
+  let suppressHover = false;
+  let leaveTimer;
+  const directoryOpen = () => !S.directoryCollapsed || directoryPreview;
+  function updateDirectoryState() {
+    layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
+    layout.classList.toggle("directory-preview", directoryPreview);
+    updateDirectoryToggle();
+  }
+  function closeDirectoryPreview() {
+    if (!directoryPreview) return Promise.resolve();
+    suppressHover = true;
+    directoryPreview = false;
+    updateDirectoryState();
+    return Promise.resolve();
+  }
+  nav.onpointerenter = event => {
+    clearTimeout(leaveTimer);
+    if (event.pointerType !== "mouse" || suppressHover || directoryOpen()) return;
+    directoryPreview = true;
+    updateDirectoryState();
+  };
+  nav.onpointerleave = () => {
+    suppressHover = false;
+    leaveTimer = setTimeout(() => {
+      if (nav.isConnected && directoryPreview) closeDirectoryPreview().then(() => { suppressHover = false; });
+    }, 140);
+  };
   const navh = el("header");
   const nh = el("h3"); nh.textContent = "对象目录"; navh.append(nh);
   const ng = el("span", "grow"); navh.append(ng);
@@ -750,16 +778,18 @@ function viewDraft(pid) {
   toggle.setAttribute("aria-pressed", String(S.showAllTypes));
   navh.append(toggle);
   const collapse = chipBtn("", () => {
+    clearTimeout(leaveTimer);
+    suppressHover = true;
     animatePanelToggle(layout, nav, () => {
       S.directoryCollapsed = !S.directoryCollapsed;
-      layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
-      updateDirectoryToggle();
+      directoryPreview = false;
+      updateDirectoryState();
     });
   });
   collapse.classList.add("directory-toggle");
   function updateDirectoryToggle() {
-    const label = S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
-    collapse.setAttribute("aria-expanded", String(!S.directoryCollapsed));
+    const label = directoryPreview ? "固定展开对象目录" : S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
+    collapse.setAttribute("aria-expanded", String(directoryOpen()));
     collapse.setAttribute("aria-label", label);
     collapse.title = label;
     setPanelToggleIcon(collapse, S.directoryCollapsed);
@@ -811,12 +841,17 @@ function viewDraft(pid) {
       b.append(ct);
       b.dataset.draftTarget = key;
       b.setAttribute("aria-controls", "draft-object-" + key);
-      b.onclick = () => {
+      b.onclick = async () => {
         if (o.id) {
           history.pushState(null, "", `#/p/${pid}/draft/${o.id}`);
           S.route = parseRoute();
         }
-        scrollToDraft(key);
+        if (directoryPreview) {
+          clearTimeout(leaveTimer);
+          collapse.focus({ preventScroll: true });
+          await closeDirectoryPreview();
+        }
+        if (layout.isConnected) scrollToDraft(key);
       };
       ol.append(b);
     }
@@ -826,7 +861,9 @@ function viewDraft(pid) {
   if (!objnav.children.length) objnav.append(empty("🗂", "还没有对象内容", ["可切换查看全部 23 类对象。"]));
   navb.append(objnav);
   nav.append(navb);
-  layout.append(nav);
+  const directorySlot = el("div", "draft-directory-slot");
+  directorySlot.append(nav);
+  layout.append(directorySlot);
 
   /* 所有可见对象按目录顺序连续阅读；目录导航与版本切换不重建整页。 */
   const main = el("div", "draft-stream");
@@ -869,7 +906,7 @@ function animatePanelToggle(layout, directory, changeState) {
   changeState();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     restoreDraftAnchor(anchor);
-    return;
+    return Promise.resolve();
   }
   const after = directory.getBoundingClientRect();
   const timing = { duration: 260, easing: "cubic-bezier(.22, 1, .36, 1)" };
@@ -905,7 +942,7 @@ function animatePanelToggle(layout, directory, changeState) {
   };
   panelTransitions.set(layout, cleanup);
   keepPosition();
-  Promise.all(animations.map(animation => animation.finished)).then(() => {
+  return Promise.all(animations.map(animation => animation.finished)).then(() => {
     if (panelTransitions.get(layout) !== cleanup) return;
     cleanup();
     restoreDraftAnchor(anchor);
@@ -915,7 +952,7 @@ function animatePanelToggle(layout, directory, changeState) {
 
 // Directory navigation never rebuilds the document. Scroll tracking only updates navigation state.
 function draftReadingLine() {
-  const directory = document.querySelector(".draft-directory");
+  const directory = document.querySelector(".directory-preview .draft-directory-slot") || document.querySelector(".draft-directory");
   const stream = document.querySelector(".draft-stream");
   if (directory && stream && Math.abs(directory.getBoundingClientRect().left - stream.getBoundingClientRect().left) < 10)
     return Math.max(100, directory.getBoundingClientRect().bottom + 12);
