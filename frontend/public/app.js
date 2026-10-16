@@ -6,7 +6,7 @@
 
 import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
-const S = { route: null, q: "", inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: false, versionOf: {} };
+const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: false, mainNavCollapsed: false, versionOf: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
 const $ = (id) => document.getElementById(id);
@@ -69,6 +69,14 @@ function money(minor, currency) {
 }
 
 /* ── 小部件 ─────────────────────────────────────────────────────────────── */
+function setPanelToggleIcon(button, collapsed) {
+  const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  icon.setAttribute("viewBox", "0 0 24 24");
+  icon.setAttribute("width", "20"); icon.setAttribute("height", "20");
+  icon.setAttribute("aria-hidden", "true");
+  icon.innerHTML = `<g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/><path d="${collapsed ? "m13 9 3 3-3 3" : "m16 9-3 3 3 3"}"/></g>`;
+  button.replaceChildren(icon);
+}
 function tag(text, hue, dot) {
   const s = el("span", "tag");
   if (hue) s.style.setProperty("--h", hueOf(hue));
@@ -264,23 +272,6 @@ function itemsUsingSourceVersion(sv_id) {
     seen.add(key);
     return true;
   });
-}
-
-/* 反向索引：哪些 review 段落使用了某个 draft 条目 */
-function reviewsUsingItem(object_id, item_id) {
-  const out = [];
-  for (const r of DATA.object_revisions) {
-    const o = oOf(r.object_id);
-    if (!o || o.layer !== "review") continue;
-    const lg = r.block_lineage || {};
-    for (const bid of Object.keys(lg)) {
-      if ((lg[bid].basis || []).some((b) => b.object_id === object_id && b.item_id === item_id)) {
-        out.push({ object: o, revision: r, block_id: bid });
-      }
-    }
-  }
-  const cur = out.filter((x) => x.object.current_revision_id === x.revision.id);
-  return cur.length ? cur : out;
 }
 
 /* 对象的直接上下游 */
@@ -614,10 +605,8 @@ function renderInspector() {
 function viewProjects() {
   const c = el("div", "content wide projects-content");
 
-  const q = S.q.trim().toLowerCase();
-  const match = (p) => !q || p.name.toLowerCase().includes(q) || (p.client_summary || "").toLowerCase().includes(q);
-  const active = DATA.projects.filter((p) => p.lifecycle === "active" && match(p));
-  const archived = DATA.projects.filter((p) => p.lifecycle === "archived" && match(p));
+  const active = DATA.projects.filter((p) => p.lifecycle === "active");
+  const archived = DATA.projects.filter((p) => p.lifecycle === "archived");
 
   const group = (title, list) => {
     if (!list.length) return;
@@ -665,7 +654,7 @@ function viewProjects() {
   };
 
   if (!active.length && !archived.length) {
-    c.append(empty("🔍", "没有匹配的项目", ["清空搜索可以看到全部项目。"]));
+    c.append(empty("📁", "还没有项目", ["可以把下方的新建项目提示交给 Agent。"]));
   }
   group("当前项目", active);
   group("过往项目", archived);
@@ -708,8 +697,6 @@ function themeHueForProject(pid) {
 function viewDraft(pid) {
   const c = el("div", "content wide");
   const objs = DATA.objects.filter((o) => o.project_id === pid && o.layer === "draft" && o.type_key !== "expression_guide");
-  const withContent = objs.filter((o) => o.current_revision_id);
-  const q = S.q.trim().toLowerCase();
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
@@ -717,9 +704,6 @@ function viewDraft(pid) {
   h.style.margin = "0 0 6px";
   h.textContent = "信息收集";
   head.append(h);
-  const sub = el("p", "subtitle");
-  sub.textContent = `已保存 ${withContent.length} 类对象内容，共 23 类业务对象可查阅。没有内容的对象不显示为待完成任务。`;
-  head.append(sub);
   c.append(head);
 
   const body = el("div");
@@ -743,7 +727,7 @@ function viewDraft(pid) {
   toggle.setAttribute("aria-pressed", String(S.showAllTypes));
   navh.append(toggle);
   const collapse = chipBtn("", () => {
-    animateDirectoryToggle(layout, nav, () => {
+    animatePanelToggle(layout, nav, () => {
       S.directoryCollapsed = !S.directoryCollapsed;
       layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
       updateDirectoryToggle();
@@ -755,12 +739,7 @@ function viewDraft(pid) {
     collapse.setAttribute("aria-expanded", String(!S.directoryCollapsed));
     collapse.setAttribute("aria-label", label);
     collapse.title = label;
-    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    icon.setAttribute("viewBox", "0 0 24 24");
-    icon.setAttribute("width", "20"); icon.setAttribute("height", "20");
-    icon.setAttribute("aria-hidden", "true");
-    icon.innerHTML = `<g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/><path d="${S.directoryCollapsed ? "m13 9 3 3-3 3" : "m16 9-3 3 3 3"}"/></g>`;
-    collapse.replaceChildren(icon);
+    setPanelToggleIcon(collapse, S.directoryCollapsed);
   }
   updateDirectoryToggle();
   collapse.setAttribute("aria-controls", "draftDirectoryList");
@@ -776,7 +755,6 @@ function viewDraft(pid) {
       ? DATA.catalog.filter(m => th.types.includes(m.type_key)).map(m => objs.find(o => o.type_key === m.type_key) || { id: null, type_key: m.type_key, current_revision_id: null })
       : objs.filter((o) => th.types.includes(o.type_key));
     if (!S.showAllTypes) list = list.filter((o) => o.current_revision_id || o.id === selectedId);
-    if (q) list = list.filter((o) => (typeName(o.type_key) + (typeCode(o.type_key) || "")).toLowerCase().includes(q));
     if (!list.length) continue;
     list.sort((a, b) => (typeCode(a.type_key) || "").localeCompare(typeCode(b.type_key) || ""));
 
@@ -822,7 +800,7 @@ function viewDraft(pid) {
     g.append(ol);
     objnav.append(g);
   }
-  if (!objnav.children.length) objnav.append(empty("🗂", "没有匹配的对象", ["换一个关键词，或展开全部 23 类对象。"]));
+  if (!objnav.children.length) objnav.append(empty("🗂", "还没有对象内容", ["可切换查看全部 23 类对象。"]));
   navb.append(objnav);
   nav.append(navb);
   layout.append(nav);
@@ -846,8 +824,8 @@ function viewDraft(pid) {
     }
     main.append(section);
   }
-  if (!visibleObjects.length) main.append(empty("📄", q ? "没有匹配的对象" : "这个项目还没有已保存的对象内容",
-    [q ? "换一个关键词，或切换到全部 23 类。" : "可以把材料交给 Agent，或切换到全部 23 类查看对象。"]));
+  if (!visibleObjects.length) main.append(empty("📄", "这个项目还没有已保存的对象内容",
+    ["可以把材料交给 Agent，或切换到全部 23 类查看对象。"]));
   layout.append(main);
 
   body.append(layout);
@@ -855,13 +833,15 @@ function viewDraft(pid) {
 }
 
 // Animate measured sizes so both side-by-side and stacked directories transition smoothly.
-const directoryTransitions = new WeakMap();
-function animateDirectoryToggle(layout, directory, changeState) {
+const panelTransitions = new WeakMap();
+function animatePanelToggle(layout, directory, changeState) {
   let anchor = draftReadingAnchor();
   const before = directory.getBoundingClientRect();
   const beforeGrid = getComputedStyle(layout).gridTemplateColumns;
   const beforeGap = getComputedStyle(layout).columnGap;
-  directoryTransitions.get(layout)?.();
+  const dock = layout === document.body ? document.querySelector(".project-create-dock") : null;
+  const dockLeft = dock?.getBoundingClientRect().left;
+  panelTransitions.get(layout)?.();
   changeState();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     restoreDraftAnchor(anchor);
@@ -876,7 +856,9 @@ function animateDirectoryToggle(layout, directory, changeState) {
     }, timing),
     directory.animate({ width: [before.width + "px", after.width + "px"], height: [before.height + "px", after.height + "px"] }, timing),
   ];
-  if (!S.directoryCollapsed) animations.push(directory.querySelector(".body").animate(
+  if (dock) animations.push(dock.animate({ left: [dockLeft + "px", dock.getBoundingClientRect().left + "px"] }, timing));
+  const content = directory.querySelector(".body");
+  if (content && getComputedStyle(content).display !== "none") animations.push(content.animate(
     { opacity: [0, 1], transform: ["translateX(-6px)", "translateX(0)"] },
     { duration: 180, delay: 60, fill: "backwards", easing: "ease-out" },
   ));
@@ -894,12 +876,12 @@ function animateDirectoryToggle(layout, directory, changeState) {
     input.abort();
     animations.forEach(animation => animation.cancel());
     directory.style.overflow = "";
-    directoryTransitions.delete(layout);
+    panelTransitions.delete(layout);
   };
-  directoryTransitions.set(layout, cleanup);
+  panelTransitions.set(layout, cleanup);
   keepPosition();
   Promise.all(animations.map(animation => animation.finished)).then(() => {
-    if (directoryTransitions.get(layout) !== cleanup) return;
+    if (panelTransitions.get(layout) !== cleanup) return;
     cleanup();
     restoreDraftAnchor(anchor);
     updateDraftDirectory();
@@ -1069,11 +1051,6 @@ function itemCard(o, rev, it, hue) {
   if (it.data.status) {
     const sm = { confirmed: ["已确认参与", "green"], candidate: ["候选", "gray"], pending: ["待确认", "orange"] }[it.data.status];
     if (sm) head.append(tag(sm[0], sm[1]));
-  }
-  const rel = reviewsUsingItem(o.id, it.item_id);
-  if (rel.length) {
-    const rb = chipBtn(rel.length + " 处成果引用", () => openInspector({ kind: "object", id: o.id }));
-    head.append(rb);
   }
   head.append(copyRefButton({
     project_name: projOf(o.project_id).name, project_id: o.project_id,
@@ -1625,7 +1602,6 @@ function qaReviewView(pid, qaObj, kindMeta) {
 function viewSources(pid) {
   const c = el("div", "content wide");
   const srcs = DATA.sources.filter((s) => s.project_id === pid);
-  const q = S.q.trim().toLowerCase();
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
@@ -1638,8 +1614,7 @@ function viewSources(pid) {
 
   const groups = ["feishu", "local", "oral", "web"];
   for (const prov of groups) {
-    let list = srcs.filter((s) => s.provider === prov);
-    if (q) list = list.filter((s) => (s.cached_title + " " + s.resource_type).toLowerCase().includes(q));
+    const list = srcs.filter((s) => s.provider === prov);
     if (!list.length) continue;
     const pm = DATA.PROVIDERS[prov];
     const gh = el("div");
@@ -1966,7 +1941,21 @@ function renderMarkdown(md) {
 }
 
 /* ═══════════════════════════ 顶栏与侧栏 ═══════════════════════════════ */
+function updateMainNavigationToggle() {
+  const button = $("mainNavToggle");
+  const label = S.mainNavCollapsed ? "展开主导航" : "收起主导航";
+  button.setAttribute("aria-label", label);
+  button.setAttribute("aria-expanded", String(!S.mainNavCollapsed));
+  button.title = label;
+  setPanelToggleIcon(button, S.mainNavCollapsed);
+  button.onclick = () => animatePanelToggle(document.body, $("navigation"), () => {
+    S.mainNavCollapsed = !S.mainNavCollapsed;
+    document.body.classList.toggle("main-nav-collapsed", S.mainNavCollapsed);
+    updateMainNavigationToggle();
+  });
+}
 function renderChrome() {
+  updateMainNavigationToggle();
   const tb = $("toolbar"); tb.replaceChildren();
   const r = S.route;
   document.documentElement.classList.toggle("reading-draft", r.view === "draft");
@@ -2002,17 +1991,6 @@ function renderChrome() {
   }
   tb.append((() => { const s = el("span", "grow"); return s; })());
 
-  const search = el("div", "search");
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("width", "13"); svg.setAttribute("height", "13"); svg.setAttribute("viewBox", "0 0 16 16");
-  svg.innerHTML = '<circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M10.6 10.6 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>';
-  const inp = el("input");
-  inp.setAttribute("aria-label", "搜索当前页面");
-  inp.type = "search"; inp.placeholder = r.view === "draft" ? "搜索对象名称、编号…" : r.view === "sources" ? "搜索材料标题…" : "搜索项目名称、客户…"; inp.value = S.q;
-  inp.oninput = () => { S.q = inp.value; renderStage(false); };
-  search.append(svg, inp);
-  if (["projects", "draft", "sources"].includes(r.view)) tb.append(search);
-
   // 侧栏
   const sm = $("sideMain"); sm.replaceChildren();
   const addNav = (parent, label, hash, opts) => {
@@ -2020,7 +1998,8 @@ function renderChrome() {
     b.type = "button";
     if (opts && opts.current) b.setAttribute("aria-current", "page");
     const ic = el("span", "ic"); ic.textContent = opts.icon || ""; b.append(ic);
-    b.append(document.createTextNode(label));
+    const text = el("span", "nav-label"); text.textContent = label; b.append(text);
+    b.setAttribute("aria-label", label); b.title = label;
     if (opts && opts.n != null) { const n = el("span", "n"); n.textContent = opts.n; b.append(n); }
     b.onclick = () => go(hash);
     parent.append(b);
@@ -2291,25 +2270,17 @@ function renderInspectorExtra() {
 function render() { renderStage(); }
 
 window.addEventListener("hashchange", () => {
-  S.inspector = null; S.q = "";
+  S.inspector = null;
   document.body.classList.remove("navigation-open");
   render();
   if (S.route.view === "draft" && S.route.objId) scrollToDraft(S.route.objId);
   else window.scrollTo({ top: 0 });
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
-    const inp = document.querySelector(".search input");
-    if (inp) { e.preventDefault(); inp.focus(); }
-  }
   if (e.key === "Escape") {
     document.body.classList.remove("navigation-open");
     document.querySelector(".mobile-menu")?.setAttribute("aria-expanded", "false");
     if (S.inspector) closeInspector();
-    else {
-      const inp = document.querySelector(".search input");
-      if (document.activeElement === inp) { inp.value = ""; S.q = ""; renderStage(); inp.blur(); }
-    }
   }
 });
 render();

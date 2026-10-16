@@ -29,8 +29,6 @@ aside {
   border-right:1px solid var(--separator);
   padding:14px 12px 20px; display:flex; flex-direction:column; gap:4px;
 }
-.traffic { display:flex; gap:8px; padding:4px 6px 12px; }
-.traffic i { width:12px; height:12px; border-radius:50%; display:block; }
 .brand { display:flex; align-items:center; gap:10px; padding:2px 8px 14px; }
 .mark {
   width:30px; height:30px; border-radius:9px; flex:none;
@@ -90,15 +88,6 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 }
 .seg button[aria-selected="true"] { background:#fff; color:var(--label); box-shadow:var(--shadow-1); font-weight:640; }
 .seg button:hover:not([aria-selected="true"]) { color:var(--label); }
-
-/* 搜索 */
-.search { position:relative; }
-.search input {
-  font:inherit; font-size:13.5px; width:230px; padding:7px 12px 7px 30px; border-radius:9px;
-  border:1px solid transparent; background:var(--bg-fill); color:var(--label);
-}
-.search input:focus { background:#fff; border-color:color-mix(in srgb, var(--blue) 40%, transparent); box-shadow:0 0 0 3.5px color-mix(in srgb, var(--blue) 14%, transparent); outline:none; }
-.search svg { position:absolute; left:9px; top:50%; transform:translateY(-50%); color:var(--label-3); pointer-events:none; }
 
 /* ── 大字标题 ───────────────────────────────────────────────────────────── */
 .largetitle { font-size:clamp(28px,3vw,38px); letter-spacing:-0.032em; line-height:1.12; margin:34px 0 8px; }
@@ -391,10 +380,8 @@ nav button:focus-visible { outline:3px solid color-mix(in srgb, var(--blue) 45%,
   dl.kv { grid-template-columns:84px minmax(0,1fr); gap:7px 10px; }
   .lrow { flex-wrap:wrap; }
   .lrow > .grow { flex-basis:65%; }
-  .search { flex:1; min-width:150px; }
 }
 
-@media (max-width:720px) { .search input { width:100%; } }
 /* Let the grid grow with long documents so its sticky sidebar remains on screen. */
 body { height:auto; min-height:100vh; }
 
@@ -413,7 +400,6 @@ body { height:auto; min-height:100vh; }
 @media (max-width:720px) {
   .toolbar.project-toolbar { padding:24px 20px 0; }
   .project-toolbar { gap:10px; }
-  .project-toolbar .search { flex:0 1 190px; min-width:120px; }
   .project-create-dock { left:20px; right:20px; bottom:12px; }
 }
 
@@ -482,4 +468,25 @@ html.reading-draft { overflow-anchor:none; }
   .with-insp .draft-layout.directory-collapsed { grid-template-columns:minmax(0,1fr) !important; }
   .with-insp .directory-collapsed .draft-directory { width:max-content; }
   .with-insp .directory-collapsed .draft-section { scroll-margin-top:calc(var(--toolbar-height, 70px) + 80px); }
+}
+
+/* Main navigation shares the directory's folding control and transition. */
+.brand-name { flex:1; min-width:0; }
+#navigation { min-width:0; }
+#navigation .nav-label { white-space:nowrap; }
+@media (min-width:721px) {
+  body.main-nav-collapsed { --rail:68px; }
+  .main-nav-collapsed #navigation { padding-left:8px; padding-right:8px; }
+  .main-nav-collapsed .brand { justify-content:center; padding-left:0; padding-right:0; }
+  .main-nav-collapsed .brand > :not(.main-nav-toggle),
+  .main-nav-collapsed #navigation .nav-label,
+  .main-nav-collapsed #navigation .n,
+  .main-nav-collapsed #sideProject > div,
+  .main-nav-collapsed .railfoot { display:none; }
+  .main-nav-collapsed #navigation .sgroup { font-size:0; height:1px; padding:0; margin:10px 6px; border-top:1px solid var(--separator); }
+  .main-nav-collapsed #navigation nav button { justify-content:center; padding:9px; }
+  .main-nav-collapsed #navigation nav button .ic { font-size:16px; }
+}
+@media (max-width:720px) {
+  .main-nav-toggle { display:none; }
 }
