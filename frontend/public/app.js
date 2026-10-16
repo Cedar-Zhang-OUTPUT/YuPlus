@@ -6,7 +6,7 @@
 
 import DATA from "./data/demo.js";
 import { basisStatus } from "./data/selectors.js";
-const S = { route: null, q: "", inspector: null, expanded: {}, showAllTypes: false, versionOf: {} };
+const S = { route: null, q: "", inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: false, versionOf: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
 const $ = (id) => document.getElementById(id);
@@ -707,7 +707,6 @@ function themeHueForProject(pid) {
 /* ── 项目内：draft ─────────────────────────────────────────────────────── */
 function viewDraft(pid) {
   const c = el("div", "content wide");
-  const proj = projOf(pid);
   const objs = DATA.objects.filter((o) => o.project_id === pid && o.layer === "draft" && o.type_key !== "expression_guide");
   const withContent = objs.filter((o) => o.current_revision_id);
   const q = S.q.trim().toLowerCase();
@@ -729,26 +728,48 @@ function viewDraft(pid) {
 
   const selectedId = S.route.objId;
   const layout = el("div");
-  layout.style.cssText = "display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:26px;align-items:start;";
-  layout.classList.add("object-layout");
+  layout.className = "object-layout draft-layout";
+  layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
 
   /* 目录：按阅读主题分组 */
-  const nav = el("div", "card");
+  const nav = el("div", "card draft-directory");
   const navh = el("header");
   const nh = el("h3"); nh.textContent = "对象目录"; navh.append(nh);
   const ng = el("span", "grow"); navh.append(ng);
   const toggle = chipBtn(S.showAllTypes ? "只看有内容" : "全部 23 类", () => { S.showAllTypes = !S.showAllTypes; render(); });
+  const switchIcon = el("span", "switch-icon"); switchIcon.textContent = "⇄";
+  switchIcon.setAttribute("aria-hidden", "true"); toggle.prepend(switchIcon);
+  toggle.title = "切换全部对象与已有内容";
+  toggle.setAttribute("aria-pressed", String(S.showAllTypes));
   navh.append(toggle);
+  const collapse = chipBtn("‹", () => {
+    const anchor = draftReadingAnchor();
+    S.directoryCollapsed = !S.directoryCollapsed;
+    layout.classList.toggle("directory-collapsed", S.directoryCollapsed);
+    collapse.textContent = S.directoryCollapsed ? "›" : "‹";
+    collapse.setAttribute("aria-expanded", String(!S.directoryCollapsed));
+    collapse.setAttribute("aria-label", S.directoryCollapsed ? "展开对象目录" : "收起对象目录");
+    collapse.title = S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
+    restoreDraftAnchor(anchor);
+  });
+  collapse.classList.add("directory-toggle");
+  collapse.textContent = S.directoryCollapsed ? "›" : "‹";
+  collapse.setAttribute("aria-expanded", String(!S.directoryCollapsed));
+  collapse.setAttribute("aria-label", S.directoryCollapsed ? "展开对象目录" : "收起对象目录");
+  collapse.title = S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
+  collapse.setAttribute("aria-controls", "draftDirectoryList");
+  navh.append(collapse);
   nav.append(navh);
   const navb = el("div", "body");
   navb.style.padding = "16px";
 
-  const objnav = el("div", "objnav");
+  const objnav = el("div", "objnav"); objnav.id = "draftDirectoryList";
+  const visibleObjects = [];
   for (const th of DATA.THEMES) {
     let list = S.showAllTypes
       ? DATA.catalog.filter(m => th.types.includes(m.type_key)).map(m => objs.find(o => o.type_key === m.type_key) || { id: null, type_key: m.type_key, current_revision_id: null })
       : objs.filter((o) => th.types.includes(o.type_key));
-    if (!S.showAllTypes) list = list.filter((o) => o.current_revision_id);
+    if (!S.showAllTypes) list = list.filter((o) => o.current_revision_id || o.id === selectedId);
     if (q) list = list.filter((o) => (typeName(o.type_key) + (typeCode(o.type_key) || "")).toLowerCase().includes(q));
     if (!list.length) continue;
     list.sort((a, b) => (typeCode(a.type_key) || "").localeCompare(typeCode(b.type_key) || ""));
@@ -764,6 +785,8 @@ function viewDraft(pid) {
 
     const ol = el("div", "objlist");
     for (const o of list) {
+      visibleObjects.push(o);
+      const key = o.id || o.type_key;
       const rev = headRev(o);
       const b = el("button", "objbtn" + (o.current_revision_id ? "" : " empty-obj"));
       b.type = "button";
@@ -779,7 +802,15 @@ function viewDraft(pid) {
       const ct = el("span", "ct");
       ct.textContent = rev ? (rev.payload.items ? rev.payload.items.length : 0) + " 条" : "无内容";
       b.append(ct);
-      b.onclick = () => go(o.id ? `#/p/${pid}/draft/${o.id}` : "#/types");
+      b.dataset.draftTarget = key;
+      b.setAttribute("aria-controls", "draft-object-" + key);
+      b.onclick = () => {
+        if (o.id) {
+          history.pushState(null, "", `#/p/${pid}/draft/${o.id}`);
+          S.route = parseRoute();
+        }
+        scrollToDraft(key);
+      };
       ol.append(b);
     }
     g.append(ol);
@@ -790,20 +821,80 @@ function viewDraft(pid) {
   nav.append(navb);
   layout.append(nav);
 
-  /* 正文 */
-  const main = el("div");
-  const sel = selectedId ? DATA.objects.find(o => o.id === selectedId && o.project_id === pid && o.layer === "draft") || null : (withContent[0] || null);
-  if (!sel) {
-    main.append(empty("📄", "这个项目还没有已保存的对象内容",
-      ["可以在 Codex 中把材料交给 Agent，由它整理到对应对象；也可以从侧栏浏览 23 类对象说明。"]));
-  } else {
-    main.append(objectBody(sel, pid));
+  /* 所有可见对象按目录顺序连续阅读；目录导航与版本切换不重建整页。 */
+  const main = el("div", "draft-stream");
+  for (const o of visibleObjects) {
+    const section = el("section", "draft-section");
+    const key = o.id || o.type_key;
+    section.id = "draft-object-" + key;
+    section.dataset.draftObject = key;
+    section.setAttribute("aria-label", `${typeCode(o.type_key)} ${typeName(o.type_key)}`);
+    if (o.id) section.append(objectBody(o, pid));
+    else {
+      const card = el("div", "card");
+      const header = el("header");
+      header.append(codeChip(typeCode(o.type_key), (themeOf(o.type_key) || {}).hue));
+      const title = el("h3"); title.textContent = typeName(o.type_key); header.append(title);
+      card.append(header, empty("○", "这个对象还没有内容", ["可以继续浏览其他对象，或让 Agent 收集相关材料。"]));
+      section.append(card);
+    }
+    main.append(section);
   }
+  if (!visibleObjects.length) main.append(empty("📄", q ? "没有匹配的对象" : "这个项目还没有已保存的对象内容",
+    [q ? "换一个关键词，或切换到全部 23 类。" : "可以把材料交给 Agent，或切换到全部 23 类查看对象。"]));
   layout.append(main);
 
   body.append(layout);
   return c;
 }
+
+// Directory navigation never rebuilds the document. Scroll tracking only updates navigation state.
+function draftReadingLine() {
+  const directory = document.querySelector(".draft-directory");
+  const stream = document.querySelector(".draft-stream");
+  if (directory && stream && Math.abs(directory.getBoundingClientRect().left - stream.getBoundingClientRect().left) < 10)
+    return Math.max(100, directory.getBoundingClientRect().bottom + 12);
+  return 100;
+}
+function draftReadingAnchor() {
+  const line = draftReadingLine();
+  const sections = [...document.querySelectorAll(".draft-section")];
+  const section = sections.find(s => s.getBoundingClientRect().bottom > line);
+  if (!section) return null;
+  return { id: section.id, top: section.getBoundingClientRect().top };
+}
+function restoreDraftAnchor(anchor) {
+  const section = anchor && $(anchor.id);
+  if (section) window.scrollBy(0, section.getBoundingClientRect().top - anchor.top);
+}
+function refreshDraftObject(o, pid) {
+  const section = $("draft-object-" + o.id);
+  if (!section) { render(); return; }
+  const top = section.getBoundingClientRect().top;
+  section.replaceChildren(objectBody(o, pid));
+  window.scrollBy(0, section.getBoundingClientRect().top - top);
+}
+function scrollToDraft(key) {
+  const section = $("draft-object-" + key);
+  if (!section) return;
+  section.scrollIntoView({ block: "start", behavior: "instant" });
+  updateDraftDirectory();
+}
+let draftScrollFrame = 0;
+function updateDraftDirectory() {
+  draftScrollFrame = 0;
+  const sections = [...document.querySelectorAll(".draft-section")];
+  if (!sections.length) return;
+  const readingLine = draftReadingLine() + 10;
+  const active = sections.find(s => s.getBoundingClientRect().bottom > readingLine) || sections.at(-1);
+  for (const button of document.querySelectorAll("[data-draft-target]")) {
+    if (button.dataset.draftTarget === active.dataset.draftObject) button.setAttribute("aria-current", "true");
+    else button.removeAttribute("aria-current");
+  }
+}
+window.addEventListener("scroll", () => {
+  if (!draftScrollFrame && S.route?.view === "draft") draftScrollFrame = requestAnimationFrame(updateDraftDirectory);
+}, { passive: true });
 
 /* 单个 draft 对象的正文 */
 function objectBody(o, pid) {
@@ -832,7 +923,7 @@ function objectBody(o, pid) {
   if (rev) {
     const versionArea = el("label", "version-control");
     const label = el("span"); label.textContent = "版本";
-    const select = el("select"); select.id = "draftVersion";
+    const select = el("select"); select.id = "draftVersion-" + o.id;
     select.setAttribute("aria-label", "历史版本");
     for (const version of revsOf(o.id).slice().reverse()) {
       const option = el("option"); option.value = String(version.version);
@@ -844,9 +935,8 @@ function objectBody(o, pid) {
     select.onchange = () => {
       if (Number(select.value) === current.version) delete S.versionOf[o.id];
       else S.versionOf[o.id] = Number(select.value);
-      S.inspector = null;
-      render();
-      $("draftVersion")?.focus({ preventScroll: true });
+      refreshDraftObject(o, pid);
+      $("draftVersion-" + o.id)?.focus({ preventScroll: true });
     };
     versionArea.append(label, select); head.append(versionArea);
   } else {
@@ -861,6 +951,7 @@ function objectBody(o, pid) {
 
   const bd = el("div", "body");
   bd.style.padding = "22px";
+  bd.classList.add("draft-object-content");
 
   if (!rev) {
     bd.append(empty("○", "这个对象还没有内容",
@@ -885,7 +976,7 @@ function objectBody(o, pid) {
   if (isOld) {
     bd.append(banner("orange", "◷", [
       Object.assign(el("p"), { textContent: `正在阅读历史 v${rev.version}，当前版本为 v${current.version}。` }),
-      chipBtn("回到当前版本", () => { delete S.versionOf[o.id]; render(); }),
+      chipBtn("回到当前版本", () => { delete S.versionOf[o.id]; refreshDraftObject(o, pid); }),
     ]));
   }
   const itemsBox = el("div", "items");
@@ -1820,6 +1911,7 @@ function renderMarkdown(md) {
 function renderChrome() {
   const tb = $("toolbar"); tb.replaceChildren();
   const r = S.route;
+  document.documentElement.classList.toggle("reading-draft", r.view === "draft");
   tb.classList.toggle("project-toolbar", r.view === "projects");
   tb.classList.toggle("catalog-toolbar", r.view === "types");
 
@@ -1915,7 +2007,17 @@ function parseRoute() {
   }
   return r;
 }
-function go(hash) { if (location.hash === hash) { render(); } else { location.hash = hash; } }
+function go(hash) {
+  if (location.hash === hash) {
+    render();
+    if (S.route.view === "draft" && S.route.objId) scrollToDraft(S.route.objId);
+  } else location.hash = hash;
+}
+
+const toolbarSizeObserver = new ResizeObserver(() => {
+  document.documentElement.style.setProperty("--toolbar-height", `${$("toolbar").getBoundingClientRect().height}px`);
+});
+toolbarSizeObserver.observe($("toolbar"));
 
 const projectDockObserver = new ResizeObserver(entries => {
   for (const { target } of entries) {
@@ -1924,6 +2026,9 @@ const projectDockObserver = new ResizeObserver(entries => {
 });
 
 function renderStage(updateChrome = true) {
+  const nextRoute = parseRoute();
+  const anchor = S.route?.view === "draft" && nextRoute.view === "draft" && S.route.pid === nextRoute.pid
+    ? draftReadingAnchor() : null;
   projectDockObserver.disconnect();
   S.route = parseRoute();
   if (updateChrome) renderChrome();
@@ -1949,7 +2054,7 @@ function renderStage(updateChrome = true) {
 
   // 项目内页面始终显示项目名称（已在顶栏面包屑中显示）
   if (S.inspector) {
-    const wrap = el("div", "with-insp");
+    const wrap = el("div", "with-insp" + (S.route.view === "draft" ? " draft-with-inspector" : ""));
     wrap.append(view);
     wrap.append(renderInspector());
     stage.append(wrap);
@@ -1959,6 +2064,8 @@ function renderStage(updateChrome = true) {
   renderInspectorExtra();
   const projectDock = document.querySelector(".project-create-dock");
   if (projectDock) projectDockObserver.observe(projectDock);
+  restoreDraftAnchor(anchor);
+  if (S.route.view === "draft") requestAnimationFrame(updateDraftDirectory);
 
 }
 
@@ -2128,7 +2235,9 @@ function render() { renderStage(); }
 window.addEventListener("hashchange", () => {
   S.inspector = null; S.q = "";
   document.body.classList.remove("navigation-open");
-  render(); window.scrollTo({ top: 0 });
+  render();
+  if (S.route.view === "draft" && S.route.objId) scrollToDraft(S.route.objId);
+  else window.scrollTo({ top: 0 });
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
@@ -2146,3 +2255,4 @@ document.addEventListener("keydown", (e) => {
   }
 });
 render();
+if (S.route.view === "draft" && S.route.objId) scrollToDraft(S.route.objId);
