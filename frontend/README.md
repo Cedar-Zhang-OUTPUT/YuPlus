@@ -7,10 +7,10 @@
 在仓库根目录安装 Python 包后：
 
 ```sh
-.venv/bin/yu --data-dir .local/work serve --port 0 --json
+.venv/bin/yu --data-dir .local/work start --json
 ```
 
-保持前台会话运行，打开启动 JSON 的实际 URL。`/api/health` 返回 `mode: live`、URL、端口和绝对数据目录。端口 0 自动分配；不要假设 7801 是正式服务。wheel 包含生产页面资源，安装后无需源码或 Node。
+打开启动 JSON 中的实际 URL；status 可恢复地址，stop 只停止核验过的托管服务。serve --port 0 仍可前台运行。`/api/health` 返回 `mode: live`、URL、端口和绝对数据目录。端口 0 自动分配；不要假设 7801 是正式服务。wheel 包含生产页面资源，安装后无需源码或 Node。
 
 `GET /api/view` 返回项目目录；`GET /api/view?project=PROJECT_ID` 返回指定项目的对象、全部已保存版本、来源、变更与决定，以及后端计算的条目级依据状态。API 出错显示读取失败，不渲染为空项目或模拟项目。CLI 保存后点击“刷新页面”或浏览器重载查看；同一项目内导航可复用已加载快照。
 
@@ -60,4 +60,4 @@ npm --prefix frontend test
 - `src/yuplus/browser_view.py`、`gateway.py`：只读 SQLite 快照、项目隔离、文件访问与本机 HTTP 服务。
 - `server.mjs`、`data/demo.js`、`source.html/source.js`：独立模拟预览。
 
-当前选定项目的视图一次读取全部已保存版本，资产逐个做完整哈希校验；大量历史或大视频可能影响加载速度，尚未做分页或校验缓存。没有实时推送、自动远端版本扫描、编辑/审批/聊天界面。本轮沿用[交接说明](../docs/design/2026-10-16-frontend-integration-handoff.md)，验证范围见[集成验收](../docs/validation/2026-10-16-live-integration.md)。
+当前选定项目的视图一次读取全部已保存版本，资产逐个做完整哈希校验；大量历史或大视频可能影响加载速度，尚未做分页或校验缓存。新服务启动会后台检查飞书来源；页面刷新后显示检查结果。没有实时推送或编辑/审批/聊天界面。本轮沿用[交接说明](../docs/design/2026-10-16-frontend-integration-handoff.md)，验证范围见[集成验收](../docs/validation/2026-10-16-live-integration.md)。

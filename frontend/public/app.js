@@ -461,9 +461,9 @@ function renderInspector() {
       const obs = src.remote_observation;
       const concl = obs && obs.conclusion;
       const hue = concl === "changed" ? "orange" : concl === "unchanged" ? "green" : "gray";
-      remote.append(tag(concl === "changed" ? "远端有更新" : concl === "unchanged" ? "远端未变化" : "可能变化／无法确认", hue, true));
+      remote.append(tag(src.check_error ? (concl === "changed" ? "上次发现更新 · 本次检查失败" : "本次检查失败") : concl === "changed" ? "远端有更新" : concl === "unchanged" ? "检查时远端未变化" : "缺少比较基线／无法确认", src.check_error ? "orange" : hue, true));
       const p = el("p", "small muted"); p.style.marginTop = "8px";
-      p.textContent = obs ? obs.detail : "未记录检测依据";
+      p.textContent = src.check_error ? src.check_error.message : obs ? obs.detail : "未记录检测依据";
       remote.append(p);
       remote.append(kv([["检查时间", fullTime(src.last_checked_at)], ["检测方法", obs ? obs.method : "尚未记录"]]));
       const n = el("p", "tiny muted"); n.style.marginTop = "8px";
@@ -1990,7 +1990,8 @@ function viewSources(pid) {
       badges.style.cssText = "margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;";
       if (s.check_error) badges.append(tag(s.check_error.code === "FILE_NOT_FOUND" ? "原件不可用" : "读取失败", "orange", true));
       if (s.remote_observation && s.remote_observation.conclusion === "changed") badges.append(tag("远端有更新", "orange", true));
-      if (s.remote_observation && s.remote_observation.conclusion === "unchanged") badges.append(tag("远端未变化", "green", true));
+      if (!s.check_error && s.remote_observation?.conclusion === "unchanged") badges.append(tag("检查时远端未变化", "green", true));
+      if (s.remote_observation?.conclusion === "unknown") badges.append(tag("缺少比较基线", "gray"));
       if (!s.last_checked_at && s.provider === "feishu") badges.append(tag("尚未检查远端", "gray"));
       g2.append(badges);
       row.append(g2);

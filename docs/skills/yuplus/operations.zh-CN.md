@@ -1,0 +1,27 @@
+# 安装、恢复与来源检查
+
+对应英文 `references/operations.md`。只读当前任务所需部分，这些运维能力不增加业务场景，也不设阶段准入条件。
+
+## 安装位置与服务
+
+安装后的 Skill 若含 `installation.json`，首次使用时读取其中的 `cli`、`python`、`data_dir`，后续复用。用户选择其他工作目录或复制的真实项目引用指向另一目录时，明确核对；开发 `.preview` 不是正式数据目录。
+
+从可信的本地代码包运行 `./install.sh`，复用合适的 Python，缺少时通过 uv 官方安装器准备独立运行环境，再安装应用及两份 Skill，检查 Python ≥3.12、SQLite ≥3.51.3，初始化选定数据目录并检查飞书认证。可用 `--prefix`、`--skills-dir`、`--data-dir` 指定位置；`--python PATH` 指定已有解释器，`--managed-python` 强制独立环境路径。不修改 shell 配置。拒绝覆盖非安装器管理或已被修改的 Skill；不会代用户安装飞书或登录，认证问题按 lark-shared 处理。首版面向 macOS。
+
+`yu --data-dir DIR start --json` 启动或复用服务；`status` 返回核验后的地址，`stop` 只停止数据目录、PID、实例身份均匹配的服务。`serve --port 0` 保留为前台启动方式。通过可用的 Codex 浏览器工具打开实际地址。每次新服务启动会后台检查来源，复用服务不意味着重新扫描。后台检查或 CLI 写入完成后刷新原页面，查看保存的结果。
+
+## 完整备份与恢复
+
+- `yu --data-dir DIR backup create --output NEW_BACKUP_DIR --json`
+- `yu backup verify --input BACKUP_DIR --json`
+- `yu --data-dir NEW_DATA_DIR backup restore --input BACKUP_DIR --json`
+
+备份包含一致的 SQLite 快照及全部已登记材料文件，包括外部路径原件。有原件缺失或变化时失败，不宣称部分备份完整。恢复目标必须不存在；校验哈希、数据库完整性和材料覆盖，保留所有身份和历史。外部材料映射到恢复的副本，不改写封存来源。启动恢复目录并核对项目与关键材料后再切换工作；不要只复制运行中的 SQLite 主文件，不删除原数据，也不把 Markdown 导出当备份。
+
+## 飞书来源更新
+
+`source check --project PID --json` 检查项目，加 `--source SID` 检查单个来源；省略项目检查全部已保存飞书来源。`source list` 暴露检查时间、观察结果与错误。检查只记远端变化，不自动收录正文、改写 draft/review，也不制造业务变更记录。
+
+Docx 比较实际 revision；其他受支持资源使用元数据修改时间 `mtime:<latest_modify_time>`。收录这类资源时，将实际取得的标记写入 `snapshot.provenance.remote_marker`。如果内容读取前后标记不同，不能宣称是同一版本的完整快照；不编造标记。缺少可比较的收录基线就是 unknown，接口成功不等于内容未变。已知更新在后续检查失败时仍保留，直到新快照使旧观察失效。飞书失败不阻塞本地工作。
+
+用户要求同步，或更新属于已经授权的项目维护时：按相应 Skill 读取新版，追加真实来源快照，更新相关 draft，再更新依赖 review。不重写无关对象；有冲突时不能把新材料自动当成用户的新决定。纯措辞反馈仍先保存 draft 编写依据。

@@ -4,34 +4,38 @@ Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多�
 
 每个数据目录使用一份 SQLite 数据库和一个按 SHA-256 寻址的本地文件池，无需运行数据库或对象存储服务。已提供仅绑定本机的 Python 只读网关，沿用已交付 UI，读取真实项目及文件；正式运行无需 Node.js。
 
-## 打开真实项目界面
+## 安装与打开（首版 macOS）
 
-完成下方安装后，在本仓库根目录运行：
-
-```sh
-.venv/bin/yu --data-dir .local/work serve --port 0 --json
-```
-
-这是前台服务，保持终端运行；启动 JSON 返回实际 URL、端口和绝对数据目录。在 Codex 内置浏览器打开该 URL。端口 `0` 自动分配空闲端口，也可指定空闲端口。复用已有服务前核对 `/api/health` 的 `mode: live` 与 `data_dir`，不要结束占用端口的其他程序。
-
-页面查看真实多项目、draft、review、来源、历史版本和决定记录。通过 CLI 保存后，点击侧栏底部“刷新页面”或重载浏览器；页面不会写业务数据，也不推测 Agent 工作状态。`/api/view?project=PROJECT_ID` 只读取该项目的内容。真实服务故障不回退到示例。
-
-`npm --prefix frontend run dev` 保留为**独立模拟预览**（需要 Node ≥20.11）；它不读取真实数据库。两种运行方式详见 [frontend/README.md](frontend/README.md)。
-
-## 安装
-
-要求 Python ≥ 3.12，且该 Python 实际链接的 SQLite ≥ 3.51.3。安装命令在本仓库目录执行：
+在可信的本地代码包/仓库目录执行：
 
 ```sh
-python3 -c 'import sys, sqlite3; print(sys.version); print("SQLite", sqlite3.sqlite_version)'
-python3 -m venv .venv
-.venv/bin/python -m pip install -e .
-.venv/bin/yu --data-dir .local/yuplus doctor --json
+./install.sh
 ```
 
-SQLite 版本不满足时，需选择带有较新 SQLite 的 Python 后重新建立虚拟环境；安装 Python 包不会替换 Python 所链接的 SQLite。
+入口先检查本机 Python/SQLite；缺少合适环境时使用 uv 官方安装器准备私有 Python，不修改 shell 配置。随后建立独立环境、安装应用和两份 Codex Skill、初始化固定数据目录，并检查飞书认证。默认应用在 `~/.local/share/yuplus-app`，数据在 `~/.local/share/yuplus`。返回 JSON 中的实际 CLI、数据目录和启动命令；可用 `--prefix`、`--data-dir`、`--skills-dir` 改位置。不会覆盖非安装器管理或已修改的 Skill，也不会代替用户登录飞书。缺少飞书仍可使用本地材料。
 
-安装后可用 `.venv/bin/yu`；仓库中的 `./yu` 也提供入口。下文使用 `./yu`。默认数据目录为 `~/.local/share/yuplus`，开发和演示建议显式提供独立的 `--data-dir`。
+```sh
+~/.local/share/yuplus-app/venv/bin/yu start --json
+~/.local/share/yuplus-app/venv/bin/yu status --json
+~/.local/share/yuplus-app/venv/bin/yu stop --json
+```
+
+安装后的 CLI 默认沿用安装时选定的数据目录；显式 `--data-dir DIR` 可选择另一目录。`start` 自动分配端口并复用身份匹配的服务；打开返回的 URL。`status` 恢复实际地址，`stop` 只终止核验过的托管服务。`serve --port 0` 仍可前台运行。页面保持业务只读，CLI 写入或后台检查后，刷新页面查看已保存结果。
+
+开发安装仍可使用 `python3 -m venv .venv`、`.venv/bin/python -m pip install -e .`、`.venv/bin/yu --data-dir .local/work doctor --json`。开发和验收目录与正式数据分开。`npm --prefix frontend run dev` 仅启动模拟预览，不连接真实数据库。
+
+## 备份、恢复与飞书更新
+
+```sh
+yu --data-dir DATA_DIR backup create --output NEW_BACKUP_DIR --json
+yu backup verify --input BACKUP_DIR --json
+yu --data-dir NEW_DATA_DIR backup restore --input BACKUP_DIR --json
+yu --data-dir DATA_DIR source check --project PROJECT_ID --json
+```
+
+上面的 `yu` 表示安装输出中的完整 CLI 路径。备份保存一致数据库快照和登记的全部文件（包含外部原件）；缺失/变化时失败，不生成冒充完整的备份。恢复目标必须不存在，不覆盖原项目。恢复后启动新目录并核对内容再切换。
+
+每次新服务启动会后台检查已保存飞书来源，也可手动 `source check`；检查只更新观察结果，不改项目对象。Docx 比较 revision，其他受支持资源比较修改时间标记；缺基线或权限错误会如实显示。Agent 再按 Skill 读取新版、更新 draft、更新 review。数据更新和自动扫描不代表自动调用 AI。
 
 ## Yu+ Agent Skill
 
@@ -43,25 +47,10 @@ SQLite 版本不满足时，需选择带有较新 SQLite 的 Python 后重新建
 - [对象属性与成果关系](skills/yuplus/references/objects.md)：23 类 draft、内部编写依据，以及五类成果的依赖和回改位置。
 - [业务 Skill 验证记录](docs/skills/yuplus/validation.md)。
 - [可视化使用 Skill](skills/yuplus-visualization/SKILL.md) 及[完整中文版本](docs/skills/yuplus-visualization/SKILL.zh-CN.md)：启动服务、导航、来源/版本/差异、复制 Prompt 和故障处理。
-- [本次完整集成验收](docs/validation/2026-10-16-live-integration.md)。
+- [完整集成验收](docs/validation/2026-10-16-live-integration.md)。
+- [安装、备份恢复与来源检查验证](docs/validation/2026-10-16-readiness.md)。
 
-在本仓库根目录执行以下命令可将 Skill 链接到本机 Codex 的 skills 目录；目标已存在时命令会停止，避免覆盖其他版本：
-
-```sh
-python3 - <<'PY'
-import os
-from pathlib import Path
-skill_name = 'yuplus'  # 另一次改为 yuplus-visualization 安装可视化 Skill
-source = (Path.cwd() / 'skills' / skill_name).resolve()
-assert (source / 'SKILL.md').is_file(), '请在 YuPlus 仓库根目录运行'
-destination = Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex'))) / 'skills' / skill_name
-destination.parent.mkdir(parents=True, exist_ok=True)
-destination.symlink_to(source, target_is_directory=True)
-print(destination)
-PY
-```
-
-Skill 被 Codex 发现后，可用 `$yuplus` 明确调用。安装 Skill 不会安装应用、创建项目或登录飞书。首次项目使用时，Agent 按 Skill 检查实际 CLI 环境；飞书不可用仍可处理本地材料。
+统一安装入口会同时安装两份 Skill，不需要手动链接。Skill 被 Codex 发现后，可用 `$yuplus` 明确调用；首次项目使用时 Agent 读取安装记录并按需检查环境。飞书不可用仍可处理本地材料。
 
 Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只读取包内契约，不打开数据库。例如：
 
@@ -140,9 +129,11 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - review 更新校验相关 draft 变更、段落因果履历和依赖有效性；CLI 不判断自然语言的分析是否正确。
 - 一个 draft 批次或一次 review 发布分别原子提交。draft 已保存而 review 发布失败时，保留 draft，读取新的依据后继续。
 
-已包含可视化界面/只读网关、本地完整导出准备，以及由 Agent 按 Skill 调用飞书 CLI 创建并回读文档的流程。尚无飞书后台自动读取与启动版本扫描、导出历史写入、review 确认记录、备份/GC 命令。Skill 指导 Agent 做首次飞书环境检查，应用不后台执行飞书操作。原契约中列出的其他辅助命令（如 archive、diff、relations、review check）也不应视为已经提供；实际命令以 `./yu --help` 为准。
+已提供安装入口、托管启动/重新打开、完整备份恢复，以及启动时的飞书来源检查。说明见[运维参考](skills/yuplus/references/operations.md)及[中文版本](docs/skills/yuplus/operations.zh-CN.md)。来源检查仅更新观察结果，Agent 根据授权维护源快照、draft 和 review。
 
-数据库文件与对象池共同组成项目数据。当前没有在线备份命令；不要只复制运行中的 SQLite 主文件来当作完整项目备份。
+实际命令以 `yu --help` 为准。
+
+数据库与材料池共同构成项目。请使用完整备份命令，不要只复制运行中的 SQLite 主文件。
 
 ## 完整导出与真实集成验收
 
@@ -180,4 +171,4 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - [数据库与 CLI 契约](docs/superpowers/specs/2026-10-13-yuplus-data-cli-contract.md)
 - [最小链路实施计划](docs/superpowers/plans/2026-10-13-yuplus-minimal-cli.md)
 
-当前实现仍是最小链路版本，适合本地试用和继续开发；已在本机验证脱离源码目录运行 wheel 安装包；尚未验证跨操作系统分发或异常断电恢复。
+首版面向 macOS 本地使用。开发侧验证安装、重启、备份恢复和来源检查；真实 Agent 使用验收以及跨机器分发/升级验收由用户在发布后进行，不宣称已完成。

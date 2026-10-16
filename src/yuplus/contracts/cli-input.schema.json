@@ -1918,6 +1918,11 @@
         "provenance": {
           "type": "object",
           "properties": {
+            "remote_marker": {
+              "type": "string",
+              "pattern": "^mtime:[0-9]+$",
+              "description": "Actual Feishu metadata modification time observed during this capture; omit when no coherent baseline is available."
+            },
             "method": {
               "type": "string",
               "minLength": 1

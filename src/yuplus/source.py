@@ -263,6 +263,10 @@ def import_source(ctx, request: dict, prepared: dict) -> dict:
     else:
         latest_match = db.execute(matching_sql + ' ORDER BY version DESC LIMIT 1', params).fetchone()
         reused = dict(latest_match) if latest_match and latest_match['content_hash'] == prepared['content_hash'] else None
+        # Identical extracted content can belong to a later remote capture.
+        # Keep the previous immutable baseline and record the new one separately.
+        if reused and json.loads(reused['provenance_json']).get('remote_marker') != snapshot['provenance'].get('remote_marker'):
+            reused = None
     before_head = source['latest_snapshot_id']
     if reused and request['advance_head'] and reused['id'] != before_head:
         raise YuError('SOURCE_REVISION_OUTDATED', 'A historical capture cannot replace the current source head.',
@@ -305,7 +309,7 @@ def import_source(ctx, request: dict, prepared: dict) -> dict:
                    original_locator_json=canonical(asset.get('locator', {})))
         db.execute('UPDATE source_versions SET sealed=1 WHERE project_id=? AND id=?', (pid, version_id))
         if request['advance_head']:
-            db.execute('UPDATE sources SET latest_snapshot_id=? WHERE project_id=? AND id=?', (version_id, pid, sid))
+            db.execute('UPDATE sources SET latest_snapshot_id=?,remote_observation_json=NULL,check_error_json=NULL,last_checked_at=NULL,observation_generation=observation_generation+1 WHERE project_id=? AND id=?', (version_id, pid, sid))
     head = version_id if not reused and request['advance_head'] else before_head
     effect = 'changed' if not reused or metadata_changed else 'noop'
     if effect == 'changed':
@@ -323,12 +327,14 @@ def import_source(ctx, request: dict, prepared: dict) -> dict:
             'dependent_draft_items': [dict(row) for row in dependents]}
 
 
-def show_source(db, pid: str, sid: str, snapshot_id: str | None = None) -> dict:
+def show_source(db, pid: str, sid: str, snapshot_id: str | None = None, data_dir=None) -> dict:
     source = _get_source(db, pid, sid)
     selected = snapshot_id or source['latest_snapshot_id']
     result = {'source_id': sid, 'provider': source['provider'], 'resource_type': source['resource_type'],
               'provider_key': source['provider_key'], 'title': source['cached_title'],
-              'canonical_url': source['canonical_url'], 'head_snapshot_id': source['latest_snapshot_id'], 'snapshot': None}
+              'canonical_url': source['canonical_url'], 'head_snapshot_id': source['latest_snapshot_id'], 'snapshot': None,
+              'remote_observation': json.loads(source['remote_observation_json'] or 'null'),
+              'check_error': json.loads(source['check_error_json'] or 'null'), 'last_checked_at':source['last_checked_at']}
     if selected is None:
         return result
     row = db.execute('SELECT * FROM source_versions WHERE project_id=? AND source_id=? AND id=?', (pid, sid, selected)).fetchone()
@@ -336,6 +342,10 @@ def show_source(db, pid: str, sid: str, snapshot_id: str | None = None) -> dict:
         raise YuError('SOURCE_NOT_FOUND', 'The snapshot does not belong to the requested source.', details=[{'snapshot_id': selected}])
     assets = _assets_from_db(db, pid, selected)
     for asset in assets:
+        if data_dir is not None:
+            from .browser_view import asset_availability
+            asset['availability']=asset_availability(data_dir,asset)
+            continue
         if asset['storage'] == 'external':
             path = Path(asset['local_path'])
             try:

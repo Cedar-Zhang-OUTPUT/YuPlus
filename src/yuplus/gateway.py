@@ -1,5 +1,7 @@
 """Loopback-only browser gateway. Business writes belong to the CLI."""
 import json
+import os
+import threading
 import mimetypes
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -109,7 +111,7 @@ class GatewayHandler(BaseHTTPRequestHandler):
             with read_snapshot(self.server.data_dir) as db:
                 db.execute('SELECT id FROM projects LIMIT 1').fetchall()
             return self.json_response({'ok': True, 'mode': 'live', 'api_version': '1',
-                'data_dir': str(self.server.data_dir), 'url': self.server.url, 'port': self.server.server_port})
+                'data_dir': str(self.server.data_dir), 'url': self.server.url, 'port': self.server.server_port, 'pid': os.getpid(), 'instance_id': os.environ.get('YUPLUS_SERVICE_INSTANCE')})
         if path == '/api/view':
             query = self.params(url, {'project'})
             with read_snapshot(self.server.data_dir) as db:
@@ -219,6 +221,10 @@ class GatewayHandler(BaseHTTPRequestHandler):
 
 def serve(data_dir, port=7801):
     with GatewayServer(data_dir, port) as server:
+        from .service import register
+        from .source_check import startup_scan
+        register(server)
+        threading.Thread(target=startup_scan,args=(server.data_dir,),daemon=True).start()
         print(json.dumps({'api_version': '1', 'command': 'serve', 'ok': True,
                           'data': {'url': server.url, 'data_dir': str(server.data_dir), 'port': server.server_port, 'mode': 'live'}}, ensure_ascii=False), flush=True)
         try:

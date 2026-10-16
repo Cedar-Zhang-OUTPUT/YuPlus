@@ -11,7 +11,8 @@ from .core import YuError
 COMMANDS={
     'project.create','project.list','project.show','source.import','source.list','source.show',
     'draft.apply','draft.list','draft.show','review.prepare','review.publish','review.list','review.show',
-    'changes.list','decisions.list','types.show','doctor','serve',
+    'changes.list','decisions.list','types.show','doctor','serve','start','stop','status',
+    'backup.create','backup.verify','backup.restore','source.check',
 }
 INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
 
@@ -39,15 +40,27 @@ def parse_json(text):
         return value
     except (json.JSONDecodeError,UnicodeError,RecursionError) as exc:raise YuError('INVALID_INPUT','无法解析 JSON 输入。') from exc
 
+def default_data_dir():
+    if os.environ.get('YUPLUS_DATA_DIR'):return os.environ['YUPLUS_DATA_DIR']
+    receipt=Path(sys.prefix).parent/'installation.json'
+    if receipt.is_file():
+        try:
+            value=json.loads(receipt.read_text())
+            if isinstance(value,dict) and Path(value.get('cli','')).resolve()==(Path(sys.prefix)/'bin/yu').resolve() and isinstance(value.get('data_dir'),str) and Path(value['data_dir']).is_absolute():return value['data_dir']
+        except (OSError,ValueError,TypeError):pass
+        raise YuError('INVALID_INPUT','安装记录损坏或与当前 CLI 不匹配；请明确指定 --data-dir 或重新运行安装入口。')
+    return str(Path.home()/'.local/share/yuplus')
+
+
 def main(argv=None):
     parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（最小链路 v0.1）',
                   epilog='可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
-    parser.add_argument('--data-dir',default=os.environ.get('YUPLUS_DATA_DIR',str(Path.home()/'.local/share/yuplus')))
+    parser.add_argument('--data-dir')
     parser.add_argument('--port',type=int,default=7801,help='serve 本地端口（0 自动分配）')
     parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
-    parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
+    parser.add_argument('--output');parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
     parser.add_argument('--include-body',action='store_true',help='source show 显式读取来源正文')
     parser.add_argument('--object');parser.add_argument('--revision');parser.add_argument('--type',dest='type_key')
     parser.add_argument('--limit',type=int,default=50);parser.add_argument('--after-cursor',default=0)
@@ -55,6 +68,7 @@ def main(argv=None):
     app=None;args=None;command='unknown'
     try:
         args=parser.parse_args(argv)
+        args.data_dir=args.data_dir or default_data_dir()
         command='.'.join(x for x in (args.resource,args.action) if x)
         if command not in COMMANDS:raise YuError('INVALID_INPUT','未知命令，请运行 yu --help。')
         if command in INPUT_COMMANDS:
@@ -76,6 +90,24 @@ def main(argv=None):
             if command.endswith('.show') and command.startswith(('draft.','review.')) and not args.object:raise YuError('INVALID_INPUT','需要 --object。')
             if command=='source.show' and not args.source:raise YuError('INVALID_INPUT','需要 --source。')
             if command in {'changes.list','decisions.list'}:payload.update(limit=args.limit,after_cursor=args.after_cursor)
+        if command in {'start','stop','status','backup.create','backup.verify','backup.restore','source.check'}:
+            if command in {'start','stop','status'}:
+                if command=='start':
+                    check=App(args.data_dir);check.close()
+                from .service import control
+                data=control(args.data_dir,command)
+            elif command=='source.check':
+                from .source_check import scan
+                data=scan(args.data_dir,args.project,args.source)
+            else:
+                from .backup import create_backup,verify_backup,restore_backup
+                if command=='backup.create':
+                    if not args.output:raise YuError('INVALID_INPUT','需要 --output 新目录。')
+                    data=create_backup(args.data_dir,args.output)
+                else:
+                    if not args.input:raise YuError('INVALID_INPUT','需要 --input 备份目录。')
+                    data=verify_backup(args.input) if command=='backup.verify' else restore_backup(args.input,args.data_dir)
+            print(json.dumps({'api_version':'1','command':command,'ok':True,'data':data},ensure_ascii=False));return 0
         app=App(args.data_dir)
         if command=='serve':
             app.close();app=None

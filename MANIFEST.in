@@ -1,1 +1,5 @@
 recursive-include frontend/public *.html *.js *.css
+recursive-include skills *.md *.py *.yaml
+include scripts/install.py
+include README.md
+include install.sh

@@ -86,7 +86,7 @@ Expression-guide sequence: record the instruction source → draft.apply with ty
 
 ## Local browser and copied references
 
-`yu --data-dir DATA_DIR serve --port 0 --json` runs a foreground loopback-only gateway and reports its actual address. Reuse a healthy service only when `/api/health` reports `mode: live` and the intended absolute `data_dir`; another directory or the Node demo is not interchangeable. Port 0 allocates a free port. Keep the managed session alive; do not kill an existing listener to claim its port. The separate `yuplus-visualization` Skill explains actual routes and controls. CLI writes appear after “刷新页面” or browser reload; they are not live-pushed.
+Use `yu --data-dir DATA_DIR start --json` for managed startup/reuse, `status` to recover the address and `stop` for verified shutdown. `serve --port 0` remains the foreground option. See [operations.md](operations.md). The existing page shows saved source-check results after refresh. Startup scanning does not call AI or rewrite draft/review.
 
 A copied reference/Prompt is navigation context, not a write payload. Bind its data directory, project, object/item/block and viewed revision, then reread the current target. If the user wants synchronization after an existing draft change, reuse the genuine unconsumed draft cause and run prepare/publish; do not invent another draft edit. New facts or wording instructions first update their draft basis. Never overwrite newer content from a stale copied snapshot. Check all affected instances within the requested scope and refresh the browser after successful writes.
 
@@ -104,4 +104,6 @@ Use the manifest's version IDs and hashes for remote readback. A later project c
 
 ## Not implemented in this release
 
-`source check`, `project context`, project update/archive, diff/history/show helpers beyond those listed, relations queries, review check, exports, backup/GC are not callable. Do not prescribe them as working commands. For today's task use existing show/list/read_basis/history receipts, or honestly state the limitation. Do not treat a user's acceptance as a persisted review-check record until that capability exists.
+`project context`, project update/archive, diff/history/show helpers beyond those listed, relations queries, review check, exports and GC are not callable. Do not prescribe them as working commands. For today's task use existing show/list/read_basis/history receipts, or honestly state the limitation. Do not treat a user's acceptance as a persisted review-check record until that capability exists.
+
+Installed service management, complete backup/restore and `source check` are available; consult [operations.md](operations.md) only when needed.

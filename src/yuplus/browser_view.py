@@ -51,6 +51,15 @@ def asset_path(data_dir, asset):
             raise YuError('INTEGRITY_FAILURE', '资产路径超出材料库。')
     else:
         path = Path(asset['local_path'])
+        relocated = Path(data_dir).resolve() / 'restored-assets.json'
+        if relocated.is_file():
+            mapping = json.loads(relocated.read_text())
+            rel = mapping.get(asset['local_path'] + ':' + asset['sha256'])
+            if rel is not None:
+                expected = 'external-files/' + asset['sha256']
+                if rel != expected:
+                    raise YuError('INTEGRITY_FAILURE', '恢复材料映射无效。')
+                path = Path(data_dir).resolve() / rel
         # Registration stores an absolute resolved path; a later symlink replacement is not it.
         if not path.is_absolute() or path.resolve() != path:
             raise YuError('INTEGRITY_FAILURE', '登记的资产路径已改变。')

@@ -179,14 +179,15 @@ class App:
             return prepare_review(Context(self.db,self.data_dir,pid,None),payload)
         if command=='source.show':
             from .source import show_source
-            result=show_source(self.db,pid,payload['source_id'],payload.get('snapshot_id'))
+            result=show_source(self.db,pid,payload['source_id'],payload.get('snapshot_id'),self.data_dir)
             if result['snapshot'] is not None:
                 omitted=result['snapshot']['body'] is not None and not payload.get('include_body',False)
                 result['snapshot']['body_omitted']=omitted
                 if omitted:result['snapshot']['body']=None
             return result
         if command=='source.list':
-            return {'sources':[dict(r) for r in self.db.execute('SELECT id,provider,cached_title,canonical_url,latest_snapshot_id FROM sources WHERE project_id=? ORDER BY created_at,id',(pid,))]}
+            from .browser_view import decoded
+            return {'sources':[decoded(r) for r in self.db.execute('SELECT id,provider,cached_title,canonical_url,latest_snapshot_id,remote_observation_json,check_error_json,last_checked_at FROM sources WHERE project_id=? ORDER BY created_at,id',(pid,))]}
         if command in {'draft.list','review.list'}:
             layer=command.split('.')[0]
             return {'objects':[dict(r) for r in self.db.execute('SELECT id,type_key,scope_key,current_revision_id FROM objects WHERE project_id=? AND layer=? AND archived_at IS NULL ORDER BY created_at,id',(pid,layer))]}
