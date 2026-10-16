@@ -2009,11 +2009,12 @@ function renderChrome() {
   addNav(sm, "对象说明", "#/types", { icon: "◇", current: S.route.view === "types", n: "23" });
 
   const sp = $("sideProject"); sp.replaceChildren();
+  const secondary = $("sideProjectSecondary"); secondary.replaceChildren();
   if (proj) {
     addNav(sp, "信息收集", `#/p/${proj.id}/draft`, { icon: "✎", current: S.route.view === "draft" });
     addNav(sp, "整理与Review", `#/p/${proj.id}/review`, { icon: "▤", current: S.route.view === "review" });
-    addNav(sp, "原始材料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
-    addNav(sp, "变更与决定记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
+    addNav(secondary, "原始材料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
+    addNav(secondary, "变更与决定记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
   } else {
     const info = el("div");
     info.style.cssText = "padding:6px 10px;font-size:12px;color:var(--label-3);line-height:1.6;";
