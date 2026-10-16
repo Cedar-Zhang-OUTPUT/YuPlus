@@ -1,5 +1,7 @@
 # Yu+
 
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.1](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.1)
+
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
 每个数据目录使用一份 SQLite 数据库和一个按 SHA-256 寻址的本地文件池，无需运行数据库或对象存储服务。已提供仅绑定本机的 Python 只读网关，沿用已交付 UI，读取真实项目及文件；正式运行无需 Node.js。
