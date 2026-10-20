@@ -54,23 +54,10 @@
       <section id="start" class="start" aria-labelledby="start-title">
         <div class="start-copy"><h2 id="start-title">下一步，<br>交给你的 Agent。</h2><p>复制这段提示词，发给 Codex。它会下载 Yu+，检查环境，并打开你的本地工作空间。</p><p class="release-note">当前版本 v0.1 / 首版支持 macOS</p><div class="downloads"><a class="text-link" href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.1/YuPlus-v0.1.tar.gz">下载 v0.1 <svg class="icon"><use href="#arrow"/></svg></a><a class="text-link" href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.1" target="_blank" rel="noopener noreferrer">查看安装说明 <svg class="icon"><use href="#arrow"/></svg></a></div></div>
         <div class="prompt-column">
-          <div class="prompt-panel"><div class="prompt-header"><h3>安装并开始使用 Yu+</h3><button class="button accent" data-copy><svg class="icon"><use href="#copy"/></svg><span class="button-label">复制完整提示词</span></button></div>
+          <div class="prompt-panel"><div class="prompt-header"><h3>安装并开始使用 Yu+</h3><button class="button accent" data-copy><svg class="icon"><use href="#copy"/></svg><span class="button-label">复制安装提示词</span></button></div>
             <ol class="prompt-summary"><li>请帮我安装并启动 Yu+ v0.1。</li><li>从官方 GitHub Release 下载并验证安装包。</li><li>检查本地环境，运行统一安装入口。</li><li>安装 Yu+ 与两份 Codex Skill。</li><li>沿用正式数据目录，不覆盖已有项目。</li><li>检查飞书 CLI；缺少认证时明确提示。</li><li>启动服务，在 Codex 中打开实际地址。</li><li>先询问我的项目名称，不导入演示材料。</li></ol>
-            <details id="full-prompt"><summary>阅读完整提示词<span aria-hidden="true">+</span></summary><label for="install-prompt" class="visually-hidden">完整 Agent 安装提示词</label><textarea id="install-prompt" readonly spellcheck="false">请在我的电脑上安装并启动 Yu+ v0.1，供我在 Codex 中与 Agent 一起推进策展项目。请直接完成已授权的下载、检查、安装和启动；仅在确实遇到冲突、缺少认证或需要我选择项目时询问。
-
-官方仓库：https://github.com/Cedar-Zhang-OUTPUT/YuPlus
-固定版本：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.1
-安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.1/YuPlus-v0.1.tar.gz
-校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.1/SHA256SUMS.txt
-
-请按以下步骤执行：
-1. 检查操作系统。首版支持 macOS；如果不是 macOS，请说明兼容性限制，不擅自修改应用绕过检查。先检查是否已有 Yu+ 安装、安装记录和正在运行的服务，保留现有项目、Skill 自定义修改和数据目录。不要把开发或验收目录当正式目录。
-2. 在新建的独立下载目录中，从上述官方 Release 下载安装包和校验文件，校验 SHA-256 成功后解压，读取包内 README.md 和 scripts/install.py。下载失败或校验不一致时停止安装并报告具体错误；不要改用 main 分支冒充 v0.1。
-3. 运行包内 ./install.sh。它会复用合适的 Python，或通过官方 uv 安装器准备私有运行环境，再安装应用和 yuplus、yuplus-visualization 两份 Skill、初始化数据目录并检查飞书认证。默认安装位置为 ~/.local/share/yuplus-app，正式数据目录为 ~/.local/share/yuplus；已有安装沿用 installation.json 中的目录。不要覆盖非安装器管理或已修改的 Skill；遇到冲突先说明具体文件与可选处理方式。
-4. 读取安装输出和两份 Skill 的 installation.json，使用记录的真实 CLI、Python 和数据目录。阅读 yuplus/SKILL.md 与 yuplus-visualization/SKILL.md，并按其中指引择机读取参考文档；已经读过且仍适用的内容不反复加载。如果当前会话尚未自动发现新 Skill，直接读取已安装文件继续。
-5. 检查飞书 CLI 可用性。若存在，按已安装的 lark-shared 指引检查认证；缺失或未登录时明确告知，但继续完成本地功能的安装与启动，不擅自安装飞书、扩大权限或替我登录。
-6. 用安装后的 CLI 执行 doctor，然后 start --json，核对实际返回的数据目录、地址和服务身份；用 Codex 可用的浏览器工具打开该 URL，不打开演示页面或猜测端口。已启动时复用服务，不能终止其他进程来占用端口。
-7. 展示安装结果。已有项目时列出项目供我选择；没有项目时询问项目名称和第一份材料。不要导入演示数据或擅自创建示例项目。后续按两个场景协作：收集信息写入 draft，整理已有对象生成 review；反馈和新材料随时进入，先改 draft 再更新相关 review，并保留来源与决策历史。
+            <p class="guide-link">详细步骤由 Agent 读取：<a href="./agent-install.md" target="_blank" rel="noopener noreferrer">Agent 安装指南（Markdown）</a></p>
+            <details id="full-prompt"><summary>查看复制内容<span aria-hidden="true">+</span></summary><label for="install-prompt" class="visually-hidden">Agent 安装短提示词</label><textarea id="install-prompt" readonly spellcheck="false">请阅读 https://cedar-zhang-output.github.io/YuPlus/agent-install.md ，按指南帮我安装并启动 Yu+，保留已有项目数据。
 </textarea><a class="prompt-download" href="./install-prompt.txt" download>下载提示词文本</a></details>
           </div>
           <p class="local-note">资料存储在本机；读取飞书和使用 Codex 仍需要相应服务。</p>
@@ -80,6 +67,6 @@
     <footer><p><strong>Yu+</strong><span>/</span>让信息流动起来</p><div><a href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon"><use href="#external"/></svg></a><span>v0.1</span></div></footer>
   </div>
   <div id="copy-status" class="toast" role="status" aria-live="polite"></div>
-  <noscript><p class="noscript">浏览器未启用 JavaScript。可展开完整提示词手动复制，或<a href="./install-prompt.txt">打开提示词文本</a>。</p></noscript>
+  <noscript><p class="noscript">浏览器未启用 JavaScript。可展开短提示词手动复制，或<a href="./install-prompt.txt">打开提示词文本</a>。</p></noscript>
 </body>
 </html>
