@@ -33,6 +33,9 @@ class App:
     def _initialize(self):
         # executescript commits any pending transaction, so put BEGIN in the script.
         # Concurrent starters serialize on BEGIN and re-check user_version afterwards.
+        if self.db.execute('PRAGMA user_version').fetchone()[0] == 1:
+            from .backup import create_backup
+            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_monitor'))
         self.db.execute('BEGIN IMMEDIATE')
         try:
             version=self.db.execute('PRAGMA user_version').fetchone()[0]
@@ -48,7 +51,13 @@ class App:
                         self.db.execute(pending);pending=''
                 if pending.strip() and not all(x.strip().startswith('--') or not x.strip() for x in pending.splitlines()):
                     raise YuError('INTEGRITY_FAILURE','Schema 文件不完整。')
-            elif version!=1: raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
+            elif version not in (1,2): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
+            if version in (0,1):
+                pending=''
+                for line in (CONTRACTS/'monitor-schema.sql').read_text().splitlines(keepends=True):
+                    pending+=line
+                    if sqlite3.complete_statement(pending):
+                        self.db.execute(pending);pending=''
             self.db.execute('COMMIT')
         except BaseException:
             self.db.execute('ROLLBACK');raise
@@ -97,7 +106,7 @@ class App:
             if row['request_hash']!=request_hash:raise YuError('IDEMPOTENCY_CONFLICT','同一 request-id 已用于不同请求。')
             return self._envelope(command,row['project_id'],request_id,json.loads(row['result_json']),row['id'],row['seq'],True)
         return None
-    def execute(self,command,payload=None,*,project_id=None,request_id=None):
+    def execute(self,command,payload=None,*,project_id=None,request_id=None,_guard=None,_record=None):
         payload={} if payload is None else payload
         self._validate(command,payload,request_id)
         if command not in WRITE_COMMANDS:
@@ -109,7 +118,7 @@ class App:
             except BaseException:self.db.execute('ROLLBACK');raise
         request_hash=digest({'api_version':'1','command':command,'project_id':project_id,'input':payload})
         replay=self._replay(command,project_id,request_id,request_hash)
-        if replay:return replay
+        if replay and _record is None:return replay
         if command!='project.create':self._project(project_id,True)
         prepared=None
         if command=='source.import':
@@ -117,8 +126,11 @@ class App:
             prepared=prepare_import(self.data_dir,payload)
         self.db.execute('BEGIN IMMEDIATE')
         try:
+            if _guard: _guard()
             replay=self._replay(command,project_id,request_id,request_hash)
-            if replay:self.db.execute('COMMIT');return replay
+            if replay:
+                if _record: _record(replay)
+                self.db.execute('COMMIT');return replay
             cid=new_id('chg')
             if command=='project.create':
                 if project_id is not None:raise YuError('INVALID_INPUT','创建项目不接受已有 --project。')
@@ -145,8 +157,10 @@ class App:
                    actor_json=canonical({'kind':'cli'}),reason=payload.get('reason','创建项目'),causal_change_ids_json=canonical(sorted(set(ctx.causal_change_ids))),
                    changed_refs_json=canonical(ctx.changed_refs),result_json=canonical(data),created_at=now())
             seq=self.db.execute('SELECT seq FROM changes WHERE id=?',(cid,)).fetchone()[0]
+            result=self._envelope(command,project_id,request_id,data,cid,seq)
+            if _record: _record(result)
             self.db.execute('COMMIT')
-            return self._envelope(command,project_id,request_id,data,cid,seq)
+            return result
         except BaseException:
             self.db.execute('ROLLBACK');raise
     def _page_position(self, command, pid, value):
@@ -164,7 +178,7 @@ class App:
         if command=='project.list':
             return {'projects':[{'project_id':r['id'],**{k:r[k] for k in ('name','working_scene','lifecycle','metadata_version')}} for r in self.db.execute('SELECT * FROM projects ORDER BY created_at,id')]}
         if command=='doctor':
-            return {'sqlite_version':sqlite3.sqlite_version,'data_dir':str(self.data_dir),'schema_version':1,'journal_mode':'wal'}
+            return {'sqlite_version':sqlite3.sqlite_version,'data_dir':str(self.data_dir),'schema_version':self.db.execute('PRAGMA user_version').fetchone()[0],'journal_mode':'wal'}
         if command=='types.show':
             data=json.loads((CONTRACTS/'object-types.json').read_text());key=payload.get('type_key')
             if key:

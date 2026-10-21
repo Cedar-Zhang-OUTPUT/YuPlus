@@ -1,6 +1,6 @@
 ---
 name: yuplus-visualization
-description: Open and explain the Yu+ project browser, including navigation, saved sources, versions, basis changes, update and Feishu export prompts, and local service problems. Use for Yu+ interface help; business changes belong to the Yu+ project skill.
+description: Open and explain the Yu+ project browser, including navigation, sources, versions, basis changes, group monitoring results and copied action prompts. Use for Yu+ interface help and local service problems; business changes belong to the Yu+ project skill.
 ---
 
 # Yu+ visualization
@@ -10,7 +10,7 @@ Help the user read their saved Yu+ project and use its actual controls. The brow
 ## Read only what the task needs
 
 - Opening a project or fixing an unavailable page: [service.md](references/service.md).
-- Explaining a page, directory, card, version, or source control: [interface.md](references/interface.md).
+- Explaining a page, directory, card, version, source control, or persisted group-monitor result: [interface.md](references/interface.md).
 - Explaining changed basis, processing an edit reference, or exporting: [review-actions.md](references/review-actions.md).
 - An operation fails or its state is unclear: [troubleshooting.md](references/troubleshooting.md).
 
@@ -25,6 +25,7 @@ Open the verified address and appropriate hash route using an available browser 
 ## Keep viewing and writing distinct
 
 - “复制引用”, “复制更新 Prompt”, and “复制飞书导出 Prompt” copy text only. “已复制” does not mean saved, synchronized, or exported.
+- Group monitor sync/pause/resume/interval/removal Prompts also copy only. Bind their real data directory, project and monitor, then use the installed `yuplus` monitoring reference when the user asks to execute one. UI navigation or a group link does not authorize scheduling.
 - Original titles open the stored original address in a new tab when present. “查看引用” opens Yu+'s saved snapshot, possibly historical. A local head snapshot is not proof of remote freshness.
 - Resolve requests such as “change this paragraph” from project ID, data directory, object/block/item ID and viewed revision, then reread the current target. Use the installed `yuplus` business skill for the write. If its guidance is already loaded, consult only the relevant reference; do not bounce between full skills recursively.
 - New facts or wording instructions go into the appropriate draft basis before `review prepare` and `review publish`. Never write browser view JSON directly to SQLite or submit copied context as a CLI payload.
@@ -34,4 +35,4 @@ Do not apply the business copilot's end-of-turn project footer to pure Yu+ softw
 
 ## Maintenance basis
 
-Aligned with the 2026-10-16 frontend integration. Behavioral sources: `frontend/public/app.js`, `data/runtime.js`, `data/review-prompts.js`, `data/basis-diff.js`; service sources: `src/yuplus/gateway.py`, `browser_view.py`, `export_bundle.py`. These are repository-relative implementation locations, not required paths in a standalone skill installation. Check installed CLI help and observed UI when versions differ. Design handoff screenshots are illustrative and do not establish a current browser test or successful external export.
+Aligned with the 2026-10-21 monitoring addition. Behavioral sources: `frontend/public/app.js`, `data/runtime.js`, `data/monitoring.js`, `data/review-prompts.js`, `data/basis-diff.js`; service sources: `src/yuplus/gateway.py`, `browser_view.py`, `monitor.py`, `export_bundle.py`. These are repository-relative implementation locations, not required paths in a standalone skill installation. Check installed CLI help and observed UI when versions differ. Design screenshots or fixture tests do not establish successful live scheduling or external export.

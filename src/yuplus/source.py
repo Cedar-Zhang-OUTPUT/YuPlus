@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 import stat
 import tempfile
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlsplit, urlunsplit
 
 from .core import YuError, canonical, digest, insert, new_id, now
 
@@ -104,9 +104,49 @@ def _prepare_asset(data_dir: Path, asset: dict) -> dict:
             staging_path.unlink(missing_ok=True)
 
 
+def _message_identity(key, url, host, port):
+    """Validate CLI chat/thread locators while identity remains scoped by IDs.
+
+    CLI message links use chat positions or thread positions, not message IDs.
+    Opaque share tokens cannot be checked against the chat scope: callers must
+    use the verified chat AppLink fallback for those instead.
+    """
+    match = re.fullmatch(r'[A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)*:(oc_[A-Za-z0-9_-]+):(om_[A-Za-z0-9_-]+)', key)
+    if not match or host not in {'applink.feishu.cn', 'applink.larksuite.com'} or port not in (None, 443):
+        raise YuError('INVALID_INPUT', 'Message sources require a scoped identity and a trusted Feishu/Lark AppLink.')
+    try:
+        pairs = parse_qsl(url.query, keep_blank_values=True, strict_parsing=True, max_num_fields=10)
+    except ValueError:
+        raise YuError('INVALID_INPUT', 'Invalid message AppLink query.') from None
+    query = dict(pairs)
+    if len(query) != len(pairs):
+        raise YuError('INVALID_INPUT', 'Message AppLink parameters must not be repeated.')
+    chat_id = match[1]
+    if url.path == '/client/chat/open':
+        valid = (query.get('openChatId') == chat_id and set(query) <= {'openChatId', 'position'}
+                 and ('position' not in query or re.fullmatch(r'-?[0-9]+(?:\.[0-9]+)?', query['position'])))
+    elif url.path == '/client/thread/open':
+        chat_keys = {'openchatid', 'open_chat_id'} & query.keys()
+        thread_keys = {'openthreadid', 'open_thread_id'} & query.keys()
+        threads = {query[k] for k in thread_keys}
+        valid = (bool(chat_keys) and bool(thread_keys) and len(threads) == 1
+                 and all(query[k] == chat_id for k in chat_keys)
+                 and re.fullmatch(r'(?:om|omt)_[A-Za-z0-9_-]+', next(iter(threads)))
+                 and re.fullmatch(r'-?[0-9]+(?:\.[0-9]+)?', query.get('thread_position', ''))
+                 and set(query) <= {'openchatid', 'open_chat_id', 'openthreadid', 'open_thread_id', 'thread_position'})
+    else:
+        valid = False
+    if not valid:
+        raise YuError('INVALID_INPUT', 'Message AppLink must identify the scoped chat with supported position parameters.')
+    return key, urlunsplit(('https', host, url.path, url.query, ''))
+
+
 def _remote_identity(target: dict) -> tuple[str, str]:
     """Normalize supported public link forms without pretending to query Feishu."""
-    url = urlsplit(target['canonical_url'])
+    try:
+        url = urlsplit(target['canonical_url'])
+    except ValueError:
+        raise YuError('INVALID_INPUT', 'Invalid remote source URL.') from None
     if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password:
         raise YuError('INVALID_INPUT', 'A remote source requires an HTTP(S) URL without credentials.')
     try:
@@ -122,6 +162,8 @@ def _remote_identity(target: dict) -> tuple[str, str]:
     if target['provider'] == 'feishu':
         if url.scheme != 'https' or not (host.endswith('.feishu.cn') or host.endswith('.larksuite.com') or host.endswith('.larkoffice.com')):
             raise YuError('INVALID_INPUT', 'Feishu sources require a supported HTTPS Feishu/Lark document link.')
+        if target['resource_type'] == 'message':
+            return _message_identity(key, url, host, port)
         match = re.fullmatch(r'/(docx|docs|doc|sheets|sheet|base|bitable|file|slides)/([A-Za-z0-9_-]+)', path)
         if not match:
             raise YuError('INVALID_INPUT', 'Resolve wiki/share links to the actual Feishu resource before import.')

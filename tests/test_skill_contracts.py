@@ -14,6 +14,18 @@ EXAMPLES = ROOT / "docs/superpowers/specs/contracts/v0.1/examples"
 
 
 class SkillContractTests(unittest.TestCase):
+    def test_human_chinese_review_copies_are_not_installable_or_routed(self):
+        self.assertTrue(list((ROOT/'docs/skills').rglob('*.zh-CN.md')))
+        for path in (ROOT/'skills').rglob('*'):
+            self.assertNotIn('zh-CN',path.name)
+            if path.suffix=='.md':
+                text=path.read_text()
+                self.assertNotIn('docs/skills',text)
+                self.assertNotIn('.zh-CN.md',text)
+        installer=(ROOT/'scripts/install.py').read_text()
+        self.assertIn("shutil.copytree(repo/'skills'/name",installer)
+        self.assertNotIn("repo/'docs'",installer)
+
     def run_helper(self, *args):
         return subprocess.run([sys.executable, str(HELPER), *args],
                               capture_output=True, text=True, cwd=ROOT)

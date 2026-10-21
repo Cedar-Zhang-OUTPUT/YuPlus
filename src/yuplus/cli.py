@@ -15,6 +15,9 @@ COMMANDS={
     'backup.create','backup.verify','backup.restore','source.check',
 }
 INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
+MONITOR_ACTIONS={'add','list','show','runs','schedule','scheduler-bind','update','pause','resume','remove',
+                 'begin','fetch','pending','steps','read','renew','capture','step','discard-step','resolve','finish'}
+COMMANDS.update('monitor.'+action for action in MONITOR_ACTIONS)
 
 class Parser(argparse.ArgumentParser):
     def error(self,message): raise YuError('INVALID_INPUT',message)
@@ -53,13 +56,14 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（最小链路 v0.1）',
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.2）',
                   epilog='可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
     parser.add_argument('--data-dir')
     parser.add_argument('--port',type=int,default=7801,help='serve 本地端口（0 自动分配）')
     parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
+    parser.add_argument('--monitor')
     parser.add_argument('--output');parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
     parser.add_argument('--include-body',action='store_true',help='source show 显式读取来源正文')
     parser.add_argument('--object');parser.add_argument('--revision');parser.add_argument('--type',dest='type_key')
@@ -71,7 +75,7 @@ def main(argv=None):
         args.data_dir=args.data_dir or default_data_dir()
         command='.'.join(x for x in (args.resource,args.action) if x)
         if command not in COMMANDS:raise YuError('INVALID_INPUT','未知命令，请运行 yu --help。')
-        if command in INPUT_COMMANDS:
+        if command in INPUT_COMMANDS or (args.resource=='monitor' and (args.input or args.action not in {'list','show','runs','schedule'})):
             if not args.input:raise YuError('INVALID_INPUT','该命令需要 --input 文件或 --input -。')
             if args.input=='-':raw=sys.stdin.buffer.read(8*1024*1024+1)
             else:
@@ -85,6 +89,7 @@ def main(argv=None):
         else:
             payload={}
             mapping={'source_id':args.source,'snapshot_id':args.snapshot,'object_id':args.object,'revision_id':args.revision,'type_key':args.type_key}
+            if args.monitor:payload['monitor_id']=args.monitor
             payload.update({k:v for k,v in mapping.items() if v is not None})
             if args.include_body:payload['include_body']=True
             if command.endswith('.show') and command.startswith(('draft.','review.')) and not args.object:raise YuError('INVALID_INPUT','需要 --object。')
@@ -113,7 +118,10 @@ def main(argv=None):
             app.close();app=None
             from .gateway import serve
             return serve(args.data_dir,args.port)
-        result=app.execute(command,payload,project_id=args.project,request_id=args.request_id)
+        if args.resource=='monitor':
+            from .monitor import Monitor
+            result=app._envelope(command,args.project,None,Monitor(app).execute(args.action,payload,args.project))
+        else:result=app.execute(command,payload,project_id=args.project,request_id=args.request_id)
         print(json.dumps(result,ensure_ascii=False,allow_nan=False));return 0
     except YuError as exc:error=exc
     except FileNotFoundError as exc:error=YuError('FILE_NOT_FOUND','输入文件不存在。',details=[{'path':str(exc.filename)}])

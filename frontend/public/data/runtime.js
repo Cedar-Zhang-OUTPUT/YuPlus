@@ -10,6 +10,7 @@ export function hydrateView(raw) {
   data.catalog = Array.isArray(raw.catalog) ? raw.catalog : raw.catalog?.objects || [];
   data.internal_types = (raw.internal_types || raw.catalog?.internal_types || []).map(t=>({...t,meaning:t.meaning || t.purpose,boundary:t.boundary || t.purpose}));
   for (const key of ['changes','decisions','review_checks','exports']) data[key] ||= [];
+  for (const key of ['chat_monitors','monitor_runs']) data[key] = Array.isArray(raw[key]) ? raw[key] : [];
   data.project_activity ||= {};
   data.indexes = {
     objById:Object.fromEntries(data.objects.map(o=>[o.id,o])),

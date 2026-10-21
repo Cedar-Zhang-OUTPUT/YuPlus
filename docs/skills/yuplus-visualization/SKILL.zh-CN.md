@@ -1,6 +1,6 @@
 ---
 name: yuplus-visualization
-description: 打开并解释 Yu+ 项目浏览器，包括导航、已保存来源、版本、依据变化、更新与飞书导出 Prompt，以及本地服务故障。适用于 Yu+ 界面使用问题；业务修改由 Yu+ 项目 skill 负责。
+description: 打开并解释 Yu+ 项目浏览器，包括导航、来源、版本、依据变化、群监控结果与复制操作 Prompt。适用于 Yu+ 界面使用及本地服务故障；业务修改由 Yu+ 项目 skill 负责。
 ---
 
 # Yu+ 可视化界面使用
@@ -10,7 +10,7 @@ description: 打开并解释 Yu+ 项目浏览器，包括导航、已保存来�
 ## 只读取当前任务需要的说明
 
 - 打开项目或排查页面不可达：[服务与打开页面](references/service.zh-CN.md)。
-- 解释页面、目录、卡片、版本或来源控件：[界面指南](references/interface.zh-CN.md)。
+- 解释页面、目录、卡片、版本、来源控件或已保存群监控结果：[界面指南](references/interface.zh-CN.md)。
 - 解释依据变化、接收修改引用或导出：[Review 操作](references/review-actions.zh-CN.md)。
 - 操作失败或状态不明：[故障处理](references/troubleshooting.zh-CN.md)。
 
@@ -25,6 +25,7 @@ description: 打开并解释 Yu+ 项目浏览器，包括导航、已保存来�
 ## 区分阅读与写入
 
 - “复制引用”“复制更新 Prompt”“复制飞书导出 Prompt”都只复制文字。“已复制”不等于保存、同步或导出成功。
+- 群监控的同步/暂停/恢复/间隔/解除 Prompt 也只复制文字。用户要求执行时，绑定真实数据目录、项目和监控，按已安装 `yuplus` 的监控参考执行。切换页面或群链接本身不授权建立调度。
 - 来源有原文地址时，点击标题在新标签页打开保存的原文地址；“查看引用”打开 Yu+ 已保存快照，可能是历史版。本地主快照不证明远端最新。
 - 收到“修改这一段”时，解析项目 ID、数据目录、对象/段落/条目 ID 和所看版本，再重新读取当前目标。写入使用已安装的 `yuplus` 业务 skill。若已读过其指导，只补读相关参考，不在两个 skill 之间递归全量加载。
 - 新事实或措辞要求先记录为相应 draft 依据，再 `review prepare`、`review publish`。不得把浏览器视图 JSON 直接写入 SQLite，也不得把复制的上下文当作 CLI 输入。
@@ -34,6 +35,6 @@ description: 打开并解释 Yu+ 项目浏览器，包括导航、已保存来�
 
 ## 维护依据
 
-对应 2026-10-16 前端集成。行为代码：`frontend/public/app.js`、`data/runtime.js`、`data/review-prompts.js`、`data/basis-diff.js`；服务代码：`src/yuplus/gateway.py`、`browser_view.py`、`export_bundle.py`。这是仓库内的实现位置，不要求独立安装的 skill 目录包含这些文件。版本不同时，以已安装 CLI 帮助和实际界面为准。设计交接截图只用于说明，不代表已完成当前浏览器测试或真实外部导出验证。
+对应 2026-10-21 群监控补充。行为代码：`frontend/public/app.js`、`data/runtime.js`、`data/monitoring.js`、`data/review-prompts.js`、`data/basis-diff.js`；服务代码：`src/yuplus/gateway.py`、`browser_view.py`、`monitor.py`、`export_bundle.py`。这是仓库内实现位置，不要求独立安装的 skill 目录包含这些文件。版本不同时，以已安装 CLI 帮助和实际界面为准。设计截图或模拟测试不证明真实宿主定时执行或远端导出成功。
 
 本文件及相邻中文参考是可安装英文 skill 的完整中文审阅版；实际安装入口位于 `skills/yuplus-visualization/SKILL.md`。

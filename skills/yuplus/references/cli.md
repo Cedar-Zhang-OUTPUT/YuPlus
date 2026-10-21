@@ -1,4 +1,4 @@
-# Yu+ CLI v0.1: supported operations
+# Yu+ CLI: supported operations
 
 Read only the section required by the current operation. In commands below, replace uppercase values with actual values; use returned IDs, never demonstration IDs. Quote local paths. Use a JSON file or stdin, not shell interpolation of client text.
 
@@ -85,6 +85,8 @@ Expression-guide sequence: record the instruction source → draft.apply with ty
 - Stop retrying when the same unresolved error recurs; explain the concrete missing permission, material or environment requirement instead of looping or bypassing the CLI.
 
 ## Local browser and copied references
+
+For user-authorized Feishu group intake, `monitor` binding, schedule receipts, chronological processing and recovery, read [chat-monitoring.md](chat-monitoring.md). These commands supplement the unchanged four core business contracts. A copied monitor Prompt binds `data_dir`, `project_id`, `monitor_id`, action and viewed configuration version; reread the real binding before executing it. Clicking copy does not run a command.
 
 Use `yu --data-dir DATA_DIR start --json` for managed startup/reuse, `status` to recover the address and `stop` for verified shutdown. `serve --port 0` remains the foreground option. See [operations.md](operations.md). The existing page shows saved source-check results after refresh. Startup scanning does not call AI or rewrite draft/review.
 

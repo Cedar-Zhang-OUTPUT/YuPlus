@@ -11,12 +11,16 @@ def scan(data_dir, project_id=None, source_id=None, observer=observe):
     try:
         if project_id: app._project(project_id)
         if source_id and not project_id: raise YuError('INVALID_INPUT','指定来源时必须指定项目。')
-        clauses=["provider='feishu'","archived_at IS NULL"]
+        clauses=["provider='feishu'","resource_type!='message'","archived_at IS NULL"]
         values=[]
         if project_id: clauses.append('project_id=?');values.append(project_id)
         if source_id: clauses.append('id=?');values.append(source_id)
         sources=[dict(r) for r in app.db.execute('SELECT * FROM sources WHERE '+' AND '.join(clauses)+' ORDER BY project_id,id',values)]
-        if source_id and not sources: raise YuError('SOURCE_NOT_FOUND','未找到可检查的飞书来源。')
+        if source_id and not sources:
+            message=app.db.execute("SELECT 1 FROM sources WHERE project_id=? AND id=? AND provider='feishu' AND resource_type='message' AND archived_at IS NULL",(project_id,source_id)).fetchone()
+            if message:
+                raise YuError('SOURCE_CHECK_UNSUPPORTED','群消息需通过群聊监控复查，不使用文档版本检查。')
+            raise YuError('SOURCE_NOT_FOUND','未找到可检查的飞书来源。')
         results=[]
         for source in sources:
             head=source['latest_snapshot_id']; generation=source['observation_generation']
