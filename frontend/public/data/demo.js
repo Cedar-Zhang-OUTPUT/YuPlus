@@ -292,7 +292,9 @@ const DATA = (() => {
     { id: "obj_risks", project_id: "prj_city", layer: "draft", type_key: "risks", scope_key: "project", current_revision_id: "rev_risks_1", created_at: dt("10T07:30:00Z") },
     { id: "obj_decision", project_id: "prj_city", layer: "draft", type_key: "assessment_decision", scope_key: "project", current_revision_id: null, created_at: dt("07T02:20:00Z") },
 
-    // 内部类型：成果编写要求（不是第 24 类业务对象）
+    { id: "obj_open_questions", project_id: "prj_city", layer: "draft", type_key: "open_questions", scope_key: "project", current_revision_id: null, created_at: dt("16T06:30:00Z") },
+
+    // 内部类型：成果编写要求（不计入 24 类业务对象）
     { id: "obj_guide_r01", project_id: "prj_city", layer: "draft", type_key: "expression_guide", scope_key: "review:obj_r01", current_revision_id: "rev_guide_1", created_at: dt("12T03:10:00Z") },
 
     // YU+ Dev 项目：用于检验项目隔离
@@ -845,7 +847,7 @@ const DATA = (() => {
     change("chg_032", 32, "source.import", "noop", "品牌资产清单远端 revision 未变化，快照复用", dt("13T08:02:30Z"), []),
   ];
 
-  /* ── 展示优化用模拟记录：补齐全部 23 类业务对象 ───────────────────────── */
+  /* ── 展示优化用模拟记录：补齐全部 24 类业务对象 ───────────────────────── */
   const fixtureTime = "2026-10-16T06:30:00Z";
   for (const [index, fixture] of DESIGN_FIXTURES.entries()) {
     const sourceId = `src_design_${fixture.key}`;
@@ -893,9 +895,9 @@ const DATA = (() => {
   object_revisions.push({id:"rev_timeline_2",object_id:"obj_timeline",version:2,created_at:fixtureTime,change_id:"chg_design_schedule",
     payload:{...timelineBase.payload,item_order:[...timelineBase.payload.item_order,...minuteItems.map((it)=>it.item_id)],items:[...timelineBase.payload.items,...minuteItems]}});
   objects.find((o)=>o.id==="obj_timeline").current_revision_id="rev_timeline_2";
-  changes.push(change("chg_design_schedule",39,"draft.apply","changed","补齐 23 类对象展示数据，并补充分钟级时间安排",fixtureTime,[],[{layer:"draft",object_id:"obj_timeline"}]));
+  changes.push(change("chg_design_schedule",33 + DESIGN_FIXTURES.length,"draft.apply","changed","补齐 24 类对象展示数据，并补充分钟级时间安排",fixtureTime,[],[{layer:"draft",object_id:"obj_timeline"}]));
   projects.find((p)=>p.id==="prj_city").updated_at=fixtureTime;
-  project_activity.prj_city={change_id:"chg_design_schedule",summary:"23 类业务对象模拟内容已齐备，可逐项优化展示",at:fixtureTime};
+  project_activity.prj_city={change_id:"chg_design_schedule",summary:"24 类业务对象模拟内容已齐备，可逐项优化展示",at:fixtureTime};
 
   const decisions = [
     {
@@ -960,7 +962,7 @@ const DATA = (() => {
 
   const exports = []; // 不用链接冒充成果导出记录。
 
-  /* ══════════════════════ 对象属性目录（23 类 + 内部类型） ═══════════════
+  /* ══════════════════════ 对象属性目录（24 类 + 内部类型） ═══════════════
      来源：contracts/v0.1/object-types.json 与《Yu+ 对象关系与展示对照表》。
      页面的「对象说明」从这里派生，保证 UI 与 Skill 对同一对象的解释一致。
      ═══════════════════════════════════════════════════════════════════ */
@@ -969,7 +971,7 @@ const DATA = (() => {
     { key: "background", name: "背景与需求", hue: "blue", types: ["bd_context", "client_brief", "tender_documents", "cooperation_type", "client_history", "client_meetings"] },
     { key: "research", name: "研究与资料", hue: "teal", types: ["venue", "brand_assets", "audience", "competitor_analysis"] },
     { key: "plan", name: "计划与协作", hue: "orange", types: ["milestones", "resources", "responsibilities", "deliverables", "budget_range", "budget_allocation", "project_assessment"] },
-    { key: "judgment", name: "判断与决定", hue: "purple", types: ["lead_strategy", "risks", "client_decisions", "project_rating", "assessment_decision", "qa"] },
+    { key: "judgment", name: "判断与决定", hue: "purple", types: ["lead_strategy", "risks", "client_decisions", "project_rating", "assessment_decision", "qa", "open_questions"] },
   ];
 
   const catalog = [
@@ -987,7 +989,7 @@ const DATA = (() => {
     { code: "D12", type_key: "competitor_analysis", name: "竞争对手分析", meaning: "已知竞争对象、公开作品、引用材料、分析和判断", boundary: "核实信息与传闻、推测分开标明", sources: "D01、D03、公开资料", usage: "D17；R01/R03 按需引用", missing: "允许未知与不适用。" },
     { code: "D13", type_key: "client_history", name: "客户历史合作方与过往项目", meaning: "历史项目、合作方、作品/媒体、表达特点及来源", boundary: "历史事实与对本次偏好的推断分开", sources: "客户资料、公开记录", usage: "D01、D17", missing: "允许未知与不适用。" },
     { code: "D14", type_key: "client_meetings", name: "与甲方的会议纪要", meaning: "原始纪要/转写、会议时间、客户原话、议题、意见与实际决定", boundary: "原话、摘要、意见与已作决定分开；定位按实际获取能力保存", sources: "飞书或其他真实会议材料", usage: "向多个 draft 对象提供证据", missing: "会议时间未知可缺省；节选需注明采集范围。" },
-    { code: "D15", type_key: "qa", name: "客户 Q&A 问题表", meaning: "问题、涉及对象、跟进人、答复、证据、已记录状态", boundary: "无答复与已有答复区分；答复关联到哪些业务对象", sources: "所有对象发现的缺口与用户问题", usage: "R05 展示同一问题表；其他成果引用", missing: "可以只有问题；问题状态是业务事实，不是启动门槛。" },
+    { code: "D15", type_key: "qa", name: "客户 Q&A 问题表", meaning: "问题、涉及对象、跟进人、答复、证据、已记录状态", boundary: "无答复与已有答复区分；答复关联到哪些业务对象", sources: "客户沟通中的具体澄清与往来答复；开放议题使用 D24", usage: "R05 展示同一问题表；其他成果引用", missing: "可以只有问题；问题状态是业务事实，不是启动门槛。" },
     { code: "D16", type_key: "project_assessment", name: "立项评估结果", meaning: "档期、资源、供应商、投入及价值匹配判断、依据", boundary: "Agent/用户建议与真实正式评估分开", sources: "D07、D09、D19、D22，用户评估", usage: "D21、D23、D17；R01/R03 按需引用", missing: "允许未知与不适用。" },
     { code: "D17", type_key: "lead_strategy", name: "主策策略", meaning: "本轮目标、策略、调研判断、已有方向候选、取舍理由、实际审查意见", boundary: "已有策略与待讨论建议分开；不要求完成创意方向筛选", sources: "D01、D04—D08、D12、D13、D16、D23", usage: "R03；R01/R04 按需引用", missing: "允许未知与不适用；不要求收集阶段完成创意策划。" },
     { code: "D18", type_key: "deliverables", name: "交付细节", meaning: "轮次、交付物、颗粒度、格式/规格、数量、使用限制、外部依赖、不做范围", boundary: "本轮/某位创作者要求与全项目要求区分；日期统一引用 D09", sources: "D01—D03、D14、用户约定；关联 D05/D19", usage: "R01、R02、R04", missing: "允许未知与不适用；不做范围可单独记录。" },
@@ -998,13 +1000,15 @@ const DATA = (() => {
     { code: "D23", type_key: "assessment_decision", name: "评审会结论", meaning: "实际立项评审结论、Go/No-Go、补材料/调整交付/重新评估等决定及行动项", boundary: "立项评审与创意审查分开；是业务记录，不是软件准入门槛", sources: "真实评审记录、用户明确结论", usage: "R04、D17；其他成果按需引用", missing: "允许未知与不适用。" },
   ];
 
+  catalog.push({"code": "D24", "type_key": "open_questions", "name": "开放性问题", "meaning": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。", "boundary": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。", "sources": "主策思考、会议与群聊、客户或团队提出的开放议题、材料与现有对象中的探索问题。", "usage": "D17 策略、D18 交付等相关 draft；形成实际决定时保留决策历史；R01—R04 按需依赖，不加入 R05 客户 Q&A。", "missing": "允许未决、暂缓和未知；不要求先有答案，不阻止信息收集或整理。"});
+
   const internal_types = [
     { type_key: "expression_guide", name: "成果编写要求", meaning: "用户的表达或结构要求：作用于哪份成果、哪些段落、指令来源与版本", boundary: "不是第 24 类业务对象；与事实字段分开，不因改写流程捏造事实变化", sources: "用户口述中的纯表达意见", usage: "绑定某一 review 的段落 ID 或全部段落" },
   ];
 
   const REVIEW_KINDS = [
     { code: "R01", type_key: "debrief", name: "主策 Debrief", persistable: true, meaning: "客户为何做、要解决什么、面向谁、谁决定什么、本轮交付与边界的完整说明", basis: "D01 背景目标；D02/D03 需求依据；D06 受众；D10 客户决策角色；D20 内部职责；D18 交付边界" },
-    { code: "R02", type_key: "advancement", name: "推进要素", persistable: true, meaning: "本轮交付、颗粒度、回收/合稿/Review 节点、相关职责和已有待讨论项", basis: "D09 时间，D18 交付；负责人引用 D20；缺口引用 D15" },
+    { code: "R02", type_key: "advancement", name: "推进要素", persistable: true, meaning: "本轮交付、颗粒度、回收/合稿/Review 节点、相关职责和已有待讨论项", basis: "D09 时间，D18 交付；负责人引用 D20；客户澄清引用 D15，开放议题引用 D24" },
     { code: "R03", type_key: "creative_review", name: "创意审查结果", persistable: true, meaning: "目标、方向、投入重点的实际审查意见、取舍及依据；无正式结论时呈现已有策略与待讨论内容", basis: "D17 主策策略及实际审查意见，D08 预算分配及实际审查意见" },
     { code: "R04", type_key: "creator_brief", name: "内外部创作者 Brief", persistable: true, meaning: "指定创作者/资源和轮次的任务背景、问题、交付要求、日期、职责、协作及使用边界", basis: "D23、D19、D18；背景来自 D01/D06/D17，负责人来自 D20，日期来自 D09" },
     { code: "R05", type_key: "qa_view", name: "客户 Q&A", persistable: false, meaning: "在 review 场景中展示同一份 D15 问题、答复、状态、来源和关联对象", basis: "直接使用 D15，不复制一份独立维护的 review Q&A" },

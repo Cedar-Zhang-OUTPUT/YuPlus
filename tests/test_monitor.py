@@ -113,6 +113,22 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(self.app.db.execute('SELECT count(*) FROM decisions').fetchone()[0],2)
         self.assertEqual(self.app.db.execute('SELECT count(*) FROM source_versions').fetchone()[0],2)
 
+    def test_open_project_question_can_be_recorded_without_client_qa(self):
+        self.reader.messages=lambda *args,**kwargs: {'messages':[self.reader.msg('om_question',1000,'如何让观众更愿意参与？')],'has_more':False,'page_token':None}
+        auth,msgs=self.fetched();vid=msgs[0]['id']
+        source=self.call('capture',{**auth,'message_version':vid})['source_version_id']
+        payload={'api_version':'1','command':'draft.apply','reason':'保留开放讨论','decisions':[],
+            'objects':[{'op_id':'discussion','type_key':'open_questions','scope_key':'project','base_revision':None,
+              'set_items':[{'item_id':'participation','data':{'question':'如何让观众更愿意参与？','status':'open'},
+                'epistemic_kind':'source_statement','source_refs':[{'evidence_id':'message','source_version_id':source,'kind':'supports'}],'dependencies':[]}]}]}
+        result=self.step(auth,vid,'discussion','draft.apply',payload)
+        again=self.step(auth,vid,'discussion','draft.apply',payload)
+        self.assertEqual(again['meta']['change_id'],result['meta']['change_id'])
+        self.call('resolve',{**auth,'message_versions':[vid],'outcome':'clarification','reason':'保留待讨论议题','change_ids':[result['meta']['change_id']]})
+        self.assertTrue(self.call('finish',auth)['completed'])
+        self.assertEqual(self.app.db.execute("SELECT count(*) FROM objects WHERE type_key='qa'").fetchone()[0],0)
+        self.assertEqual(self.app.db.execute("SELECT count(*) FROM objects WHERE type_key='open_questions'").fetchone()[0],1)
+
     def test_step_commit_and_receipt_roll_back_together(self):
         auth,msgs=self.fetched();vid=msgs[0]['id']
         source=self.call('capture',{**auth,'message_version':vid})['source_version_id']
@@ -223,7 +239,7 @@ class MonitorTests(unittest.TestCase):
         old=Path(self.tmp.name)/'legacy';old.mkdir()
         db=sqlite3.connect(old/'yuplus.sqlite');db.executescript((Path(__file__).parents[1]/'src/yuplus/contracts/schema.sql').read_text());db.close()
         migrated=App(old)
-        try:self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],2)
+        try:self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],3)
         finally:migrated.close()
         backups=list((Path(self.tmp.name)/'legacy-migration-backups').iterdir());self.assertEqual(len(backups),1)
         verify_backup(backups[0]);db=sqlite3.connect(backups[0]/'yuplus.sqlite')

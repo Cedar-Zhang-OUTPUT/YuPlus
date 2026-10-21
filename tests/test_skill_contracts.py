@@ -66,6 +66,21 @@ class SkillContractTests(unittest.TestCase):
                     wrong["objects"][0]["type_key"] = "venue"
                     self.assertFalse(Draft202012Validator(schema).is_valid(wrong))
 
+    def test_open_questions_scoped_contract_and_client_qa_are_distinct(self):
+        result=self.output('type','open_questions')
+        self.assertEqual(result['type']['code'],'D24')
+        schema=self.output('command','draft.apply','--type','open_questions')['schema']
+        payload={'api_version':'1','command':'draft.apply','reason':'讨论议题','decisions':[],
+            'objects':[{'op_id':'topic','type_key':'open_questions','scope_key':'project','base_revision':None,
+              'set_items':[{'item_id':'participation','data':{'question':'如何提高参与感？','status':'exploring','options':['共创']},
+                'epistemic_kind':'suggestion','source_refs':[],'dependencies':[]}]}]}
+        validator=Draft202012Validator(schema);validator.validate(payload)
+        payload['objects'][0]['set_items'][0]['data']['status']='answered'
+        self.assertFalse(validator.is_valid(payload))
+        self.assertNotIn('data_qa',schema['$defs'])
+        qa=self.output('type','qa')['schema']
+        Draft202012Validator(qa).validate({'question':'客户提问','answer':'团队答复','asked_by':'客户','answered_by':'主策'})
+
     def test_invalid_requests_fail_without_json_success(self):
         for args in [("type", "imaginary"), ("command", "draft.apply"),
                      ("command", "source.check"),

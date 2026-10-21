@@ -16,7 +16,7 @@ test('missing revision cannot be reported as current', () => {
   assert.equal(basisStatus(DATA, {object_id:'obj_deliv', revision_id:'missing',item_id:'deliv_r1_film'}), 'unknown');
 });
 test('mock dataset keeps project, source, and review lineage identities intact', () => {
-  assert.equal(DATA.catalog.length,23);
+  assert.equal(DATA.catalog.length,24);
   assert.equal(DATA.objects.some(o => o.type_key === 'qa_view'),false);
   for (const o of DATA.objects) {
     assert.ok(DATA.projects.find(p => p.id === o.project_id));

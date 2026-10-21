@@ -26,16 +26,22 @@ class App:
         self.db.execute('PRAGMA busy_timeout=5000');self.db.execute('PRAGMA synchronous=FULL')
         mode=self.db.execute('PRAGMA journal_mode=WAL').fetchone()[0]
         if mode!='wal':raise YuError('INTEGRITY_FAILURE','无法启用 SQLite WAL。')
-        self._initialize()
+        try:self._initialize()
+        except BaseException:
+            self.db.close();raise
         schema=json.loads((CONTRACTS/'cli-input.schema.json').read_text())
         self.validator=Draft202012Validator(schema,format_checker=FormatChecker())
     def close(self): self.db.close()
     def _initialize(self):
         # executescript commits any pending transaction, so put BEGIN in the script.
         # Concurrent starters serialize on BEGIN and re-check user_version afterwards.
-        if self.db.execute('PRAGMA user_version').fetchone()[0] == 1:
+        initial_version=self.db.execute('PRAGMA user_version').fetchone()[0]
+        if initial_version in (1,2):
             from .backup import create_backup
-            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_monitor'))
+            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_open_questions'))
+        # SQLite requires FK enforcement off before starting a table rebuild;
+        # add_open_questions validates all references before commit.
+        if initial_version in (0,1,2):self.db.execute('PRAGMA foreign_keys=OFF')
         self.db.execute('BEGIN IMMEDIATE')
         try:
             version=self.db.execute('PRAGMA user_version').fetchone()[0]
@@ -51,16 +57,21 @@ class App:
                         self.db.execute(pending);pending=''
                 if pending.strip() and not all(x.strip().startswith('--') or not x.strip() for x in pending.splitlines()):
                     raise YuError('INTEGRITY_FAILURE','Schema 文件不完整。')
-            elif version not in (1,2): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
+            elif version not in (1,2,3): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
             if version in (0,1):
                 pending=''
                 for line in (CONTRACTS/'monitor-schema.sql').read_text().splitlines(keepends=True):
                     pending+=line
                     if sqlite3.complete_statement(pending):
                         self.db.execute(pending);pending=''
+            if version in (0,1,2):
+                from .migrations import add_open_questions
+                add_open_questions(self.db)
             self.db.execute('COMMIT')
         except BaseException:
             self.db.execute('ROLLBACK');raise
+        finally:
+            self.db.execute('PRAGMA foreign_keys=ON')
     def _project(self,pid,write=False):
         if not pid:raise YuError('INVALID_INPUT','必须显式指定 --project。')
         row=self.db.execute('SELECT * FROM projects WHERE id=?',(pid,)).fetchone()

@@ -2,6 +2,14 @@
    These records are only loaded by the standalone preview, never by the CLI. */
 export const DESIGN_FIXTURES = [
   {
+    key:'open_questions',objectId:'obj_open_questions',title:'开放性问题',provider:'feishu',
+    sourceTitle:'城市记忆展厅｜主策讨论议题（模拟）',
+    body:'主策与团队在会上提出：如何让观众参与城市记忆的共同叙述？目前考虑参与式共创和收集观众故事，尚未选定方向。该议题需要探索，不是要求客户补齐一个答案。下一次讨论将比较两种方式对不同年龄观众的参与门槛、现场停留时间和后续内容维护的影响；当前没有采用任何方向，也没有承诺制作范围。',
+    items:[
+      {id:'participation',kind:'suggestion',data:{question:'如何让观众参与城市记忆的共同叙述？',context:'主策与团队在会上提出，尚未选定方向',impact:'影响互动策略和空间内容',options:['参与式共创','收集观众故事'],status:'exploring',related_object_ids:['obj_strategy','obj_audience']}},
+    ],
+  },
+  {
     key: 'tender', objectId: 'obj_tender', title: '招标文件', provider: 'feishu',
     sourceTitle: '城市记忆展厅｜采购文件与澄清记录（模拟）',
     body: '【采购概况】项目采用邀请比选，采购文件 V2 于 2026-10-03 发布。原始总预算上限为 100 万元，含客户自行采购的设备。\n【原始范围】主影片成片 1 支（约 8 分钟）及 3 面展墙图文；原始目标为 2027 年春季开馆。\n【评审方式】创意与叙事 40 分、团队履历 25 分、报价 25 分、进度保障 10 分。提交叙事方案、预算拆分、团队履历和进度表。\n【澄清记录】10 月 13 日主策确认，本轮执行按 60 万元、交付概念脚本与展墙排版稿；原始采购要求保留，正式变更附件尚待客户回签。\n【投递】2026-10-23 17:00 截止，通过客户指定工作群提交 PDF，签章纸质版后补。',

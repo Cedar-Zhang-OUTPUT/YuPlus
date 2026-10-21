@@ -56,6 +56,8 @@ All core inputs contain `api_version:"1"` and the matching dotted `command`. Wri
 
 ### draft.apply
 
+D24 uses `type_key=open_questions`, ordinary draft scope `project`, and the same `draft apply` / `draft show` commands. Read its writable fields with `PYTHON SKILL_DIR/scripts/inspect_contract.py command draft.apply --type open_questions` before writing; do not invent a separate questions command. `options` is a string array; status is `open`, `exploring`, `resolved`, `deferred` or `closed`. These are discussion states, not the D15 answer states. D15 also accepts optional `asked_by` and `answered_by`.
+
 - Top level: reason, objects[], decisions[], and optional instruction_source_version_id.
 - Each operation: op_id, type_key, scope_key, base_revision, optionally object_id; set_items/remove_items/title/item_order specify edits. New ordinary draft: scope_key=project and base_revision=null. Existing identity: actual base_revision; do not “create again” to bypass it.
 - `set_items` replaces the complete specified item: item_id, data, epistemic_kind, source_refs[], dependencies[]. Preserve unchanged fields/references from its current version. Unmentioned sibling items remain.

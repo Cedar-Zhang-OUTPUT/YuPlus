@@ -36,3 +36,10 @@ export function qaState(status) {
   if (status === 'open' || status === '待答复') return {label:'待答复',hue:'orange',answered:false};
   return {label:status || '未记录状态',hue:'gray',answered:false};
 }
+
+// Open discussion is distinct from a customer question awaiting an answer.
+export function openQuestionState(status) {
+  const states = {open:['待讨论','orange'], exploring:['探索中','purple'], resolved:['已有结论','green'], deferred:['暂缓','gray'], closed:['已关闭','gray']};
+  const [label, hue] = states[status] || [status || '未记录状态','gray'];
+  return {label, hue};
+}

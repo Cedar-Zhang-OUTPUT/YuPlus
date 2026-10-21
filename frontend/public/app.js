@@ -6,7 +6,7 @@
 
 import { loadView } from "./data/runtime.js";
 let DATA;
-import { basisStatus, qaState } from "./data/selectors.js";
+import { basisStatus, qaState, openQuestionState } from "./data/selectors.js";
 import { expandBasis, changedBasisDetails } from "./data/provenance.js";
 import { compareBasisItems } from "./data/basis-diff.js";
 import { reviewUpdatePrompt, reviewExportPrompt } from "./data/review-prompts.js";
@@ -969,7 +969,7 @@ function viewDraft(pid) {
   const navh = el("header");
   const nh = el("h3"); nh.textContent = "对象目录"; navh.append(nh);
   const ng = el("span", "grow"); navh.append(ng);
-  const toggle = chipBtn(S.showAllTypes ? "只看有内容" : "全部 23 类", () => { S.showAllTypes = !S.showAllTypes; render(); });
+  const toggle = chipBtn(S.showAllTypes ? "只看有内容" : `全部 ${DATA.catalog.length} 类`, () => { S.showAllTypes = !S.showAllTypes; render(); });
   const switchIcon = el("span", "switch-icon"); switchIcon.textContent = "⇄";
   switchIcon.setAttribute("aria-hidden", "true"); toggle.prepend(switchIcon);
   toggle.title = "切换全部对象与已有内容";
@@ -1056,7 +1056,7 @@ function viewDraft(pid) {
     g.append(ol);
     objnav.append(g);
   }
-  if (!objnav.children.length) objnav.append(empty("🗂", "还没有对象内容", ["可切换查看全部 23 类对象。"]));
+  if (!objnav.children.length) objnav.append(empty("🗂", "还没有对象内容", [`可切换查看全部 ${DATA.catalog.length} 类对象。`]));
   navb.append(objnav);
   nav.append(navb);
   const directorySlot = el("div", "draft-directory-slot");
@@ -1083,7 +1083,7 @@ function viewDraft(pid) {
     main.append(section);
   }
   if (!visibleObjects.length) main.append(empty("📄", "这个项目还没有已保存的对象内容",
-    ["可以把材料交给 Agent，或切换到全部 23 类查看对象。"]));
+    [`可以把材料交给 Agent，或切换到全部 ${DATA.catalog.length} 类查看对象。`]));
   layout.append(main);
 
   body.append(layout);
@@ -1460,6 +1460,10 @@ function itemCard(o, rev, it, hue) {
   // 适用范围（局部要求不得显示成全项目要求）
   if (it.data.applies_to) head.append(tag(it.data.applies_to, "orange"));
   if (it.data.round_key) head.append(tag("轮次 " + it.data.round_key, "teal"));
+  if (o.type_key === "open_questions") {
+    const state = openQuestionState(it.data.status);
+    head.append(tag(state.label, state.hue));
+  }
   if (it.data.status) {
     const sm = { confirmed: ["已确认参与", "green"], candidate: ["候选", "gray"], pending: ["待确认", "orange"] }[it.data.status];
     if (sm) head.append(tag(sm[0], sm[1]));
@@ -1591,6 +1595,7 @@ const FIELD_LABEL = {
   round_key: "轮次", budget_kind: "口径", currency: "币种", min_minor: "金额下限", max_minor: "金额上限",
   applies_to: "适用范围", scope: "适用范围", raw: "原文金额", decided_by: "决定者", rationale: "理由", event: "事件",
   time_kind: "时间类型", date: "日期", start: "开始", end: "结束", source_note: "时间来源",
+  context: "议题背景", options: "候选思路", asked_by: "提问方", answered_by: "答复方",
   question: "问题", status: "状态", follow_up: "跟进人", answer: "答复", answer_basis: "答复依据",
   related_object_ids: "关联对象", risk: "风险", trigger: "触发条件", impact: "影响", response: "应对",
   decision: "处理决定", to_verify: "待核实", meeting: "会议", meeting_at: "会议时间", focus: "议题",
@@ -2013,6 +2018,11 @@ function qaReviewView(pid, qaObj, kindMeta) {
     if (it.data.follow_up_person || it.data.follow_up) { const f = el("span", "when"); f.textContent = "跟进：" + (it.data.follow_up_person || it.data.follow_up); top.append(f); }
     row.append(top);
     const q = el("div"); q.style.cssText = "font-weight:600;font-size:14.5px;"; q.textContent = it.data.question; row.append(q);
+    if (it.data.asked_by || it.data.answered_by) {
+      const parties = el('div', 'small muted');
+      parties.textContent = [it.data.asked_by && '提问方：' + it.data.asked_by, it.data.answered_by && '答复方：' + it.data.answered_by].filter(Boolean).join(' · ');
+      row.append(parties);
+    }
     if (it.data.answer) {
       const a = el("div"); a.style.cssText = "font-size:14px;margin-top:6px;color:var(--label-2);"; a.textContent = "答复：" + it.data.answer; row.append(a);
     } else if (it.data.note) {
@@ -2252,7 +2262,7 @@ function viewCatalog() {
   const c = el("div", "content wide");
   const h = el("h1", "largetitle"); h.textContent = "对象说明"; c.append(h);
   const sub = el("p", "subtitle");
-  sub.textContent = "23 类业务对象的名称与作用。页面中的「对象说明」从这里派生，与 Agent 使用的定义是同一套。";
+  sub.textContent = `${DATA.catalog.length} 类业务对象的名称与作用。页面中的「对象说明」从这里派生，与 Agent 使用的定义是同一套。`;
   c.append(sub);
 
   c.append((() => { const d = el("div"); d.style.height = "8px"; return d; })());
@@ -2261,7 +2271,7 @@ function viewCatalog() {
   const head = el("header");
   const h3 = el("h3"); h3.textContent = "信息收集对象"; head.append(h3);
   const g = el("span", "grow"); head.append(g);
-  head.append(tag("23 类", "blue"));
+  head.append(tag(`${DATA.catalog.length} 类`, "blue"));
   card.append(head);
   const bd = el("div", "body");
   bd.style.padding = "0";
@@ -2472,7 +2482,7 @@ function renderChrome() {
     return b;
   };
   addNav(sm, "项目", "#/", { icon: "▦", current: S.route.view === "projects" });
-  addNav(sm, "对象说明", "#/types", { icon: "◇", current: S.route.view === "types", n: "23" });
+  addNav(sm, "对象说明", "#/types", { icon: "◇", current: S.route.view === "types", n: String(DATA.catalog.length) });
 
   const sp = $("sideProject"); sp.replaceChildren();
   const secondary = $("sideProjectSecondary"); secondary.replaceChildren();

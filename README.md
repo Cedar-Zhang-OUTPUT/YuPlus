@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.2.2](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.2.2)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -63,7 +63,7 @@ yu --data-dir DATA_DIR monitor schedule --project PROJECT_ID --monitor MONITOR_I
 当前只有信息收集（draft）、信息整理（review）两个场景：收集时将材料中的信息落到 draft 对象；整理时由 AI 根据已有信息组织、改写 review 成果。场景可往返，不设信息完整度门槛。
 
 - [完整中文审阅版](docs/skills/yuplus/SKILL.zh-CN.md)：主文件、材料处理和 CLI 参考的中文译文。
-- [对象属性与成果关系](skills/yuplus/references/objects.md)：23 类 draft、内部编写依据，以及五类成果的依赖和回改位置。
+- [对象属性与成果关系](skills/yuplus/references/objects.md)：24 类 draft、内部编写依据，以及五类成果的依赖和回改位置。
 - [群聊监控与失败恢复](skills/yuplus/references/chat-monitoring.md)：真实调度绑定、全量可访问历史、按时间分批处理、回执重放与静默检查。
 - [业务 Skill 验证记录](docs/skills/yuplus/validation.md)。
 - [可视化使用 Skill](skills/yuplus-visualization/SKILL.md) 及[完整中文版本](docs/skills/yuplus-visualization/SKILL.zh-CN.md)：启动服务、导航、来源/版本/差异、复制 Prompt 和故障处理。
@@ -146,7 +146,8 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 
 - 一个数据目录管理多个项目，所有业务操作显式指定项目，拒绝跨项目的证据与对象引用。
 - 保存飞书、网页等来源的身份和 Agent 提供的内容；本地文件可复制或登记外部路径；口述保存原话及归属。
-- 23 类 draft 对象按需建立，内部条目有稳定 ID；无业务信息完整度门槛。R05 Q&A 使用 D15 的同一份数据。
+- 24 类 draft 对象按需建立，内部条目有稳定 ID；无业务信息完整度门槛。D24“开放性问题”保留尚待探索、讨论或判断的议题；D15 保存具体客户澄清问答，R05 使用 D15 的同一份数据。
+- v0.3 将旧库升级为 schema 3，迁移前保存完整备份；不自动搬迁原有 Q&A 内容。升级前停止旧服务，安装后重启，回退时恢复升级前备份到新目录。
 - 来源快照、draft/review 版本及决策只追加。更新比较基础版本，重放同键同请求返回原回执。
 - review 更新校验相关 draft 变更、段落因果履历和依赖有效性；CLI 不判断自然语言的分析是否正确。
 - 一个 draft 批次或一次 review 发布分别原子提交。draft 已保存而 review 发布失败时，保留 draft，读取新的依据后继续。

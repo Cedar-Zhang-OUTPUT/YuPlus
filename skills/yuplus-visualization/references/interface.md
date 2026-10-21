@@ -10,7 +10,7 @@ Project navigation contains “信息收集”, “整理与Review”, “原始
 
 ## Information collection: draft
 
-The reading area groups the 23 business object types. They are available categories, not 23 mandatory completed records. “全部 23 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
+The reading area groups the 24 business object types. They are available categories, not 24 mandatory completed records. “全部 24 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
 
 The “对象目录” is initially collapsed. Hover opens a floating preview without resizing the reading layout. Moving away or choosing an entry closes that preview. Clicking “展开对象目录” or “固定展开对象目录” pins it open and changes the layout; choosing entries then leaves it open. “收起对象目录” collapses it. In a narrow window expansion appears downward. The click controls are also the touch/keyboard route.
 
@@ -25,6 +25,8 @@ Structured money is displayed from integer smallest-unit amounts and currency; r
 Timelines accept both day and minute precision, point events and ranges. Do not invent midnight or a timezone for a day-only value. Expand a milestone for its detail card. Delivery timelines organize rounds and reference time nodes; a reference date is not automatically a confirmed deadline.
 
 Q&A cards show both question and answer. Missing answers remain pending; an inapplicable answer retains its explanation. Source evidence appears in the shared “依据” row.
+
+D24 “开放性问题” appears under “判断与决定”, with question, context, impact, options, discussion status, conclusion, evidence and related objects when recorded. Its states are 待讨论 / 探索中 / 已有结论 / 暂缓 / 已关闭. It is separate from client clarification Q&A; R01–R04 may cite it, while R05 still shows only D15.
 
 ## Monitored groups in draft and review
 

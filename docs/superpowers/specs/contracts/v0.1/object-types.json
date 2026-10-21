@@ -159,8 +159,8 @@
       "code": "D15",
       "type_key": "qa",
       "name": "客户 Q&A 问题表",
-      "content_and_boundary": "需要客户提供信息或确认的业务问题，以及后续答复；记录影响对象、跟进人、依据与状态，答复落实到对应对象后保留关联。内部待办、内部决策和测试/操作上下文澄清不进入本表。",
-      "possible_sources": "材料或用户提出的客户业务问题，以及已有对象中有具体业务影响、需客户回答且尚未解决的缺口；不能把所有未知字段自动转成提问。",
+      "content_and_boundary": "客户沟通中具体问题的澄清及往来答复，包括客户提问与团队答复、团队向客户核实事实及客户回应；可记录提问方和答复方。开放探索或待讨论议题归 D24，不因来自会议或客户就归为 Q&A。",
+      "possible_sources": "客户往来、Brief 澄清、会议中的明确问答或具体待确认事项；不自动收纳所有未知与开放性议题。",
       "display": "问题清单及详情、答复与影响对象",
       "downstream": "R05 展示同一问题表；其他成果引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_qa",
@@ -253,6 +253,17 @@
       "downstream": "R04、D17；其他成果按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_assessment_decision",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
+    },
+    {
+      "code": "D24",
+      "type_key": "open_questions",
+      "name": "开放性问题",
+      "content_and_boundary": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。",
+      "possible_sources": "主策思考、会议与群聊、客户或团队提出的开放议题、材料与现有对象中的探索问题。",
+      "display": "议题卡片、背景与影响、候选思路、讨论状态、结论、来源及关联对象",
+      "downstream": "D17 策略、D18 交付等相关 draft；形成实际决定时保留决策历史；R01—R04 按需依赖，不加入 R05 客户 Q&A。",
+      "data_schema_ref": "cli-input.schema.json#/$defs/data_open_questions",
+      "missing_policy": "允许未决、暂缓和未知；不要求先有答案，不阻止信息收集或整理。"
     }
   ],
   "internal_types": [

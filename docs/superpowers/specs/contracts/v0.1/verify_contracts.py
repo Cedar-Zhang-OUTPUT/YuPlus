@@ -45,7 +45,7 @@ bad_json('reject empty source', '01-source-feishu.input.json', lambda v: v['snap
 bad_json('reject malformed capture time', '01-source-feishu.input.json', lambda v: v['snapshot'].update(captured_at='yesterday'))
 
 catalog = json.loads((ROOT / 'object-types.json').read_text())
-check('all 23 distinct approved types represented', len(catalog['objects']) == len({v['type_key'] for v in catalog['objects']}) == 23)
+check('all 24 distinct approved types represented', len(catalog['objects']) == len({v['type_key'] for v in catalog['objects']}) == 24)
 for entry in catalog['objects'] + catalog['internal_types']:
     fragment = entry['data_schema_ref'].split('#/$defs/')[1]
     check('catalog data schema ' + entry['type_key'], fragment in schemas['cli-input'].schema['$defs'])

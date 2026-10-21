@@ -57,7 +57,7 @@ def _data_rules(ctx,typ,scope,item,planned):
         except (ValueError,KeyError,TypeError):raise YuError('INVALID_TIME','时间必须为真实日期或带时区的时刻，区间必须有合法起止。')
     if typ in {'deliverables','responsibilities'} and data.get('resource_item_id'):
         if data['resource_item_id'] not in _items_for_type(ctx,'resources',planned):raise YuError('INVALID_ITEM_REFERENCE','资源条目不在同项目 D19 中。')
-    if typ=='qa':
+    if typ in {'qa','open_questions'}:
         for oid in data.get('related_object_ids',[]):get_object(ctx.db,ctx.project_id,oid)
     if typ=='expression_guide':
         o=get_object(ctx.db,ctx.project_id,data['review_object_id'])
