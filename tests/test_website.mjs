@@ -40,17 +40,17 @@ test('embedded and downloadable short prompts point to the shipped public guide'
   const urls=prompt.match(/https:\/\/[^\s]+/g);
   assert.deepEqual(urls,['https://cedar-zhang-output.github.io/YuPlus/agent-install.md']);
   assert.match(html,/href="\.\/agent-install\.md"/);
-  assert.match(guide,/releases\/download\/v0\.3\.1\/YuPlus-v0\.3\.1\.tar\.gz/);
+  assert.match(guide,/releases\/download\/v0\.3\.2\/YuPlus-v0\.3\.2\.tar\.gz/);
   assert.match(guide,/SHA256SUMS\.txt/);
-  assert.match(guide,/4e400bbf5b5f53cbc0371485a9f96d96b92dd81e7f7a6a790f166ac43d9c95e6/);
+  assert.match(guide,/c9a1772991f987d14ae8c6fb4efcf1a4b3feb453c1e9c0036e3d86214b87743c/);
   assert.match(guide,/先改 draft 再改 review/);
 });
 
-test('v0.3.1 guide preserves upgrade data and keeps monitoring opt-in',()=>{
-  assert.match(prompt,/安装或升级到 Yu\+ v0\.3\.1/);
+test('v0.3.2 guide preserves upgrade data and keeps monitoring opt-in',()=>{
+  assert.match(prompt,/安装或升级到 Yu\+ v0\.3\.2/);
   assert.match(guide,/backup create --output NEW_BACKUP_DIR/);
   assert.match(guide,/schema_version: 3/);
-  assert.match(guide,/0\.3\.1/);
+  assert.match(guide,/0\.3\.2/);
   assert.match(guide,/安装或升级本身不创建监控/);
   assert.match(guide,/中文副本仅供用户审阅/);
   assert.doesNotMatch(html,/v0\.1/);
