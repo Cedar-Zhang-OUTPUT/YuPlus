@@ -1827,12 +1827,7 @@ function reviewDocument(o, pid, kindMeta) {
     t.title = ck.note;
     meta.append(t);
   }
-  if (!checks.length) {
-    const t = tag("尚无确认记录", "gray");
-    t.title = "当前版本尚未接入确认记录，页面不推定审核状态。";
-    meta.append(t);
-  }
-  bd.append(meta);
+  if (checks.length) bd.append(meta);
 
   if (isOld) {
     const other = rev;
