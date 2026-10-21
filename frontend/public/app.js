@@ -294,8 +294,14 @@ function sourceLink(sv_id, opts) {
     txt.textContent = `${prov.label}材料（标题尚未取得）`;
   }
   title.append(txt);
-  if (src && src.canonical_url) {
-    title.href = src.canonical_url;
+  // 原件属于被引用的快照，不跟随来源最新版本，也不把提取正文当成原件。
+  const originals = (sv.assets || []).filter((asset) => asset.role === "original");
+  const files = originals.length ? originals : (sv.assets || []);
+  const localFile = provider === "local" && files.length === 1 &&
+    ["available", "local_copy"].includes(files[0].availability) ? files[0] : null;
+  const originalUrl = src?.canonical_url || localFile?.url;
+  if (originalUrl) {
+    title.href = originalUrl;
     title.target = "_blank";
     title.rel = "noopener noreferrer";
     title.title = DATA.meta.demo ? "在新标签页打开示例原文（本地模拟）" : "在新标签页打开原文";
@@ -303,8 +309,8 @@ function sourceLink(sv_id, opts) {
     title.append(ext);
   } else {
     title.href = "#";
-    title.title = "本地来源，没有远端地址";
-    title.onclick = (e) => { e.preventDefault(); openInspector({ kind: "source", id: sv.source_id }); };
+    title.title = "查看此版本的来源正文与文件（未保存可直接打开的唯一原件）";
+    title.onclick = (e) => { e.preventDefault(); openInspector({ kind: "source", id: sv.source_id, sv: sv.id }); };
   }
   wrap.append(title);
 

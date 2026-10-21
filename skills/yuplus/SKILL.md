@@ -60,6 +60,10 @@ Use the step-specific guidance above for object meaning and exact CLI fields. Th
 
 Preserve original material and distinguish source statements, user supplements, reports, hypotheses, suggestions and adopted decisions. Never turn your inference into a client's decision. Keep conflicting accounts with their evidence; ask only when choosing the current interpretation would otherwise require guessing. Do not create a consensus pool or duplicate R05 Q&A data.
 
+**Route uncertainty before creating questions.** Check the supplied material and relevant existing context first. D15 is for business questions that need client information or confirmation and have a concrete project impact, including their subsequent answers; it is not a queue for everything the Agent does not know. Internal actions or choices belong with the relevant draft work, dates and responsibilities. Questions about the user's test, selected project, file identity or how to use Yu+ stay in the conversation when clarification is necessary, not in client Q&A. Before writing D15, consult its routing rules in [objects.md](references/objects.md#d15-客户-qa-问题表qa). Unknowns may remain unknown without creating any question.
+
+Keep the material's event time separate from today's processing date. In historical collection or a user-specified replay, elapsed dates alone do not imply a missed deadline, changed schedule or completed event. Do not invent a test context from an old file; reuse the user's stated context. For explicitly current execution, an old unverified schedule can warrant a relevant status check, routed to the party who can answer it.
+
 ## Information collection — draft
 
 1. Follow the relevant material-reading row above, reusing guidance already read. Read the supplied material with the selected tool or Skill, or use the user's actual words for spoken input. Preserve a real title, source identity and available location/version information. An imported attachment does not mean its contents were analyzed.

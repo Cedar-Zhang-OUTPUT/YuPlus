@@ -29,6 +29,8 @@ Record only observed content. A file can be stored without claiming to have pars
 
 A partial textual extraction is `capture_scope.kind="selection"`, with its actual locator, and `advance_head=false`; it can still carry the original file as an asset. Only assert `whole_resource` for the resource actually captured at that scope. Separate supplied file content from the Agent's interpretation.
 
+For screenshots and dated files, use visible dates, surrounding messages and available source metadata to establish context before asking for it. Do not replace a document's business dates with the import date or assume old dates mean overdue work. Follow the user's historical/replay scope when given. Distinguish an explicit requirement, a tentative value and a creative option; a TBC or an unprovided technical detail is not automatically a client question. Route remaining uncertainty using D15 in [objects.md](objects.md#d15-客户-qa-问题表qa).
+
 ## Spoken input and review instructions
 
 Use `provider="oral"`, typically `resource_type="statement"`, and preserve the actual words available in the conversation. Attribute the speaker accurately in provenance. Label summaries/transcriptions as such; do not invent verbatim quotations, meeting times, decision authority or an audio recording.
