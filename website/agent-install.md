@@ -1,16 +1,16 @@
 # Yu+：Agent 安装与启动指南
 
-本文件供收到用户“安装并启动 Yu+”请求的 Agent 阅读。完成下载、校验、安装、检查并打开本地应用；保留用户已有项目。遇到安装冲突或认证缺失时说明具体问题，不把安装流程扩展成项目内容操作。
+本文件供收到用户“安装、升级并启动 Yu+”请求的 Agent 阅读。完成下载、校验、安装、检查并打开本地应用；保留用户已有项目。遇到安装冲突或认证缺失时说明具体问题，不把安装流程扩展成项目内容操作。
 
 ## 当前发行版与可信来源
 
 - 支持平台：macOS。
-- GitHub Release：**v0.1**；Python 包 `yuplus-local` 的版本为 **0.1.0**，两者是同一版本的不同命名。
+- GitHub Release：**v0.2**；Python 包 `yuplus-local` 的版本为 **0.2.0**，两者是同一版本的不同命名。
 - 官方仓库：https://github.com/Cedar-Zhang-OUTPUT/YuPlus
-- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.1
-- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.1/YuPlus-v0.1.tar.gz
-- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.1/SHA256SUMS.txt
-- 安装包 SHA-256：`7ad849b8a6c63e0edb3dc840daf89b23a397e4ec66cbbf1779cfc8fcd8d558b4`
+- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.2
+- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.2/YuPlus-v0.2.tar.gz
+- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.2/SHA256SUMS.txt
+- 安装包 SHA-256：`e63ee1e3d6ff65525acd944742bb04416330a139e452874c83b1b025a0587cbb`
 
 固定下载上述版本。不要将 main 分支、旧开发目录或演示数据冒充正式安装。版本发布后如发现错误，报告具体问题，不改写原发布包或擅自修改应用绕过校验。
 
@@ -34,10 +34,10 @@
 
 ```sh
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.1/YuPlus-v0.1.tar.gz \
-  --output YuPlus-v0.1.tar.gz
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.2/YuPlus-v0.2.tar.gz \
+  --output YuPlus-v0.2.tar.gz
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.1/SHA256SUMS.txt \
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.2/SHA256SUMS.txt \
   --output SHA256SUMS.txt
 shasum -a 256 -c SHA256SUMS.txt
 ```
@@ -45,8 +45,8 @@ shasum -a 256 -c SHA256SUMS.txt
 同时核对计算出的摘要与本文件上面的固定摘要。下载或校验失败时停止执行，不忽略错误继续解压。校验成功后：
 
 ```sh
-tar -xzf YuPlus-v0.1.tar.gz
-cd YuPlus-v0.1
+tar -xzf YuPlus-v0.2.tar.gz
+cd YuPlus-v0.2
 ```
 
 读取包内 README.md 及安装入口说明。安装包包含 CLI 源码、前端静态资源、两份 Skill 和安装器，不需要另外搭建数据库服务或 Node 前端服务。
@@ -61,9 +61,9 @@ cd YuPlus-v0.1
 
 已有自定义安装时，显式传入其应用前缀，例如 `./install.sh --prefix '/实际应用目录'`；安装器会沿用该前缀安装记录中的数据和 Skill 目录。仅在用户有意选择新位置时传 `--data-dir` 或 `--skills-dir`，不指向 `.preview` 或验收目录。
 
-确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `status --json`，再执行 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.1 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
+从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.2 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
 
-v0.1 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
+v0.2 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
 
 安装入口会复用满足 Python ≥3.12、SQLite ≥3.51.3 的运行环境；缺少时通过官方 uv 安装器准备私有 Python。之后安装 `yuplus-local`、`yuplus` 与 `yuplus-visualization` 两份 Skill，初始化数据目录并检查飞书认证。需要网络下载运行时与依赖；不修改 shell 配置。
 
@@ -71,9 +71,11 @@ v0.1 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会
 
 如果已有 Skill 是符号链接、非安装器管理或包含用户修改，安装器会拒绝覆盖。保留这些文件，说明具体路径和冲突，由用户选择处理方式。不要先删除旧 Skill 再重试。
 
+升级 v0.1 数据库时，v0.2 首次访问会迁移到 schema 2，并保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的库。安装后查询包版本应为 `0.2.0`，并确认 `doctor` 返回 `schema_version: 2`。
+
 ## 4. 读取已安装 Skill，并检查环境
 
-读取两份已安装 Skill 的 `installation.json`，取得真实 CLI、Python 和数据目录；核对它们与应用安装记录一致。读取 `yuplus/SKILL.md` 与 `yuplus-visualization/SKILL.md`，按主文件指引读取当前步骤需要的参考文档，避免重复载入已读内容。新 Skill 尚未被当前会话自动发现时，可直接读取已安装文件继续。
+读取两份已安装 Skill 的 `installation.json`，取得真实 CLI、Python 和数据目录；核对它们与应用安装记录一致。读取 `yuplus/SKILL.md` 与 `yuplus-visualization/SKILL.md`，按主文件指引读取当前步骤需要的参考文档，避免重复载入已读内容。新 Skill 尚未被当前会话自动发现时，可直接读取已安装文件继续。`docs/skills/` 中的中文副本仅供用户审阅，不安装，也不作为 Agent 执行参考读取。
 
 飞书能力依赖本机 `lark-cli`。如已存在，使用可用的 `lark-shared` 指引检查认证；无 Skill 时先查 CLI 自身帮助，不猜命令。缺少飞书 CLI 或未登录时明确告知，但继续完成本地功能的启动。不要擅自安装飞书、替用户登录或扩大权限，不输出凭据。
 
@@ -95,7 +97,13 @@ CLI --data-dir DATA_DIR status --json
 
 每次新服务启动会后台检查已保存飞书来源，复用服务不会重新扫描。检查结果通过 CLI 和刷新后的页面查看；检查不会自动调用 AI、收录新版或改写项目内容。安装任务不包含同步用户项目；只有用户授权相关维护时，才按 Skill 读取新版来源、修改 draft，再更新相关 review。
 
-## 6. 交付与开始项目
+## 6. 群聊监控的安装边界
+
+v0.2 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
+
+默认间隔60分钟，可按用户要求调整；首次收集全部可访问历史，再按时间顺序维护 draft 和已有受影响 review。没有宿主定时工具时只能手动同步，不宣称自动检查已接通。真实群聊与定时唤起需在用户指定目标后验收；已保存调度回执不等于真实运行成功。
+
+## 7. 交付与开始项目
 
 报告已安装版本、实际数据目录、服务地址、两份 Skill 状态及飞书可用性。无需要求用户手动准备 Python/SQLite 或手动链接 Skill。
 
