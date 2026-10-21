@@ -1800,6 +1800,9 @@ function reviewDocument(o, pid, kindMeta) {
   head.style.padding = "18px 22px";
   head.append(codeChip(kindMeta ? kindMeta.code : "R", "indigo"));
   const h = el("h3"); h.style.fontSize = "19px"; h.textContent = (kindMeta ? kindMeta.name : shown.payload.title); head.append(h);
+  const updated = el("span", "tiny muted");
+  updated.textContent = `更新于 ${fullTime(shown.created_at)}`;
+  head.append(updated);
   if (o.scope_key && o.scope_key !== "project") head.append(tag(instanceLabel(o), "indigo"));
   const grow = el("span", "grow"); head.append(grow);
   head.append(tag("v" + shown.version, isOld ? "orange" : "green"));
@@ -1814,12 +1817,9 @@ function reviewDocument(o, pid, kindMeta) {
   const bd = el("div", "body");
   bd.style.padding = "24px 26px";
 
-  // 版本与确认记录
+  // 确认记录
   const meta = el("div");
   meta.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;";
-  const mt = el("span", "tiny muted");
-  mt.textContent = `v${shown.version} · 更新于 ${fullTime(shown.created_at)}`;
-  meta.append(mt);
   const checks = DATA.review_checks.filter((x) => x.review_revision_id === shown.id);
   for (const ck of checks) {
     const m = DATA.CHECKS[ck.verdict] || { label: ck.verdict, hue: "gray" };
@@ -1981,6 +1981,11 @@ function qaReviewView(pid, qaObj, kindMeta) {
   head.style.padding = "18px 22px";
   head.append(codeChip("R05", "teal"));
   const h = el("h3"); h.style.fontSize = "19px"; h.textContent = "客户 Q&A"; head.append(h);
+  if (rev) {
+    const updated = el("span", "tiny muted");
+    updated.textContent = `更新于 ${fullTime(rev.created_at)}`;
+    head.append(updated);
+  }
   const grow = el("span", "grow"); head.append(grow);
   if (rev) head.append(tag("同 D15 · v" + rev.version, "teal"));
   card.append(head);
@@ -1993,10 +1998,6 @@ function qaReviewView(pid, qaObj, kindMeta) {
     wrap.append(card);
     return wrap;
   }
-  const meta = el("div", "tiny muted");
-  meta.style.marginBottom = "18px";
-  meta.textContent = `v${rev.version} · 更新于 ${fullTime(rev.created_at)}`;
-  bd.append(meta);
 
   const items = rev.payload.items || [];
   const answered = items.filter((i) => qaState(i.data.status).answered).length;
