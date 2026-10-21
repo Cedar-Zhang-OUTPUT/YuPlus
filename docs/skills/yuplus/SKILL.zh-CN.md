@@ -53,6 +53,8 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 
 ### 定位当前任务，不要每轮重新开始
 
+**有日期的安排必须结构化保存。** 收集或修改项目时间时，按需查阅 [D09 规则与示例](../../../skills/yuplus/references/objects.md#d09-时间节点或区间milestones)。每个具体日历节点或完整区间必须使用 D09 的 `time_kind` 和 `start/end`，进入甘特图，不能只写成文字条目。多个不连续日期/区间分别保存，保留 TBC、建议性质和来源；只有确实无法确定日期的时间说明保留为文字。已读规则复用，保存后核对本次相关条目。
+
 - 明确可执行文件、数据目录和项目 ID；已经知道就复用。多个项目都可能符合且目标不清楚时，写入前只问一个项目选择问题。用户要求创建项目时创建，不限制一次安装只能管理一个项目。
 - 初次设置或环境故障时，按后面的“初始化与材料读取”操作。届时检查 Yu+ 与飞书 CLI 是否可用，不要每轮检查。飞书故障不影响本地文件或口述材料的工作。
 - 新会话或恢复会话时，只读取当前请求需要的项目身份、相关对象、来源或决策。同一会话复用已读内容。上下文压缩、长时间中断、疑似外部修改或版本冲突后，只刷新受影响部分。不要在启动或每轮对话时加载所有对象、全部参考文件和完整历史。
@@ -239,6 +241,7 @@ D24 使用 `type_key=open_questions`、普通 draft 的 `scope_key=project` 和�
 - 每个操作：op_id、type_key、scope_key、base_revision，可选 object_id；通过 set_items/remove_items/title/item_order 指定修改。普通新 draft 使用 scope_key=project、base_revision=null。已有对象使用真实基础版本，不用“重新创建”绕过版本。
 - `set_items` 替换完整指定条目：item_id、data、epistemic_kind、source_refs[]、dependencies[]。保留现有条目中未改的字段与引用。未提及的其他条目保留。
 - 证据包含 evidence_id、source_version_id、kind，可选 locator/asset_id。依赖指向 draft 对象、版本、稳定条目 ID；只有确实依赖整个对象时才用 `*`。同批操作可通过 op_id 引用本批新产生的 draft 操作。
+- D09 排期：日期点使用 `time_kind=date` 和日期型 `start`；时刻使用 `instant` 和带实际时区偏移的 RFC3339 `start`；区间使用 `range` 和格式一致的 `start/end`。没有可写的 `date` 字段。日期只放在 event/note 中不会进入甘特图；不同日历安排应拆开。示例见对象说明 D09；不熟悉字段时先按需查询 `draft.apply --type milestones` 契约。
 - 金额使用**最小货币单位的整数字符串**和币种：人民币 60 万元为 `"60000000"` 分。未知金额不能填零。
 - 已采用决定需要 decision_key、statement、decided_by、instruction_source_version_id、rationale，以及通过 op_id/item_id 指定的 affected_items。替代旧决策时使用 supersedes_id。修改或删除已采用条目也需要决策记录；不能把其标签改成 hypothesis 绕过。
 - 返回 objects[].revision_id 和 meta.change_id 是新依据及修改原因；affected_draft_items、affected_reviews 指示接下来要检查的影响。不要盲目重做整个项目。

@@ -95,7 +95,7 @@
       "name": "时间节点或区间",
       "content_and_boundary": "事件、日期/区间、对应交付及 Review 看什么；倒排结果注明依据",
       "possible_sources": "D02、D03、D14、用户安排，关联 D18/D20",
-      "display": "节点清单；信息足够时可用时间轴或甘特视图",
+      "display": "有具体日历节点或完整区间时必须以 time_kind 和 start/end 结构化保存，进入甘特图；多个不连续安排分别保存。TBC 日期保留暂定说明；只有无法确定日期的内容使用文字条目。",
       "downstream": "R02 推进要素、R04；其他成果直接引用日期",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_milestones",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"

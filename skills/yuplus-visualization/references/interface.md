@@ -22,7 +22,7 @@ Hover or keyboard-focus a colored item card to expose the vertical information-n
 
 Structured money is displayed from integer smallest-unit amounts and currency; recognized amounts in prose are highlighted red. Highlighting is a display heuristic, not validation or a reason to edit source wording/insert HTML. Unknown amounts stay unknown.
 
-Timelines accept both day and minute precision, point events and ranges. Do not invent midnight or a timezone for a day-only value. Expand a milestone for its detail card. Delivery timelines organize rounds and reference time nodes; a reference date is not automatically a confirmed deadline.
+The D09 Gantt chart reads saved structured start/end values, not dates embedded in prose. Every concrete calendar point or complete interval belongs in this chart; separate noncontiguous occurrences into separate D09 items. TBC/proposed dates remain chartable with their qualification and evidence. Only undated explanations stay as prose cards. If a dated item is missing, inspect and correct its D09 fields through the business Skill/CLI, then refresh; do not patch UI data or invent dates. Timelines accept both day and minute precision, point events and ranges. Do not invent midnight or a timezone for a day-only value. Expand a milestone for its detail card. Delivery timelines organize rounds and reference time nodes; a reference date is not automatically a confirmed deadline.
 
 Q&A cards show both question and answer. Missing answers remain pending; an inapplicable answer retains its explanation. Source evidence appears in the shared “依据” row.
 

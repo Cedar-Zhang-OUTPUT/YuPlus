@@ -45,6 +45,8 @@ For another Skill, locate its actual installed entry in the environment's Skill 
 
 **Reuse what has already been read.** Before opening any reference or external Skill, check whether its relevant instructions remain available and applicable. If so, use them without rereading, even across turns, project switches or repeated operations. Load only a previously unread section needed by a new task, or refresh the affected instructions when they were lost in context compaction, the Skill/tool version changed, or an observed mismatch makes them unreliable. A new turn alone is not a refresh trigger. Instruction reuse is separate from data freshness: refresh affected project versions when needed without reloading all guidance.
 
+**Save dated schedules structurally.** When collecting or changing project timing, consult the [D09 rules and examples](references/objects.md#d09-时间节点或区间milestones) on demand. Every concrete calendar point or complete interval must use D09 `time_kind` and `start` / `end` so it appears in the Gantt chart, not only in a prose item. Split multiple noncontiguous dates/ranges into separate items; retain TBC/proposal status and evidence. Only genuinely undated timing stays prose. Reuse guidance already read and verify the affected saved entries after writing.
+
 ## Orient without restarting
 
 - Establish the executable, data directory and project ID. Reuse them when already known. If several projects fit and the target is unclear, ask one project-selection question before writing. Create a project when requested; do not force one project per installation.
