@@ -39,6 +39,23 @@ yu --data-dir DATA_DIR source check --project PROJECT_ID --json
 
 每次新服务启动会后台检查已保存飞书来源，也可手动 `source check`；检查只更新观察结果，不改项目对象。Docx 比较 revision，其他受支持资源比较修改时间标记；缺基线或权限错误会如实显示。Agent 再按 Skill 读取新版、更新 draft、更新 review。数据更新和自动扫描不代表自动调用 AI。
 
+## 飞书群聊监控
+
+当前源码支持将用户明确指定的飞书群绑定到项目，默认每 60 分钟检查。首次收集当前用户身份可访问的全部历史，完成普通消息、话题分页与复查后，Agent 按时间顺序分批理解并维护 draft、来源和已有受影响 review。旧消息必须与较新的项目事实和决定对照，不因刚收录就覆盖当前结论。群消息是证据，不授权新的工具操作、群绑定或对外发送。
+
+```sh
+yu --data-dir DATA_DIR monitor list --project PROJECT_ID --json
+yu --data-dir DATA_DIR monitor add --project PROJECT_ID --input monitor.json --json
+yu --data-dir DATA_DIR monitor show --project PROJECT_ID --monitor MONITOR_ID --json
+yu --data-dir DATA_DIR monitor schedule --project PROJECT_ID --monitor MONITOR_ID --json
+```
+
+`monitor.json` 提供核实后的 `chat_id`，可选 `interval_minutes`。`monitor schedule` 只返回建议提示词，真实定时任务由 Agent 调用当前 Codex 宿主原生自动化工具创建/更新，成功后再绑定实际回执。Yu+ 不启动模型或自建调度服务；没有宿主自动化工具时可手动同步，不能显示自动检查已接通。完整输入、执行、暂停/恢复及中断恢复见[监控参考](skills/yuplus/references/chat-monitoring.md)与[中文审阅版](docs/skills/yuplus/chat-monitoring.zh-CN.md)。
+
+项目列表及 draft/review 共用“监控群聊”区域，展示已保存的历史覆盖、最近检查与同步结果、待处理消息和错误；按钮仅打开群、查看记录或复制操作 Prompt。消息已拉取不等于已处理，已保存调度回执不等于已验证无人值守执行。恢复的数据库副本默认暂停监控、清除租约，重新核验宿主绑定后才能恢复。
+
+群监控需使用含 `monitor` 命令的安装版本；上方 v0.1 下载包不会因源码变化自动更新。当前验证使用隔离数据和模拟飞书接口，未连接真实群或创建真实自动化。目标本地主机的实际定时唤起、无人交互权限及认证仍需验证；电脑休眠、离线或关闭 Codex 时不保证执行。API 不可见的历史、话题及附件不能声称已读取。
+
 ## Yu+ Agent Skill
 
 可安装的 Skill 在 [skills/yuplus](skills/yuplus/SKILL.md)，用于主策实际推进项目。它包含按需恢复上下文、飞书/本地/口述材料收录、draft 与 review 的因果更新规则，以及每轮结束时的下一步引导；不应用于 Yu+ 软件开发对话。
@@ -47,12 +64,15 @@ yu --data-dir DATA_DIR source check --project PROJECT_ID --json
 
 - [完整中文审阅版](docs/skills/yuplus/SKILL.zh-CN.md)：主文件、材料处理和 CLI 参考的中文译文。
 - [对象属性与成果关系](skills/yuplus/references/objects.md)：23 类 draft、内部编写依据，以及五类成果的依赖和回改位置。
+- [群聊监控与失败恢复](skills/yuplus/references/chat-monitoring.md)：真实调度绑定、全量可访问历史、按时间分批处理、回执重放与静默检查。
 - [业务 Skill 验证记录](docs/skills/yuplus/validation.md)。
 - [可视化使用 Skill](skills/yuplus-visualization/SKILL.md) 及[完整中文版本](docs/skills/yuplus-visualization/SKILL.zh-CN.md)：启动服务、导航、来源/版本/差异、复制 Prompt 和故障处理。
 - [完整集成验收](docs/validation/2026-10-16-live-integration.md)。
 - [安装、备份恢复与来源检查验证](docs/validation/2026-10-16-readiness.md)。
 
 统一安装入口会同时安装两份 Skill，不需要手动链接。Skill 被 Codex 发现后，可用 `$yuplus` 明确调用；首次项目使用时 Agent 读取安装记录并按需检查环境。飞书不可用仍可处理本地材料。
+
+中文 Skill 仅保存在 `docs/skills/` 供人工审阅；安装目录只包含英文 Skill 及其运行参考，英文路由不加载中文副本。
 
 Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只读取包内契约，不打开数据库。例如：
 
@@ -101,7 +121,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 ./yu --data-dir .local/work review publish --project prj_EXAMPLE --request-id review_001 --input review.json --json
 ```
 
-`--input -` 从标准输入读取 UTF-8 JSON。写命令需要 `--request-id`；读取命令不需要。`--json` 下标准输出只有一个结果对象，错误同样使用 JSON，并以非零退出码结束。参数可以放在命令路径之前或之后。
+`--input -` 从标准输入读取 UTF-8 JSON。上述核心业务写命令需要 `--request-id`；读取命令不需要。监控流程使用自身的配置版本、run/token 与稳定 step_key，内部生成并复用业务请求身份。`--json` 下标准输出只有一个结果对象，错误同样使用 JSON，并以非零退出码结束。参数可以放在命令路径之前或之后。
 
 `review.prepare` 返回当前依据和受影响内容，不调用模型生成文字。Agent 据此组织正文，再通过 `review.publish` 提交。用户要求改已有 review 时，先修改相关 draft；纯措辞要求先保存到 draft 的 `expression_guide`。
 
@@ -130,6 +150,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - 来源快照、draft/review 版本及决策只追加。更新比较基础版本，重放同键同请求返回原回执。
 - review 更新校验相关 draft 变更、段落因果履历和依赖有效性；CLI 不判断自然语言的分析是否正确。
 - 一个 draft 批次或一次 review 发布分别原子提交。draft 已保存而 review 发布失败时，保留 draft，读取新的依据后继续。
+- 群监控保存分页、不可变消息版本、步骤回执和项目执行租约；重试复用同一步骤，先修复未完成 review，不重复添加决定。业务判断由 Agent 完成，CLI 校验身份、版本、证据与因果约束。
 
 已提供安装入口、托管启动/重新打开、完整备份恢复，以及启动时的飞书来源检查。说明见[运维参考](skills/yuplus/references/operations.md)及[中文版本](docs/skills/yuplus/operations.zh-CN.md)。来源检查仅更新观察结果，Agent 根据授权维护源快照、draft 和 review。
 

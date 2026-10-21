@@ -26,6 +26,16 @@ Timelines accept both day and minute precision, point events and ranges. Do not 
 
 Q&A cards show both question and answer. Missing answers remain pending; an inapplicable answer retains its explanation. Source evidence appears in the shared “依据” row.
 
+## Monitored groups in draft and review
+
+Project rows show “监控 N 个群” and a count needing attention. The shared “监控群聊” card appears in both “信息收集” and “整理与Review”, scoped to that project; an older server without monitor data shows an empty state. A verified stored group AppLink opens in a new tab. The page does not configure the group by opening it.
+
+Each group shows its configured interval, enabled/paused/pending schedule state, collection of **all accessible history**, “已拉取至”, “最近检查”, “最近同步完成”, “最近保存结果”, pending messages and saved errors. When present, “已记录澄清消息” counts historical clarification dispositions, not currently unanswered D15 questions. Collection complete means the fetched history window is complete, not that every message was adopted or that inaccessible history was read. Check time can record a failed attempt; use the error and completion result together.
+
+“已保存调度绑定回执” reflects the saved host receipt. A stale receipt is “调度状态待核验”; an overdue result says “尚未收到本轮结果”. Neither proves an Agent is currently running. Do not invent live reading/progress statuses. “查看已保存运行记录” expands only records supplied by the service; “拉取未完成” / “处理未完成” / “已完成” describe saved stages. If no records are available, use the inspection Prompt rather than claiming there were no runs.
+
+“复制立即同步 Prompt”, “复制暂停 Prompt” / “复制恢复 Prompt”, “复制调整间隔 Prompt”, “复制解除绑定 Prompt”, and “复制查看记录 Prompt” copy an intent bound to the real data directory, project, monitor and configuration version. They make no business or scheduler changes. Send the desired copied request to the Agent conversation to execute it; interval changes need the requested minute value. Recheck current configuration before a write. After completion refresh the page to see saved results.
+
 ## Review outputs
 
 | Code | Visible output | Identity rule |

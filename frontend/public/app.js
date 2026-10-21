@@ -12,6 +12,7 @@ import { compareBasisItems } from "./data/basis-diff.js";
 import { reviewUpdatePrompt, reviewExportPrompt } from "./data/review-prompts.js";
 import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timeline.js";
 import { moneyMatches, formatMinor } from "./data/money-text.js";
+import { projectMonitors, projectMonitorSummary, monitorSummary, monitorPrompt, monitorRuns, monitorRunStatus, safeChatUrl } from "./data/monitoring.js";
 let pageLoadedAt = new Date();
 const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, versionOf: {} };
 
@@ -751,6 +752,9 @@ function viewProjects() {
         a.style.color = "var(--label-3)";
       }
       g2.append(a);
+      const monitors = el("div", "sub");
+      monitors.textContent = projectMonitorSummary(DATA, p.id);
+      g2.append(monitors);
       row.append(g2);
       const right = el("div");
       right.style.cssText = "text-align:right;flex:none;display:flex;flex-direction:column;gap:6px;align-items:flex-end;";
@@ -806,6 +810,92 @@ function themeHueForProject(pid) {
   return th ? th.hue : "gray";
 }
 
+// Shared read-only monitor panel; all controls inspect data or copy a scoped intent.
+function projectMonitorPanel(pid) {
+  const monitors = projectMonitors(DATA, pid);
+  const panel = el("section", "card");
+  panel.style.marginTop = "20px";
+  panel.setAttribute("aria-label", "监控群聊");
+  const header = el("header");
+  const title = el("h3", "grow"); title.textContent = "监控群聊";
+  header.append(title, tag(projectMonitorSummary(DATA, pid), monitors.some(m => monitorSummary(m).attention) ? "orange" : "gray"));
+  panel.append(header);
+  const body = el("div", "body");
+  if (!monitors.length) {
+    const note = el("p", "small muted");
+    note.textContent = "尚未绑定监控群聊。可在 Codex 中指定这个项目需要监控的飞书群。";
+    body.append(note);
+  }
+  for (const monitor of monitors) {
+    const summary = monitorSummary(monitor);
+    const group = el("section");
+    group.style.cssText = "padding:4px 0 16px;overflow-wrap:anywhere;";
+    group.setAttribute("aria-label", monitor.chat_name || "群名尚未记录");
+    const heading = el("div");
+    heading.style.cssText = "display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;";
+    const name = el("h4");
+    const url = safeChatUrl(monitor.chat_url);
+    if (url) {
+      const link = el("a"); link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer";
+      link.textContent = monitor.chat_name || "打开群聊";
+      link.title = "在新窗口打开飞书群聊";
+      name.append(link);
+    } else name.textContent = monitor.chat_name || "群名尚未记录";
+    heading.append(name, tag(summary.status, monitor.status === "paused" ? "gray" : summary.attention ? "orange" : "green"));
+    const interval = el("span", "small muted"); interval.textContent = summary.interval; heading.append(interval);
+    group.append(heading);
+    group.append(kv([
+      ["历史收集", summary.history],
+      ["已拉取至", fullTime(monitor.fetched_through)],
+      ["最近检查", fullTime(monitor.last_checked_at)],
+      ["最近同步完成", fullTime(monitor.last_completed_at)],
+      ["最近保存结果", summary.result],
+      ["待处理消息", summary.pending === null ? "尚未记录" : `${summary.pending} 条`],
+      ...(Number.isInteger(monitor.clarification_count) && monitor.clarification_count >= 0 ? [["已记录澄清消息", `${monitor.clarification_count} 条`]] : []),
+      ["定时任务", summary.schedule],
+      ["调度核验", fullTime(monitor.schedule?.verified_at)],
+      ["最近错误", summary.error || "无已记录错误"],
+    ]));
+    if (summary.overdue) {
+      const note = el("p", "small muted"); note.style.marginTop = "10px";
+      note.textContent = "按已保存的检查间隔，尚未收到本轮结果。";
+      group.append(note);
+    }
+    const history = el("details"); history.style.marginTop = "12px";
+    const label = el("summary", "small"); label.style.cursor = "pointer"; label.textContent = "查看已保存运行记录";
+    history.append(label);
+    const runs = monitorRuns(DATA, pid, monitor.id);
+    if (!runs.length) {
+      const note = el("p", "small muted"); note.textContent = "当前视图未提供运行明细；可复制查看记录提示交给 Agent。";
+      history.append(note);
+    }
+    for (const run of runs) {
+      const entry = el("div"); entry.style.marginTop = "12px";
+      entry.append(kv([["运行编号", run.id], ["开始时间", fullTime(run.started_at || run.created_at)], ["完成时间", fullTime(run.completed_at)], ["已保存阶段", monitorRunStatus(run.status || run.phase)], ["结果", typeof run.summary === "string" ? run.summary : "尚无已保存结果"], ["错误", typeof run.error === "string" ? run.error : run.error?.message || "无已记录错误"]]));
+      history.append(entry);
+    }
+    group.append(history);
+    const actions = el("div"); actions.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;";
+    for (const [action, label] of [["sync","复制立即同步 Prompt"],[monitor.status === "paused" ? "resume" : "pause",monitor.status === "paused" ? "复制恢复 Prompt" : "复制暂停 Prompt"],["interval","复制调整间隔 Prompt"],["remove","复制解除绑定 Prompt"],["inspect","复制查看记录 Prompt"]]) {
+      let prompt;
+      try { prompt = monitorPrompt(DATA, pid, monitor.id, action); } catch { continue; }
+      const button = chipBtn(label, () => copyText(prompt, button));
+      button.title = "复制到 Agent 会话后执行；复制本身不会更改监控";
+      button.setAttribute("aria-live", "polite");
+      actions.append(button);
+    }
+    group.append(actions);
+    body.append(group);
+  }
+  if (monitors.length) {
+    const note = el("p", "tiny muted");
+    note.textContent = "仅显示已保存的检查与同步结果。历史范围限于当前飞书身份可访问的消息；历史收集完成不等于全部消息已处理。复制 Prompt 不会执行操作。";
+    body.append(note);
+  }
+  panel.append(body);
+  return panel;
+}
+
 /* ── 项目内：draft ─────────────────────────────────────────────────────── */
 function viewDraft(pid) {
   const c = el("div", "content wide");
@@ -819,6 +909,7 @@ function viewDraft(pid) {
   h.textContent = "信息收集";
   head.append(h);
   c.append(head);
+  c.append(projectMonitorPanel(pid));
 
   const body = el("div");
   body.style.marginTop = "20px";
@@ -1514,6 +1605,7 @@ function viewReview(pid) {
   head.append(headingRow);
   const sub = el("p", "subtitle");
   c.append(head);
+  c.append(projectMonitorPanel(pid));
 
   const layout = el("div");
   layout.style.cssText = "display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr);gap:26px;align-items:start;margin-top:20px;";

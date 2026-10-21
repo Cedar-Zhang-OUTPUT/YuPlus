@@ -21,7 +21,7 @@ def read_snapshot(data_dir):
     try:
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
-        if db.execute('PRAGMA user_version').fetchone()[0] != 1:
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2):
             raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
         yield db
     finally:
@@ -166,8 +166,13 @@ def browser_view(db, data_dir, project_id=None):
     for project in view['projects']:
         row = db.execute("SELECT id,reason,created_at FROM changes WHERE project_id=? AND effect='changed' ORDER BY seq DESC LIMIT 1", (project['id'],)).fetchone()
         view['project_activity'][project['id']] = {'change_id': row['id'], 'summary': row['reason'], 'at': row['created_at']} if row else None
+    from .monitor import summaries
+    view['chat_monitors'] = summaries(db)
+    view['monitor_runs'] = []
     if not project_id:
         return view
+    if db.execute("SELECT 1 FROM sqlite_master WHERE name='monitor_runs'").fetchone():
+        view['monitor_runs'] = [dict(r) for r in db.execute('SELECT id,monitor_id,project_id,status,created_at AS started_at,completed_at,summary FROM monitor_runs WHERE project_id=? ORDER BY created_at DESC LIMIT 30',(project_id,))]
     require_project(db, project_id)
     for table in arrays:
         if table in {'blobs', 'object_revisions', 'source_versions', 'source_files'}:
