@@ -1719,9 +1719,7 @@ function viewReview(pid) {
   } else if (kindMeta) {
     const card = el("div", "card");
     const bd = el("div", "body");
-    bd.append(empty("✎", `尚未生成 ${kindMeta.name}`,
-      ["可以让 Agent 基于已有对象整理。信息不齐也可以生成简短成果，页面不显示材料不足或锁定入口。"]));
-    bd.append(qv(kindMeta));
+    bd.append(empty("✎", `尚未生成 ${kindMeta.name}`, []));
     card.append(bd);
     main.append(card);
   } else {

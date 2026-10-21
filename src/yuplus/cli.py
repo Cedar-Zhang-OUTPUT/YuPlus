@@ -56,7 +56,7 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.1）',
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.2）',
                   epilog='可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
