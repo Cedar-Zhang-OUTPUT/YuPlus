@@ -12,7 +12,7 @@ import subprocess
 import sys
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 
-from .browser_view import (asset_availability, browser_view, open_verified_asset,
+from .browser_view import (asset_availability, browser_view, is_original_local_asset, open_verified_asset,
                            read_snapshot, registered_asset, require_project)
 from .core import YuError
 from .source import _assets_from_db
@@ -118,12 +118,14 @@ class GatewayHandler(BaseHTTPRequestHandler):
                 view = browser_view(db, self.server.data_dir, query.get('project'))
             return self.json_response(view)
         if path == '/api/assets':
-            query = self.params(url, {'project', 'version', 'asset'}, ('project', 'version', 'asset'))
+            query = self.params(url, {'project', 'version', 'asset', 'download'}, ('project', 'version', 'asset'))
+            if 'download' in query and query['download'] != '1':
+                raise YuError('INVALID_INPUT', '下载参数无效。')
             with read_snapshot(self.server.data_dir) as db:
                 asset = registered_asset(db, query['project'], query['version'], query['asset'])
             stream, _ = open_verified_asset(self.server.data_dir, asset)
             with stream:
-                return self.stream_asset(stream, asset)
+                return self.stream_asset(stream, asset, download=query.get('download') == '1')
         if path == '/api/local-files':
             query = self.params(url, {'project'}, ('project',))
             supported = sys.platform == 'darwin' and shutil.which('open') is not None
@@ -133,7 +135,7 @@ class GatewayHandler(BaseHTTPRequestHandler):
                 if supported:
                     for row in db.execute('SELECT id FROM source_versions WHERE project_id=? AND sealed=1', (query['project'],)):
                         for asset in _assets_from_db(db, query['project'], row['id']):
-                            if asset_availability(self.server.data_dir, asset) == 'available':
+                            if is_original_local_asset(self.server.data_dir, asset) and asset_availability(self.server.data_dir, asset) == 'available':
                                 files.append({'projectId': query['project'], 'versionId': row['id'], 'assetId': asset['asset_id'],
                                               'source_version_id': row['id'], 'asset_id': asset['asset_id']})
             return self.json_response({'supported': supported, 'files': files})
@@ -168,6 +170,8 @@ class GatewayHandler(BaseHTTPRequestHandler):
             raise YuError('INVALID_INPUT', '仅接受登记的项目、版本及资产 ID。')
         with read_snapshot(self.server.data_dir) as db:
             asset = registered_asset(db, payload['projectId'], payload['versionId'], payload['assetId'])
+        if not is_original_local_asset(self.server.data_dir, asset):
+            raise YuError('INVALID_INPUT', '此附件保存在材料库中，请下载文件；不能在 Finder 中定位内部存储文件。')
         stream, path = open_verified_asset(self.server.data_dir, asset)
         stream.close()
         if sys.platform != 'darwin' or not shutil.which('open'):
@@ -177,7 +181,7 @@ class GatewayHandler(BaseHTTPRequestHandler):
             return self.error('UNAVAILABLE', '无法定位此文件。', 503)
         return self.json_response({'ok': True})
 
-    def stream_asset(self, stream, asset):
+    def stream_asset(self, stream, asset, download=False):
         size = asset['size_bytes']
         start, end, status = 0, size - 1, 200
         range_header = self.headers.get('Range')
@@ -201,7 +205,7 @@ class GatewayHandler(BaseHTTPRequestHandler):
         safe = mime in SAFE_INLINE
         self.send_response(status)
         self.send_header('Content-Type', mime if safe else 'application/octet-stream')
-        self.send_header('Content-Disposition', ('inline' if safe else 'attachment') + "; filename*=UTF-8''" + quote(asset['display_name'], safe=''))
+        self.send_header('Content-Disposition', ('inline' if safe and not download else 'attachment') + "; filename*=UTF-8''" + quote(asset['display_name'], safe=''))
         self.send_header('Content-Security-Policy', "sandbox; default-src 'none'")
         self.send_header('Accept-Ranges', 'bytes')
         self.send_header('Content-Length', str(max(0, end - start + 1)))

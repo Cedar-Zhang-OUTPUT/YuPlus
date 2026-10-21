@@ -188,25 +188,35 @@ function chipBtn(label, onclick) {
   return b;
 }
 let localFileCapabilities;
-function addFinderAction(container, version, asset) {
+function addFileAction(container, version, asset) {
+  if (asset.availability !== 'available') return;
+  const download = () => {
+    if (!asset.download_url) return;
+    const link = el('a', 'chipbtn');
+    link.href = asset.download_url; link.download = asset.display_name;
+    link.textContent = '下载'; link.title = '按原文件名下载已保存的附件';
+    container.append(link);
+  };
+  if (asset.storage !== 'external') { download(); return; }
+  const projectId = S.route.pid;
   localFileCapabilities ||= fetch("/api/local-files" + (DATA.meta.demo ? "" : "?project=" + encodeURIComponent(S.route.pid))).then((response) => response.ok ? response.json() : null).catch(() => null);
   localFileCapabilities.then((capabilities) => {
-    if (!capabilities?.supported || !capabilities.files.some((file) => file.versionId === version.id && file.assetId === asset.asset_id)) return;
+    if (!capabilities?.supported || !capabilities.files.some((file) => file.versionId === version.id && file.assetId === asset.asset_id)) { download(); return; }
     const status = el("div", "tiny muted"); status.setAttribute("role", "status");
     const button = chipBtn("在 Finder 中显示", async () => {
       button.disabled = true; status.textContent = "";
       try {
         const response = await fetch("/api/local-files/reveal", {
           method:"POST", headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({...(!DATA.meta.demo ? {projectId:S.route.pid} : {}),versionId:version.id,assetId:asset.asset_id}),
+          body:JSON.stringify({...(!DATA.meta.demo ? {projectId} : {}),versionId:version.id,assetId:asset.asset_id}),
         });
         const result = await response.json();
-        status.textContent = result.message || (response.ok ? "已在 Finder 中显示" : "无法定位本地文件");
+        status.textContent = result.message || result.error?.message || (response.ok ? "已在 Finder 中显示" : "无法定位本地文件");
       } catch { status.textContent = "无法连接本地文件服务"; }
       finally { button.disabled = false; }
     });
     button.classList.add("reveal-file");
-    button.title = "在 Finder 中显示本地快照文件";
+    button.title = "在 Finder 中显示已登记的本地原文件";
     container.append(button, status);
   });
 }
@@ -563,7 +573,7 @@ function renderInspector() {
           if (['missing','unavailable','changed'].includes(a.availability)) {
             const state=el('div','tiny avail'); state.textContent=a.availability==='changed'?'文件内容已变化，不能作为此历史快照读取':'登记文件当前不可用'; cap.append(state);
           }
-          addFinderAction(cap, v, a);
+          addFileAction(cap, v, a);
           if (a.availability === "external_missing") {
             const w = el("div", "tiny avail"); w.textContent = "外部原件当前不可访问";
             cap.append(w);

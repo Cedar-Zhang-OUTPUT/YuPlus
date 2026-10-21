@@ -10,6 +10,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from urllib.parse import urlencode
 
 from yuplus.app import App
@@ -157,6 +158,43 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(headers['Content-Type'], 'application/octet-stream')
         self.assertTrue(headers['Content-Disposition'].startswith('attachment'))
         self.assertIn('sandbox', headers['Content-Security-Policy'])
+
+    def test_download_preserves_file_bytes_and_name_without_changing_inline_open(self):
+        self.source(mime='image/jpeg')
+        asset = self.view(self.pid)['source_versions'][0]['assets'][0]
+        status, headers, body = self.request(asset['url'] + '&download=1')
+        self.assertEqual(status, 200)
+        self.assertEqual(body, b'saved material bytes')
+        self.assertEqual(headers['Content-Disposition'], "attachment; filename*=UTF-8''%E6%9D%90%E6%96%99.txt")
+        self.assertTrue(self.request(asset['url'])[1]['Content-Disposition'].startswith('inline'))
+        self.assertEqual(self.request(asset['url'] + '&download=anything')[0], 400)
+        self.assertEqual(self.request(asset['url'].replace(self.pid, self.other) + '&download=1')[0], 404)
+
+    def test_finder_only_reveals_original_external_files_not_pool_or_restored_files(self):
+        copied, _ = self.source()
+        external, original = self.source(storage='external')
+        headers = {'Origin': self.server.url, 'Content-Type': 'application/json'}
+        def reveal(source):
+            return self.request('/api/local-files/reveal', 'POST', headers, json.dumps({
+                'projectId': self.pid, 'versionId': source['snapshot_id'], 'assetId': 'asset_original'}))[0]
+        def files():
+            return json.loads(self.request('/api/local-files?project=' + self.pid)[2])['files']
+        with patch('yuplus.gateway.sys.platform', 'darwin'), patch('yuplus.gateway.shutil.which', return_value='/usr/bin/open'), patch('yuplus.gateway.subprocess.run') as opened:
+            opened.return_value.returncode = 0
+            self.assertEqual([f['versionId'] for f in files()], [external['snapshot_id']])
+            self.assertEqual(reveal(copied), 400)
+            opened.assert_not_called()
+            self.assertEqual(reveal(external), 200)
+            self.assertEqual(opened.call_args.args[0], ['open', '-R', str(original.resolve())])
+            opened.reset_mock()
+            asset = next(v for v in self.view(self.pid)['source_versions'] if v['id'] == external['snapshot_id'])['assets'][0]
+            restored = self.data/'external-files'/asset['sha256']
+            restored.parent.mkdir(); restored.write_bytes(original.read_bytes())
+            (self.data/'restored-assets.json').write_text(json.dumps({str(original.resolve()) + ':' + asset['sha256']: 'external-files/' + asset['sha256']}))
+            self.assertEqual(files(), [])
+            self.assertEqual(reveal(external), 400)
+            opened.assert_not_called()
+            self.assertEqual(self.request(asset['url'] + '&download=1')[0], 200)
 
     def test_host_origin_methods_and_traversal_boundaries(self):
         for headers in [{'Host':'evil.example'}, {'Origin':'https://evil.example'}, {'Origin':'null'}, {'Sec-Fetch-Site':'cross-site'}]:

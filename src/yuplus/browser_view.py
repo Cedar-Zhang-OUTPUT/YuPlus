@@ -66,6 +66,17 @@ def asset_path(data_dir, asset):
     return path
 
 
+def is_original_local_asset(data_dir, asset):
+    """Finder is for registered external originals, never internal hash-named copies."""
+    if asset['storage'] != 'external':
+        return False
+    try:
+        path = asset_path(data_dir, asset)
+        return path == Path(asset['local_path']) and not path.is_relative_to(Path(data_dir).resolve())
+    except (YuError, OSError, ValueError):
+        return False
+
+
 def open_verified_asset(data_dir, asset):
     """Hash and stream the same descriptor, never a user-provided pathname."""
     path = asset_path(data_dir, asset)
@@ -210,6 +221,7 @@ def browser_view(db, data_dir, project_id=None):
             asset = dict(asset)
             asset['availability'] = asset_availability(data_dir, asset)
             asset['url'] = '/api/assets?' + urlencode({'project': project_id, 'version': version['id'], 'asset': asset['asset_id']})
+            asset['download_url'] = asset['url'] + '&download=1'
             asset['source_version_id'] = version['id']
             version['assets'].append(asset)
             view['source_files'].append({**asset, 'project_id': project_id})
