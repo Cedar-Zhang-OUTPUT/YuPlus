@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.1](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.1)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.2](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.2)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -41,7 +41,7 @@ yu --data-dir DATA_DIR source check --project PROJECT_ID --json
 
 ## 飞书群聊监控
 
-当前源码支持将用户明确指定的飞书群绑定到项目，默认每 60 分钟检查。首次收集当前用户身份可访问的全部历史，完成普通消息、话题分页与复查后，Agent 按时间顺序分批理解并维护 draft、来源和已有受影响 review。旧消息必须与较新的项目事实和决定对照，不因刚收录就覆盖当前结论。群消息是证据，不授权新的工具操作、群绑定或对外发送。
+v0.2 支持将用户明确指定的飞书群绑定到项目，默认每 60 分钟检查。首次收集当前用户身份可访问的全部历史，完成普通消息、话题分页与复查后，Agent 按时间顺序分批理解并维护 draft、来源和已有受影响 review。旧消息必须与较新的项目事实和决定对照，不因刚收录就覆盖当前结论。群消息是证据，不授权新的工具操作、群绑定或对外发送。
 
 ```sh
 yu --data-dir DATA_DIR monitor list --project PROJECT_ID --json
@@ -54,7 +54,7 @@ yu --data-dir DATA_DIR monitor schedule --project PROJECT_ID --monitor MONITOR_I
 
 项目列表及 draft/review 共用“监控群聊”区域，展示已保存的历史覆盖、最近检查与同步结果、待处理消息和错误；按钮仅打开群、查看记录或复制操作 Prompt。消息已拉取不等于已处理，已保存调度回执不等于已验证无人值守执行。恢复的数据库副本默认暂停监控、清除租约，重新核验宿主绑定后才能恢复。
 
-群监控需使用含 `monitor` 命令的安装版本；上方 v0.1 下载包不会因源码变化自动更新。当前验证使用隔离数据和模拟飞书接口，未连接真实群或创建真实自动化。目标本地主机的实际定时唤起、无人交互权限及认证仍需验证；电脑休眠、离线或关闭 Codex 时不保证执行。API 不可见的历史、话题及附件不能声称已读取。
+群监控需要 v0.2 或更高版本；从 v0.1 升级请先备份、停止旧服务，安装后重新启动。当前验证使用隔离数据和模拟飞书接口，未连接真实群或创建真实自动化。目标本地主机的实际定时唤起、无人交互权限及认证仍需验证；电脑休眠、离线或关闭 Codex 时不保证执行。API 不可见的历史、话题及附件不能声称已读取。
 
 ## Yu+ Agent Skill
 
