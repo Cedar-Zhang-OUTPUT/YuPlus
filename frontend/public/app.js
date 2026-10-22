@@ -4,6 +4,7 @@
    没有页面内聊天或评论。业务写入一律在 Codex 中由 Agent 通过 Yu+ CLI 完成。
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { createProjectPromptTemplate } from "./data/project-create.js";
 import { loadView } from "./data/runtime.js";
 let DATA;
 import { basisStatus, qaState, openQuestionState } from "./data/selectors.js";
@@ -14,7 +15,7 @@ import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timelin
 import { moneyMatches, formatMinor } from "./data/money-text.js";
 import { projectMonitors, projectMonitorSummary, monitorSummary, monitorPrompt, monitorRuns, monitorRunStatus, safeChatUrl } from "./data/monitoring.js";
 let pageLoadedAt = new Date();
-const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, monitorExpanded: {}, versionOf: {} };
+const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, monitorExpanded: {}, versionOf: {}, projectPrompts: { materials: {}, monitor: {} } };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
 const $ = (id) => document.getElementById(id);
@@ -803,16 +804,10 @@ function viewProjects() {
   nc.append(nh);
   const nb = el("div", "body");
   const np = el("p", "small muted");
-  np.textContent = "复制到Agent会话框";
+  np.textContent = "先填写再复制到 Agent 会话框；留空时会保留下划线。文件请随提示词一起发送。";
   nb.append(np);
-  const intent = "用 Yu+ 新建一个项目，名称：______；客户/简述：______。建立后把 project_id 告诉我。";
-  const box = el("div", "copyable");
-  const codeEl = el("code"); codeEl.style.flex = "1"; codeEl.textContent = intent;
-  box.append(codeEl);
-  const cb = chipBtn("复制", () => {});
-  cb.onclick = () => copyText(intent, cb);
-  box.append(cb);
-  nb.append(box);
+  nb.append(createProjectPromptTemplate("materials", S.projectPrompts.materials, copyText));
+  nb.append(createProjectPromptTemplate("monitor", S.projectPrompts.monitor, copyText));
   nc.append(nb);
   c.append(nc);
 

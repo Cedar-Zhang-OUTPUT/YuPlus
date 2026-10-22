@@ -4,7 +4,7 @@ Use visible Chinese labels in user instructions. The desktop view has left navig
 
 ## Projects and navigation
 
-The project list supports search and empty states. Open the intended project by identity, especially when names match. “新建项目” offers text to copy into the Agent conversation; it is not a browser database-creation form. The Agent creates a requested project through the business CLI.
+The project list supports search and empty states. Open the intended project by identity, especially when names match. “新建项目” offers text to copy into the Agent conversation; it is not a browser database-creation form. The Agent creates a requested project through the business CLI. Two templates support supplying files or monitoring a designated Feishu group. Their inline fields prepare clipboard text only; blank fields copy as `______`. Users attach files in the Agent conversation. Copying alone does not create a project or schedule monitoring.
 
 Project navigation contains “信息收集”, “整理与Review”, “原始材料”, and “变更与决定记录”; the object definitions page explains supported types. The navigation toggle expands/collapses the sidebar. Its footer reports page refresh time and offers “刷新页面”. That timestamp is not a remote-source check time. The history page presents stored changes and decisions, not an audit approval or export created merely by clicking a button.
 

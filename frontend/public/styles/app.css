@@ -677,3 +677,23 @@ html.reading-draft { overflow-anchor:none; }
 }
 
 .object-card > header + * { margin-top:calc(0px - var(--object-header-tail)); }
+
+/* Editable clipboard templates; inputs never write project data. */
+.project-prompt-template + .project-prompt-template { margin-top:14px; }
+.project-prompt-title { margin:0 0 6px; font-size:12px; color:var(--label-2); }
+.project-prompt-box { align-items:flex-end; font-family:inherit; font-size:13px; }
+.project-prompt-text { flex:1; min-width:0; line-height:2.65; }
+.project-prompt-box > .chipbtn { flex-shrink:0; margin-bottom:4px; }
+.project-prompt-input {
+  display:inline-block; width:14ch; max-width:100%; box-sizing:border-box;
+  padding:5px 8px; margin:2px 3px; vertical-align:baseline; font:inherit; line-height:1.4;
+  color:var(--label); background:var(--bg-elevated); border:1px solid var(--separator); border-radius:6px;
+}
+.project-prompt-summary { width:22ch; }
+.project-prompt-chat { width:28ch; }
+.project-prompt-input::placeholder { color:var(--label-3); }
+@media (max-width:480px) {
+  .project-prompt-box { flex-wrap:wrap; }
+  .project-prompt-text { flex-basis:100%; }
+  .project-prompt-box > .chipbtn { margin-left:auto; }
+}
