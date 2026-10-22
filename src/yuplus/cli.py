@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import sqlite3
 import sys
-from .app import App
+from .app import App, LIFECYCLE_COMMANDS
 from .core import YuError
 
 COMMANDS={
@@ -14,7 +14,8 @@ COMMANDS={
     'changes.list','decisions.list','types.show','doctor','serve','start','stop','status',
     'backup.create','backup.verify','backup.restore','source.check',
 }
-INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
+COMMANDS.update(LIFECYCLE_COMMANDS)
+INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS
 MONITOR_ACTIONS={'add','list','show','runs','schedule','scheduler-bind','update','pause','resume','remove',
                  'begin','fetch','pending','steps','read','renew','capture','step','discard-step','resolve','finish'}
 COMMANDS.update('monitor.'+action for action in MONITOR_ACTIONS)
@@ -56,13 +57,13 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.11）',
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.12）',
                   epilog='可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
     parser.add_argument('--data-dir')
     parser.add_argument('--port',type=int,default=7801,help='serve 本地端口（0 自动分配）')
-    parser.add_argument('--include-deleted',action='store_true',help='project list: 包含软删除项目')
+    parser.add_argument('--include-deleted',action='store_true',help='project/source/draft/review list: 包含软删除记录')
     parser.add_argument('--base-version',type=int,help='project rename/delete: project show 返回的 metadata_version')
     parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
     parser.add_argument('--monitor')
@@ -95,7 +96,7 @@ def main(argv=None):
             if command=='project.rename':payload['base_metadata_version']=args.base_version
         else:
             payload={}
-            if command=='project.list':payload['include_deleted']=args.include_deleted
+            if command in {'project.list','source.list','draft.list','review.list'}:payload['include_deleted']=args.include_deleted
             mapping={'source_id':args.source,'snapshot_id':args.snapshot,'object_id':args.object,'revision_id':args.revision,'type_key':args.type_key}
             if args.monitor:payload['monitor_id']=args.monitor
             payload.update({k:v for k,v in mapping.items() if v is not None})

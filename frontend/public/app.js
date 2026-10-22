@@ -454,6 +454,7 @@ function renderInspector() {
     })();
     identity.append(kv([
       ["标题", src.cached_title || "标题尚未取得"],
+      ...(src.archived_at ? [["状态", "已删除 · 历史来源与文件保留"]] : []),
       ["来源种类", prov.label],
       ["资源类型", src.resource_type],
       ["所属项目", projOf(src.project_id).name],
@@ -820,7 +821,7 @@ function viewProjects() {
 
 // 给项目分配一个主题色，让列表有色彩识别度但不暗示状态
 function themeHueForProject(pid) {
-  const objs = DATA.objects.filter((o) => o.project_id === pid && o.layer === "draft" && o.current_revision_id);
+  const objs = DATA.objects.filter((o) => !o.archived_at && o.project_id === pid && o.layer === "draft" && o.current_revision_id);
   if (!objs.length) return "gray";
   const th = themeOf(objs[0].type_key);
   return th ? th.hue : "gray";
@@ -942,7 +943,7 @@ function projectMonitorPanel(pid) {
 /* ── 项目内：draft ─────────────────────────────────────────────────────── */
 function viewDraft(pid) {
   const c = el("div", "content wide");
-  const objs = DATA.objects.filter((o) => o.project_id === pid && o.layer === "draft" && o.type_key !== "expression_guide");
+  const objs = DATA.objects.filter((o) => !o.archived_at && o.project_id === pid && o.layer === "draft" && o.type_key !== "expression_guide");
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
@@ -1644,7 +1645,7 @@ const FIELD_LABEL = {
 function viewReview(pid) {
   const c = el("div", "content wide");
   const proj = projOf(pid);
-  const reviews = DATA.objects.filter((o) => o.project_id === pid && o.layer === "review");
+  const reviews = DATA.objects.filter((o) => !o.archived_at && o.project_id === pid && o.layer === "review");
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
@@ -1675,7 +1676,7 @@ function viewReview(pid) {
     const isR05 = !k.persistable;
     let instances = [];
     if (isR05) {
-      const qa = DATA.objects.find((o) => o.project_id === pid && o.type_key === "qa");
+      const qa = DATA.objects.find((o) => !o.archived_at && o.project_id === pid && o.type_key === "qa");
       if (qa && qa.current_revision_id) instances = [qa];
     } else {
       instances = reviews.filter((o) => o.type_key === k.type_key && o.current_revision_id);
@@ -1725,9 +1726,11 @@ function viewReview(pid) {
   if (kindMeta && kindMeta.persistable) {
     sel = reviews.filter((o) => o.type_key === kindMeta.type_key && o.current_revision_id)[0] || null;
   } else if (kindMeta && !kindMeta.persistable) {
-    sel = DATA.objects.find((o) => o.project_id === pid && o.type_key === "qa") || null;
+    sel = DATA.objects.find((o) => !o.archived_at && o.project_id === pid && o.type_key === "qa") || null;
   } else if (target) {
-    sel = DATA.objects.find(o => o.id === target && o.project_id === pid && (o.layer === "review" || o.type_key === "qa")) || null;
+    sel = DATA.objects.find(o => !o.archived_at && o.id === target && o.project_id === pid && (o.layer === "review" || o.type_key === "qa")) || null;
+    const prior = DATA.objects.find(o => o.id === target && o.project_id === pid && o.archived_at);
+    if (prior) kindMeta = DATA.REVIEW_KINDS.find(k => k.type_key === prior.type_key || (!k.persistable && prior.type_key === "qa")) || null;
     if (sel?.type_key === "qa") kindMeta = DATA.REVIEW_KINDS.find(k => !k.persistable);
     kindMeta = kindMeta || (sel ? DATA.REVIEW_KINDS.find((k) => k.type_key === sel.type_key) || null : null);
   }
@@ -2080,7 +2083,7 @@ function qaReviewView(pid, qaObj, kindMeta) {
 /* ── 项目内：材料与来源 ────────────────────────────────────────────────── */
 function viewSources(pid) {
   const c = el("div", "content wide");
-  const srcs = DATA.sources.filter((s) => s.project_id === pid);
+  const srcs = DATA.sources.filter((s) => s.project_id === pid && !s.archived_at);
 
   const head = el("div");
   head.style.margin = "30px 0 6px";

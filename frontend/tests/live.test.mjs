@@ -44,3 +44,10 @@ test('Q&A uses persisted statuses without assuming a closed question was answere
   assert.equal(qaState('open').label,'待答复');
   assert.equal(qaState(undefined).label,'未记录状态');
 });
+test('export excludes deleted Review roots while historical records stay accessible',()=>{
+  const snapshot=raw();snapshot.objects[0].archived_at='2026-10-22';
+  const data=hydrateView(snapshot);
+  assert.equal(data.indexes.objById.o.id,'o');
+  assert.throws(()=>reviewUpdatePrompt(data,'p','o'),/成果不存在/);
+  assert.ok(!reviewExportPrompt(data,'p').includes('"object_id": "o"'));
+});

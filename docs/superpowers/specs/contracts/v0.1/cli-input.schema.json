@@ -14,6 +14,24 @@
     },
     {
       "$ref": "#/$defs/reviewPublish"
+    },
+    {
+      "$ref": "#/$defs/draftDelete"
+    },
+    {
+      "$ref": "#/$defs/draftRestore"
+    },
+    {
+      "$ref": "#/$defs/reviewDelete"
+    },
+    {
+      "$ref": "#/$defs/reviewRestore"
+    },
+    {
+      "$ref": "#/$defs/sourceDelete"
+    },
+    {
+      "$ref": "#/$defs/sourceRestore"
     }
   ],
   "$defs": {
@@ -2418,6 +2436,207 @@
       "required": [],
       "additionalProperties": false,
       "minProperties": 1
+    },
+    "draftDelete": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "const": "draft.delete"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_revision": {
+          "$ref": "#/$defs/id"
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/decision"
+          },
+          "minItems": 0
+        },
+        "instruction_source_version_id": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "reason",
+        "object_id",
+        "base_revision"
+      ]
+    },
+    "draftRestore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "const": "draft.restore"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_revision": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "reason",
+        "object_id",
+        "base_revision"
+      ]
+    },
+    "reviewDelete": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "const": "review.delete"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_revision": {
+          "$ref": "#/$defs/id"
+        },
+        "read_basis": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/readBasis"
+          },
+          "minItems": 1
+        },
+        "cause_change_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "reason",
+        "object_id",
+        "base_revision",
+        "read_basis",
+        "cause_change_ids"
+      ]
+    },
+    "reviewRestore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "const": "review.restore"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_revision": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "reason",
+        "object_id",
+        "base_revision"
+      ]
+    },
+    "sourceDelete": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "const": "source.delete"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_snapshot_id": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "reason",
+        "source_id",
+        "base_snapshot_id"
+      ]
+    },
+    "sourceRestore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "api_version": {
+          "const": "1"
+        },
+        "command": {
+          "const": "source.restore"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_snapshot_id": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "api_version",
+        "command",
+        "reason",
+        "source_id",
+        "base_snapshot_id"
+      ]
     }
   }
 }

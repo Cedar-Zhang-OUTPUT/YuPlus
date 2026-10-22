@@ -293,6 +293,19 @@ class ReviewTests(unittest.TestCase):
         self.assertEqual(updated['version'], 2)
         self.assertCode('CAUSE_ALREADY_APPLIED', lambda: self.publish(self.updated(updated, text='再次改写', causes=['chg_budget_reverted'], deps=[dep])))
 
+    def test_deleted_creator_scope_can_be_cleaned_up_but_not_rewritten(self):
+        self.draft('obj_resources','resources',{'alice':{'name':'Alice'}},'chg_resources')
+        self.draft('obj_deliverables','deliverables',{'deliver':{'deliverable':'视频','round_key':'first'}},'chg_delivery')
+        doc=self.doc();doc['target']={'type_key':'creator_brief','scope_key':'creator:alice:round:first'}
+        saved=self.publish(doc)
+        self.draft('obj_resources','resources',{},'chg_remove_resource')
+        self.budget=self.draft('obj_budget','budget_range',{'budget':{'min_minor':'60000000','currency':'CNY'}},'chg_budget2')
+        update=self.updated(saved,causes=['chg_budget2']);update['target']={**doc['target'],'object_id':saved['object_id']}
+        self.assertCode('INVALID_SCOPE',lambda:self.publish(update))
+        prepared=prepare_review(self.ctx(),{'target':update['target'],'cause_change_ids':[],'select_basis':[]})
+        update.pop('set_blocks');update['remove_blocks']=[{'block_id':'budget','cause_change_ids':['chg_budget2']}];update['read_basis']=prepared['read_basis']
+        self.assertTrue(self.publish(update)['archived'])
+
 
 if __name__ == '__main__':
     unittest.main()

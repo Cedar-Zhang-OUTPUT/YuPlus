@@ -39,6 +39,7 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 | 读取本地文件 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Local files, images and video”（本地文件、图片与视频） | PDF、办公文档或媒体按格式及读取任务选择可用 Skill。纯文本可以直接读取，不加载所有文档 Skill。 |
 | 接收口述或修改指令 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Spoken input and review instructions”（口述及 review 修改指令） | 已有对话文字无需转写 Skill。确有录音需要转写时，才使用适合的可用工具/Skill，并保留真实取得的内容。 |
 | 保存或追加来源材料 | [cli.md](../../../skills/yuplus/references/cli.md) 的 `source.import`；采集规则查上面相应材料小节 | 复用已经读到的材料；仅将其保存到 Yu+ 不需要重新运行外部 Skill。 |
+| 删除子目、对象或来源；重新启用已删除记录 | [删除与重新启用](deletion.zh-CN.md)，再查当前命令契约 | 只有需要新材料或指令来源才用相应 Skill，不删除原件。 |
 | 创建或修改 draft 对象 | [objects.md](../../../skills/yuplus/references/objects.md) 中相关对象条目，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `draft.apply` | 只有需要额外读取材料时才用外部 Skill。业务属性也可用 `yu types show --type TYPE --json` 查询；按 cli.md 的辅助工具说明，只查询需要的输入契约。 |
 | 进入整理或组织 review 对象 | [Review 固定结构](review-structure.zh-CN.md) 中生成范围和固定栏目，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `review.prepare / review.publish` | 根据已读 draft 编写 review，本身不需要再调用飞书或文件读取 Skill。 |
 | 处理 review 反馈 | 下文“先改因，再改果”的顺序及[Review 固定结构](review-structure.zh-CN.md)；[objects.md](../../../skills/yuplus/references/objects.md) 的相关业务条目或 `expression_guide`，再看 [cli.md](../../../skills/yuplus/references/cli.md) 对应 draft/review 小节 | 反馈带来新材料时，再按其材料类型读取。纯措辞修改不需要重开所有原始材料。 |
@@ -251,6 +252,10 @@ D24 使用 `type_key=open_questions`、普通 draft 的 `scope_key=project` 和�
 - 金额使用**最小货币单位的整数字符串**和币种：人民币 60 万元为 `"60000000"` 分。未知金额不能填零。
 - 已采用决定需要 decision_key、statement、decided_by、instruction_source_version_id、rationale，以及通过 op_id/item_id 指定的 affected_items。替代旧决策时使用 supersedes_id。修改或删除已采用条目也需要决策记录；不能把其标签改成 hypothesis 绕过。
 - 返回 objects[].revision_id 和 meta.change_id 是新依据及修改原因；affected_draft_items、affected_reviews 指示接下来要检查的影响。不要盲目重做整个项目。
+
+#### 删除与重新启用
+
+`draft delete/restore`、`review delete/restore`、`source delete/restore` 使用 `--input` JSON；执行前按需读[删除与重新启用](deletion.zh-CN.md)，查询当前命令契约。`list --include-deleted` 和 `show` 可查询保留身份与历史。删除最后一个 Review 段落会保存空版本并隐藏成果；仅删除 draft 子目不自动隐藏对象。
 
 #### review.prepare / review.publish
 

@@ -51,8 +51,7 @@ def _scope(ctx, target):
         _error('INVALID_SCOPE', '成果轮次未在同项目交付条目中定义。', round_key=round_key)
 
 
-def _target(ctx, target):
-    _scope(ctx, target)
+def _target(ctx, target, allow_stale_scope=False):
     if target.get('object_id'):
         obj = get_object(ctx.db, ctx.project_id, target['object_id'])
         if (obj['layer'], obj['type_key'], obj['scope_key']) != ('review', target['type_key'], target['scope_key']):
@@ -60,6 +59,8 @@ def _target(ctx, target):
     else:
         row = ctx.db.execute("SELECT * FROM objects WHERE project_id=? AND layer='review' AND type_key=? AND scope_key=?", (ctx.project_id, target['type_key'], target['scope_key'])).fetchone()
         obj = dict(row) if row else None
+    if not (allow_stale_scope and obj):
+        _scope(ctx, target)
     if obj and obj.get('archived_at'):
         _error('INVALID_SCOPE', '已归档成果不能以新身份绕过历史。', object_id=obj['id'])
     return obj
@@ -93,7 +94,7 @@ def _closure(ctx, deps):
 
 
 def _changes(ctx):
-    return [dict(row) for row in ctx.db.execute("SELECT * FROM changes WHERE project_id=? AND command='draft.apply' AND effect='changed' ORDER BY seq", (ctx.project_id,))]
+    return [dict(row) for row in ctx.db.execute("SELECT * FROM changes WHERE project_id=? AND command IN ('draft.apply','draft.delete') AND effect='changed' ORDER BY seq", (ctx.project_id,))]
 
 
 def _intersects(ref, dep):
@@ -189,7 +190,7 @@ def _causes(ctx, ids, *, oid, block, old_deps, new_deps, lineage, read_basis, fi
         authored_seq = authored[0] if authored else None
     for cid in ids:
         change = ctx.db.execute('SELECT * FROM changes WHERE project_id=? AND id=?', (ctx.project_id, cid)).fetchone()
-        if not change or change['command'] != 'draft.apply' or change['effect'] != 'changed':
+        if not change or change['command'] not in {'draft.apply','draft.delete'} or change['effect'] != 'changed':
             _error('DRAFT_CHANGE_REQUIRED', 'review 的原因必须是同项目真实 draft 修改。', change_id=cid, block_id=block)
         if cid in consumed or (authored_seq is not None and change['seq'] <= authored_seq) or (first_seq is not None and change['seq'] <= first_seq):
             _error('CAUSE_ALREADY_APPLIED', '该 draft 变更已经体现在此段落中。', change_id=cid, block_id=block)
@@ -247,7 +248,7 @@ def _first_publication_seq(ctx, oid):
 
 
 def _plan_document(ctx, doc):
-    obj = _target(ctx, doc['target'])
+    obj = _target(ctx, doc['target'], allow_stale_scope=True)
     current = obj['current_revision_id'] if obj else None
     if current != doc['base_revision']:
         _error('BASE_REVISION_CONFLICT', 'review 当前版本与 base_revision 不一致。', expected=doc['base_revision'], actual=current)
@@ -300,8 +301,10 @@ def _plan_document(ctx, doc):
         dependencies.pop(bid, None)
         removed.append(bid)
         cause_ids.update(removal['cause_change_ids'])
-    if not blocks:
-        _error('INVALID_INPUT', '成果至少需要一个段落；空成果应归档。')
+    if not blocks and not old:
+        _error('INVALID_INPUT', '初次成果至少需要一个有依据的段落。')
+    if blocks:
+        _scope(ctx, doc['target'])
     for bid, deps in dependencies.items():
         for dep in deps:
             if not _fresh(ctx, dep):
@@ -349,7 +352,11 @@ def publish_review(ctx, request):
                     ctx.causal_change_ids.append(cid)
         else:
             result = {'object_id': plan['object_id'], 'revision_id': plan['old']['id'], 'version': plan['old']['version']}
-        output.append({**result, 'updated_blocks': plan['changed_blocks'], 'removed_blocks': plan['removed_blocks'],
+        archived = not plan['payload']['blocks'] and bool(plan['removed_blocks'])
+        if archived:
+            ctx.db.execute('UPDATE objects SET archived_at=? WHERE project_id=? AND id=?', (now(), ctx.project_id, plan['object_id']))
+            ctx.changed_refs.append({'object_id':plan['object_id'],'field':'archived_at','deleted':True})
+        output.append({**result, 'archived':archived, 'updated_blocks': plan['changed_blocks'], 'removed_blocks': plan['removed_blocks'],
                        'basis': plan['basis'], 'requires_recheck_blocks': plan['changed_blocks'] if plan['old'] else [],
                        'changed': plan['changed']})
     return {'effect': 'changed' if any(p['changed'] for p in plans) else 'noop', 'documents': output}
@@ -365,7 +372,7 @@ def _source_details(ctx, refs):
 
 def prepare_review(ctx, request):
     """Return current basis and stale paragraphs without creating a revision."""
-    obj = _target(ctx, request['target'])
+    obj = _target(ctx, request['target'], allow_stale_scope=True)
     old = load_revision(ctx.db, ctx.project_id, obj['current_revision_id']) if obj and obj['current_revision_id'] else None
     selections = {}
     for selection in request.get('select_basis', []):

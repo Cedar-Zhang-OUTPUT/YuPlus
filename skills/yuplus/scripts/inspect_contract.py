@@ -7,6 +7,7 @@ import json
 
 COMMANDS = {"source.import": "sourceImport", "draft.apply": "draftApply",
             "review.prepare": "reviewPrepare", "review.publish": "reviewPublish"}
+COMMANDS.update({f"{layer}.{action}": layer+action.title() for layer in ("draft","review","source") for action in ("delete","restore")})
 
 
 def referenced_defs(value):

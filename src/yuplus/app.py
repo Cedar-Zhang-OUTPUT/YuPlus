@@ -10,8 +10,9 @@ from jsonschema import Draft202012Validator, FormatChecker
 from .core import Context, YuError, canonical, digest, new_id, now, insert, get_object, load_revision, affected_objects
 
 CONTRACTS=Path(__file__).parent/'contracts'
-CORE_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
-WRITE_COMMANDS={'project.create','project.rename','project.delete','source.import','draft.apply','review.publish'}
+LIFECYCLE_COMMANDS={f'{layer}.{action}' for layer in ('draft','review','source') for action in ('delete','restore')}
+CORE_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS
+WRITE_COMMANDS={'project.create','project.rename','project.delete','source.import','draft.apply','review.publish'} | LIFECYCLE_COMMANDS
 ID_PATTERN=re.compile(r'^[A-Za-z][A-Za-z0-9_-]{0,127}$')
 
 class App:
@@ -190,6 +191,9 @@ class App:
                     data={'effect':'changed' if changed else 'noop','project_id':project_id,'name':name,
                           'previous_name':project['name'],'metadata_version':version,
                           'working_scene':project['working_scene'],'lifecycle':project['lifecycle']}
+                elif command in LIFECYCLE_COMMANDS:
+                    from .lifecycle import change_lifecycle
+                    data=change_lifecycle(ctx,command,payload)
                 elif command=='source.import':
                     from .source import import_source
                     data=import_source(ctx,payload,prepared)
@@ -250,16 +254,16 @@ class App:
             return result
         if command=='source.list':
             from .browser_view import decoded
-            return {'sources':[decoded(r) for r in self.db.execute('SELECT id,provider,cached_title,canonical_url,latest_snapshot_id,remote_observation_json,check_error_json,last_checked_at FROM sources WHERE project_id=? ORDER BY created_at,id',(pid,))]}
+            return {'sources':[decoded(r) for r in self.db.execute('SELECT id,provider,cached_title,canonical_url,latest_snapshot_id,archived_at,remote_observation_json,check_error_json,last_checked_at FROM sources WHERE project_id=? AND (archived_at IS NULL OR ?) ORDER BY created_at,id',(pid,payload.get('include_deleted') is True))]}
         if command in {'draft.list','review.list'}:
             layer=command.split('.')[0]
-            return {'objects':[dict(r) for r in self.db.execute('SELECT id,type_key,scope_key,current_revision_id FROM objects WHERE project_id=? AND layer=? AND archived_at IS NULL ORDER BY created_at,id',(pid,layer))]}
+            return {'objects':[dict(r) for r in self.db.execute('SELECT id,type_key,scope_key,current_revision_id,archived_at FROM objects WHERE project_id=? AND layer=? AND (archived_at IS NULL OR ?) ORDER BY created_at,id',(pid,layer,payload.get('include_deleted') is True))]}
         if command in {'draft.show','review.show'}:
             o=get_object(self.db,pid,payload['object_id'])
             if o['layer']!=command.split('.')[0]:raise YuError('INVALID_INPUT','对象层与命令不一致。')
             rid=payload.get('revision_id') or o['current_revision_id'];r=load_revision(self.db,pid,rid)
             if r['object_id']!=o['id']:raise YuError('INVALID_ITEM_REFERENCE','版本不属于指定对象。')
-            result={'object_id':o['id'],'type_key':o['type_key'],'revision_id':rid,'version':r['version'],**r['payload'],'sources':r['sources'],'dependencies':r['dependencies'],'lineage':r['lineage']}
+            result={'archived_at':o['archived_at'],'object_id':o['id'],'type_key':o['type_key'],'revision_id':rid,'version':r['version'],**r['payload'],'sources':r['sources'],'dependencies':r['dependencies'],'lineage':r['lineage']}
             if command=='review.show':result['affected']=next((v['block_ids'] for v in affected_objects(self.db,pid)['review'] if v['object_id']==o['id']),[])
             return result
         if command in {'changes.list','decisions.list'}:

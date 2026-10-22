@@ -5,7 +5,7 @@ import { basisStatus } from './selectors.js';
 export function reviewContext(data, projectId, objectId) {
   const project = data.projects.find(p => p.id === projectId);
   if (!project) throw new Error('项目不存在');
-  const selected = data.objects.filter(o => o.project_id === projectId && o.current_revision_id &&
+  const selected = data.objects.filter(o => !o.archived_at && o.project_id === projectId && o.current_revision_id &&
     (objectId ? o.id === objectId && o.layer === 'review' : o.layer === 'review' || o.type_key === 'qa'));
   if (objectId && !selected.length) throw new Error('成果不存在');
   const revisions = new Map(), objects = new Map(), snapshots = new Map(), sources = new Map();

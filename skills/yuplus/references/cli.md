@@ -93,6 +93,10 @@ D24 uses `type_key=open_questions`, ordinary draft scope `project`, and the same
 - Adopted decisions require decision_key, statement, decided_by, instruction_source_version_id, rationale and affected_items with op_id/item_id. Use supersedes_id when replacing a recorded decision. Altering or deleting an adopted item also needs a decision; changing its label to hypothesis is not a shortcut.
 - Output objects[].revision_id and meta.change_id supply the new basis/cause; affected_draft_items and affected_reviews show work to inspect next. Do not blindly regenerate all project content.
 
+### Delete and re-enable
+
+`draft delete/restore`, `review delete/restore`, and `source delete/restore` accept JSON through `--input`. Read [deletion.md](deletion.md) for exact scope, causes and restore semantics, then inspect that command's schema. `list --include-deleted` and `show` expose retained identities/history. Removing the last Review block now saves an empty version and soft-deletes the outcome. Draft item removal alone leaves an active empty object.
+
 ### review.prepare / review.publish
 
 Before composing, follow [review-structure.md](review-structure.md) for which outputs to generate and their fixed sections. CLI block validation does not enforce that business outline; verify it before and after publishing.

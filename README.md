@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.11](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.11)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.12](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.12)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -215,3 +215,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - [最小链路实施计划](docs/superpowers/plans/2026-10-13-yuplus-minimal-cli.md)
 
 首版面向 macOS 本地使用。开发侧验证安装、重启、备份恢复和来源检查；真实 Agent 使用验收以及跨机器分发/升级验收由用户在发布后进行，不宣称已完成。
+
+### 子目、对象与来源删除
+
+子目改写/删除使用 `draft apply` 的 `set_items`/`remove_items`；Review 段落使用 `review publish` 的 `set_blocks`/`remove_blocks`，保留先 draft 后 review 的因果要求。整份对象及来源支持 `draft delete`、`review delete`、`source delete`（`--input` JSON），均为保留文件和历史的软删除。删除最后一个 Review 段落会隐藏空成果。`list --include-deleted` 查询保留记录；对应 `restore` 命令可重新启用原身份，draft/Review 的当前空内容需另按依据写回。详细契约与用法见 [Skill 删除指引](skills/yuplus/references/deletion.md)。

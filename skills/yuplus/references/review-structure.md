@@ -4,7 +4,7 @@ Read when entering organization, composing Review, or correcting its structure. 
 
 ## Inspect, then generate
 
-1. For “enter review / organize the project”, inspect the draft types below and existing Review instances. Reuse current context; query only missing or stale data. Check actual items, not merely object existence. For an explicitly named output, limit work to that output and its affected dependencies.
+1. For “enter review / organize the project”, inspect the draft types below and existing Review instances. Reuse current context; query only missing or stale data. Check actual items, not merely object existence. When discovering identities, use `draft/review list --include-deleted` to distinguish absent from deliberately deleted objects; do not use deleted content as current basis. For an explicitly named output, limit work to that output and its affected dependencies.
 2. Generate or synchronize every in-scope output whose corresponding draft content is available. Do not stop after R01. In particular, D09 + D18 with content requires R02. Reuse an unchanged, already conforming output instead of publishing another version.
 3. If some basis is missing, name the missing object and a useful way to supply it; offer supplementation or organization now with known content. An existing request to organize authorizes partial organization: proceed and mark unknown sections, without asking again. A wholly unsupported output may be omitted with a brief reason; do not fabricate facts, resource identities or review conclusions. Missing D19 means R04 need not be created. An explicit request to sketch an unsupported output can receive the fixed outline as an unsaved preview.
 4. Use the exact section names and order below. Write connected content **inside** them; do not add, rename, merge or replace sections with an invented outline. Additional evidence may support the specified content; it does not create extra sections. Missing sections remain “暂无已收集信息” (or a precise known uncertainty).
@@ -25,6 +25,8 @@ Each R object is the parent. The ordered names below are its only second-level s
 R01 must not have additional sections such as “项目任务”, “主题与表达要求”, “预算”, “风险” or “待确认事项”. Relevant information belongs within the four specified sections or its own draft object. A fixed outline does not require filling unknown facts.
 
 ## Saving and corrections
+
+For an explicit request to delete a whole output, use [deletion.md](deletion.md); fixed sections do not prevent deleting the output itself. Routine organization does not re-enable a deliberately deleted outcome without user direction.
 
 - Full outputs may use one stable block per section. For a partial output, a single block may contain the complete fixed outline with the union of its real draft dependencies, marking unsupported sections as unknown. Do not cite unrelated items to manufacture a dependency for an empty section. With no actual basis, provide a preview rather than fabricate a publishable object.
 - R01–R03 use `project` or an actual `round:<round_key>`; R04 uses `creator:<resource_item_id>:round:<round_key>`. Reuse existing object/block identities where their meaning still matches. A missing identity limits saving that output, not organization of others.

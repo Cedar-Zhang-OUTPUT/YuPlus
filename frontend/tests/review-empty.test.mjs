@@ -48,3 +48,11 @@ test('empty categories can switch directly back to a populated review without us
     assert.ok(text(env.render()).includes('已有成果正文 obj_debrief'));
   }
 });
+test('deleted review is hidden while an old route keeps the category shell',()=>{
+  const env=setup([{id:'deleted',project_id:'p',layer:'review',type_key:'debrief',current_revision_id:'r',archived_at:'2026-10-22'}]);
+  env.S.route.objId='deleted';
+  const page=env.render();
+  assert.ok(!text(page).includes('已有成果正文'));
+  assert.ok(text(page).includes('尚未生成 主策 Debrief'));
+  assert.ok(buttons(page).some(b=>text(b).includes('主策 Debrief') && text(b).includes('暂无')));
+});

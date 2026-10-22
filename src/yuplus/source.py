@@ -211,7 +211,7 @@ def _duplicate_candidates(ctx, assets: list[dict]) -> list[dict]:
     wanted = sorted(a['sha256'] for a in original or assets)
     if not wanted:
         return []
-    rows = ctx.db.execute('''SELECT s.id, s.cached_title, s.latest_snapshot_id,
+    rows = ctx.db.execute('''SELECT s.id, s.cached_title, s.latest_snapshot_id, s.archived_at,
         f.source_version_id, f.role, coalesce(f.blob_sha256,f.external_sha256) AS sha256
         FROM sources s JOIN source_versions v ON v.project_id=s.project_id AND v.source_id=s.id
         JOIN source_files f ON f.project_id=v.project_id AND f.source_version_id=v.id
@@ -225,7 +225,7 @@ def _duplicate_candidates(ctx, assets: list[dict]) -> list[dict]:
         if sorted(r['sha256'] for r in originals or grouped_rows) == wanted:
             row = grouped_rows[0]
             result[row['id']] = {'source_id': row['id'], 'title': row['cached_title'],
-                                 'head_snapshot_id': row['latest_snapshot_id']}
+                                 'head_snapshot_id': row['latest_snapshot_id'],'archived_at':row['archived_at']}
     return list(result.values())
 
 
@@ -265,12 +265,12 @@ def import_source(ctx, request: dict, prepared: dict) -> dict:
             key, url = prepared['remote_identity']
         else:
             key, url = target.get('provider_key') or new_id('identity'), target.get('canonical_url')
-        existing = db.execute('''SELECT id,latest_snapshot_id FROM sources
+        existing = db.execute('''SELECT id,latest_snapshot_id,archived_at FROM sources
             WHERE project_id=? AND provider=? AND resource_type=? AND provider_key=?''',
                               (pid, provider, resource_type, key)).fetchone()
         if existing:
-            raise YuError('SOURCE_EXISTS', 'This source identity already exists; append using its current head.',
-                          details=[{'source_id': existing['id'], 'head_snapshot_id': existing['latest_snapshot_id']}])
+            raise YuError('SOURCE_EXISTS', 'This source identity already exists; restore it first if archived, otherwise append using its current head.',
+                          details=[{'source_id': existing['id'], 'head_snapshot_id': existing['latest_snapshot_id'],'archived_at':existing['archived_at']}])
         if provider == 'local' and not target.get('provider_key'):
             candidates = _duplicate_candidates(ctx, prepared['assets'])
             if candidates:
@@ -372,7 +372,7 @@ def import_source(ctx, request: dict, prepared: dict) -> dict:
 def show_source(db, pid: str, sid: str, snapshot_id: str | None = None, data_dir=None) -> dict:
     source = _get_source(db, pid, sid)
     selected = snapshot_id or source['latest_snapshot_id']
-    result = {'source_id': sid, 'provider': source['provider'], 'resource_type': source['resource_type'],
+    result = {'source_id': sid, 'archived_at':source['archived_at'], 'provider': source['provider'], 'resource_type': source['resource_type'],
               'provider_key': source['provider_key'], 'title': source['cached_title'],
               'canonical_url': source['canonical_url'], 'head_snapshot_id': source['latest_snapshot_id'], 'snapshot': None,
               'remote_observation': json.loads(source['remote_observation_json'] or 'null'),
