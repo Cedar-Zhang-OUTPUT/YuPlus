@@ -1,1 +1,1 @@
-请阅读 https://cedar-zhang-output.github.io/YuPlus/agent-install.md ，按指南帮我安装或升级到 Yu+ v0.3.12 并启动，保留已有项目数据。
+请阅读 https://cedar-zhang-output.github.io/YuPlus/agent-install.md ，按指南帮我安装或升级到 Yu+ v0.3.13 并启动，保留已有项目数据。
