@@ -689,7 +689,6 @@ html.reading-draft { overflow-anchor:none; }
   padding:5px 8px; margin:2px 3px; vertical-align:baseline; font:inherit; line-height:1.4;
   color:var(--label); background:var(--bg-elevated); border:1px solid var(--separator); border-radius:6px;
 }
-.project-prompt-summary { width:22ch; }
 .project-prompt-chat { width:28ch; }
 .project-prompt-input::placeholder { color:var(--label-3); }
 @media (max-width:480px) {

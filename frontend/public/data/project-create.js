@@ -2,7 +2,7 @@ const blank = '______';
 const value = text => String(text ?? '').trim() || blank;
 
 export function projectCreationPrompt(kind, fields = {}) {
-  const base = `用 Yu+ 新建一个项目，名称：${value(fields.name)}；客户/简述：${value(fields.summary)}。建立后把 project_id 告诉我。`;
+  const base = `用 Yu+ 新建一个项目，名称：${value(fields.name)}。建立后把 project_id 告诉我。`;
   return base + (kind === 'monitor'
     ? `顺便去监控这个飞书群的消息：${value(fields.chat)}`
     : '这是一些文件给到你：');
@@ -27,7 +27,7 @@ export function createProjectPromptTemplate(kind, values, copy) {
   const appendInput = (key, label) => {
     const input = make('input', `project-prompt-input project-prompt-${key}`);
     input.type = 'text';
-    input.placeholder = blank;
+    input.placeholder = label;
     input.value = values[key] || '';
     input.setAttribute('aria-label', `${title}：${label}`);
     input.autocomplete = 'off';
@@ -36,13 +36,11 @@ export function createProjectPromptTemplate(kind, values, copy) {
     text.append(input);
   };
   appendText('用 Yu+ 新建一个项目，名称：');
-  appendInput('name', '项目名称');
-  appendText('；客户/简述：');
-  appendInput('summary', '客户或项目简述');
+  appendInput('name', '项目名');
   appendText('。建立后把 project_id 告诉我。');
   if (kind === 'monitor') {
     appendText('顺便去监控这个飞书群的消息：');
-    appendInput('chat', '飞书群链接或群 ID');
+    appendInput('chat', '飞书群聊名称');
   } else {
     appendText('这是一些文件给到你：');
   }
