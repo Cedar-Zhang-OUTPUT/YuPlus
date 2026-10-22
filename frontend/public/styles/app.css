@@ -661,12 +661,19 @@ html.reading-draft { overflow-anchor:none; }
 }
 
 
-/* Each header sticks within its own object, then leaves with the card bottom. */
-.card.object-card { overflow:visible; }
+/* Reserve the visible reading area in the sticky margin box: release the
+   header when the card bottom reaches the viewport bottom, not its top. */
+.card.object-card {
+  overflow:visible;
+  --object-header-tail:max(0px, calc(100dvh - var(--toolbar-height, 70px) - var(--object-header-offset, 0px) - var(--object-header-height, 68px)));
+}
 .object-card > header {
   position:sticky;
+  margin-bottom:var(--object-header-tail);
   top:calc(var(--toolbar-height, 70px) + var(--object-header-offset, 0px));
   z-index:4;
   background:var(--bg-elevated);
   border-radius:var(--r-lg) var(--r-lg) 0 0;
 }
+
+.object-card > header + * { margin-top:calc(0px - var(--object-header-tail)); }

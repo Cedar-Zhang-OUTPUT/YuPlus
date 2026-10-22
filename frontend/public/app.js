@@ -1204,7 +1204,11 @@ function refreshDraftObject(o, pid) {
   const section = $("draft-object-" + o.id);
   if (!section) { render(); return; }
   const top = section.getBoundingClientRect().top;
+  const previousHeader = section.querySelector(".object-card > header");
+  if (previousHeader) objectHeaderLayoutObserver.unobserve(previousHeader);
   section.replaceChildren(objectBody(o, pid));
+  const header = section.querySelector(".object-card > header");
+  if (header) objectHeaderLayoutObserver.observe(header);
   highlightMoney(section);
   initProseToggles();
   window.scrollBy(0, section.getBoundingClientRect().top - top);
@@ -2560,8 +2564,7 @@ function go(hash) {
   } else location.hash = hash;
 }
 
-// Native sticky headers stay bounded by their own card. Only measure the
-// stacked directory offset when layout changes; no scroll-time repositioning.
+// Measure only layout changes; native sticky positioning handles scrolling.
 function updateObjectHeaderOffset() {
   const layout = document.querySelector(".draft-layout");
   if (!layout) return;
@@ -2572,7 +2575,14 @@ function updateObjectHeaderOffset() {
   const extra = stacked ? directory.getBoundingClientRect().height + 24 : 0;
   layout.style.setProperty("--object-header-offset", `${extra}px`);
 }
-const objectHeaderLayoutObserver = new ResizeObserver(updateObjectHeaderOffset);
+const objectHeaderLayoutObserver = new ResizeObserver(entries => {
+  for (const { target } of entries) {
+    if (target.matches(".object-card > header")) {
+      target.parentElement.style.setProperty("--object-header-height", `${target.getBoundingClientRect().height}px`);
+    }
+  }
+  updateObjectHeaderOffset();
+});
 
 const toolbarSizeObserver = new ResizeObserver(() => {
   document.documentElement.style.setProperty("--toolbar-height", `${$("toolbar").getBoundingClientRect().height}px`);
@@ -2625,7 +2635,7 @@ function renderStage(updateChrome = true) {
   highlightMoney(stage);
   initProseToggles();
   objectHeaderLayoutObserver.disconnect();
-  for (const target of document.querySelectorAll(".draft-directory, .draft-stream")) objectHeaderLayoutObserver.observe(target);
+  for (const target of document.querySelectorAll(".draft-directory, .draft-stream, .object-card > header")) objectHeaderLayoutObserver.observe(target);
   updateObjectHeaderOffset();
   const projectDock = document.querySelector(".project-create-dock");
   if (projectDock) projectDockObserver.observe(projectDock);
