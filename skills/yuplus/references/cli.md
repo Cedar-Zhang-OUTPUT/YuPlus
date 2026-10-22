@@ -32,6 +32,18 @@ yu --data-dir DATA_DIR changes list --project PROJECT_ID --limit 20 --after-curs
 yu --data-dir DATA_DIR decisions list --project PROJECT_ID --limit 20 --json
 ```
 
+### Rename a project
+
+When the user asks to rename a project, resolve its existing ID and read `project show` for its current name and `metadata_version`. Then run:
+
+```sh
+yu --data-dir DATA_DIR project rename --project PROJECT_ID --name 'New project name' --base-version METADATA_VERSION --request-id REQUEST_ID --json
+```
+
+`--base-version` is the integer `metadata_version` just read. The name is trimmed and must not be blank. The response includes `effect`, `project_id`, `name`, `previous_name`, `metadata_version`, `working_scene` and `lifecycle`; the change receipt records both names. Renaming to the current name returns `effect=noop` without changing the metadata version. Retries reuse the same request ID and arguments; a version conflict requires rereading the project, checking the user's intended change and issuing a fresh request ID.
+
+Renaming keeps the project ID, material files, source identities, object revisions, monitoring bindings and history. Do not create a replacement project, move its data directory, or rewrite draft/review just to rename it. Refresh the existing page after success to update the project list, breadcrumb and newly copied references. Existing document text and old copied/exported content retain their historical wording.
+
 `draft/review show --revision REVISION_ID` retrieves an old version; `review list` discovers review identities and scope_key (currently omitted by review show); reuse a known scope or read this list when needed. Omit `--after-cursor` on the first history page. Its returned `next_cursor` is an opaque next-page token bound to the query and project. A numeric cursor means “strictly after this known change sequence”. Do not advance to `meta.history_cursor` while unread pages remain. If you already know the objects relevant to the request, read them directly rather than walking history from the beginning.
 
 `source show` returns metadata by default; `--include-body` explicitly requests body text. It has no field-selection or block-range flag. `draft show` returns a whole object, not just a selected item. Use the smallest existing object/source query and reuse it.

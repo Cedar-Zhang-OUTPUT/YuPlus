@@ -50,6 +50,7 @@ For another Skill, locate its actual installed entry in the environment's Skill 
 ## Orient without restarting
 
 - Establish the executable, data directory and project ID. Reuse them when already known. If several projects fit and the target is unclear, ask one project-selection question before writing. Create a project when requested; do not force one project per installation.
+- For a project rename, read only [cli.md, “Rename a project”](references/cli.md#rename-a-project). Use the existing project ID and metadata version; this is a project metadata change, not a draft/review rewrite.
 - On initial setup or environment failure, follow [setup and material access](references/materials.md). Check Yu+ and Feishu CLI availability then, not every turn. Feishu failure does not prevent local-file or spoken-input work.
 - In a new or resumed conversation, recover only the context needed for this request: project identity and the relevant objects, sources or decisions. In the same conversation, reuse already-read content. After compaction, long interruption, suspected external changes or a version conflict, refresh the affected slice. Do not load every object, reference file or the full history at startup or each turn.
 - Use bounded history pages and remember which cursor range was actually consumed. A response's high-water `history_cursor` is not proof that all earlier pages were read. Read source bodies only when needed (`--include-body`). The current CLI cannot filter history by object or retrieve only selected draft items; do not invent such flags.

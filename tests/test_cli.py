@@ -92,6 +92,25 @@ class CliAcceptanceTests(unittest.TestCase):
         self.assertIn(first["data"]["project_id"], json.dumps(listing))
         self.assertIn(second["data"]["project_id"], json.dumps(listing))
 
+    def test_rename_preserves_full_project_chain_and_reports_errors(self):
+        project, source, draft, review, _ = self.initial_chain()
+        queries=[('source','show','--source',source['data']['source_id'],'--include-body'),
+                 ('draft','show','--object',draft['data']['objects'][0]['object_id']),
+                 ('review','show','--object',review['data']['documents'][0]['object_id'])]
+        before=[self.invoke(*q,'--project',project)['data'] for q in queries]
+        command=('project','rename','--project',project,'--name','新的城市展','--base-version','1','--request-id','rename_project')
+        renamed=self.invoke(*command)
+        self.assertEqual(renamed['data']['name'],'新的城市展')
+        self.assertEqual(renamed['data']['metadata_version'],2)
+        self.assertEqual(renamed['data']['project_id'],project)
+        self.assertTrue(self.invoke(*command)['meta']['replayed'])
+        self.assertEqual([self.invoke(*q,'--project',project)['data'] for q in queries],before)
+        self.assertEqual(self.invoke('project','show','--project',project)['data']['name'],'新的城市展')
+        missing=self.invoke('project','rename','--project',project,'--name','x','--request-id','missing_base',code=2)
+        self.assertEqual(missing['error']['code'],'INVALID_INPUT')
+        stale=self.invoke('project','rename','--project',project,'--name','x','--base-version','1','--request-id','stale_base',code=4)
+        self.assertEqual(stale['error']['code'],'BASE_REVISION_CONFLICT')
+
     def test_budget_change_goes_through_draft_and_preserves_original(self):
         project, source, draft, review, _ = self.initial_chain()
         old_budget = draft["data"]["objects"][0]

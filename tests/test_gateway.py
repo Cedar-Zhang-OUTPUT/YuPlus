@@ -90,6 +90,22 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(json.loads(raw)['data_dir'], str(self.data.resolve()))
         self.assertEqual(self.request('/api/view?project=missing')[0], 404)
 
+    def test_rename_is_visible_to_running_service_without_changing_project_contents(self):
+        self.source();self.draft()
+        before=self.view(self.pid)
+        renamed=self.execute('project.rename',{'name':'重命名后的项目','base_metadata_version':1})
+        after=self.view(self.pid)
+        for key in ['sources','source_versions','objects','object_revisions','chat_monitors']:
+            self.assertEqual(after[key],before[key])
+        for view in [after,self.view()]:
+            project=next(p for p in view['projects'] if p['id']==self.pid)
+            self.assertEqual(project['name'],'重命名后的项目')
+            self.assertEqual(project['metadata_version'],2)
+            self.assertIn('真实项目 → 重命名后的项目',view['project_activity'][self.pid]['summary'])
+        change=next(c for c in after['changes'] if c['command']=='project.rename')
+        self.assertEqual(change['result']['project_id'],renamed['project_id'])
+        self.assertEqual(change['changed_refs'][0]['before'],'真实项目')
+
     def test_item_basis_history_and_authoritative_status(self):
         initial = self.draft()
         deps = [{'dependency_id':f'dep_{item}', 'object_id':initial['object_id'],'revision_id':initial['revision_id'],'item_id':item,'kind':'fact'} for item in ['item_changed','item_stable']]

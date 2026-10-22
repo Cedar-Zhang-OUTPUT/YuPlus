@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.4](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.4)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.5](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.5)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -124,6 +124,16 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 `--input -` 从标准输入读取 UTF-8 JSON。上述核心业务写命令需要 `--request-id`；读取命令不需要。监控流程使用自身的配置版本、run/token 与稳定 step_key，内部生成并复用业务请求身份。`--json` 下标准输出只有一个结果对象，错误同样使用 JSON，并以非零退出码结束。参数可以放在命令路径之前或之后。
 
 `review.prepare` 返回当前依据和受影响内容，不调用模型生成文字。Agent 据此组织正文，再通过 `review.publish` 提交。用户要求改已有 review 时，先修改相关 draft；纯措辞要求先保存到 draft 的 `expression_guide`。
+
+### 项目重命名
+
+先用 `project show --project PROJECT_ID --json` 读取名称和 `metadata_version`，再执行：
+
+```sh
+./yu --data-dir .local/work project rename --project PROJECT_ID --name '新项目名称' --base-version METADATA_VERSION --request-id rename_001 --json
+```
+
+保留项目 ID、来源、draft/review、群监控及历史，记录新旧名称。名称不能为空；同名修改不增加版本；版本冲突时重新读取并核对。刷新页面即可显示新名称。
 
 ### 查询和按需恢复上下文
 

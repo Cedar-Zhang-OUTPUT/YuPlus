@@ -11,7 +11,7 @@ from .core import Context, YuError, canonical, digest, new_id, now, insert, get_
 
 CONTRACTS=Path(__file__).parent/'contracts'
 CORE_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
-WRITE_COMMANDS={'project.create','source.import','draft.apply','review.publish'}
+WRITE_COMMANDS={'project.create','project.rename','source.import','draft.apply','review.publish'}
 ID_PATTERN=re.compile(r'^[A-Za-z][A-Za-z0-9_-]{0,127}$')
 
 class App:
@@ -101,9 +101,13 @@ class App:
                 relevant=[err for err in leaves if list(err.absolute_path)!=['command']]
                 details=[{'path':'/'+ '/'.join(map(str,e.absolute_path)),'message':e.message[:300]} for e in relevant[:10]]
                 raise YuError('INVALID_INPUT','输入不符合命令 Schema。',details=details)
-        elif command=='project.create':
-            if set(payload)-{'name','api_version','command'} or not isinstance(payload.get('name'),str) or not payload['name'].strip():
+        elif command in {'project.create','project.rename'}:
+            allowed={'name','api_version','command'}
+            if command=='project.rename':allowed.add('base_metadata_version')
+            if set(payload)-allowed or not isinstance(payload.get('name'),str) or not payload['name'].strip():
                 raise YuError('INVALID_INPUT','项目名称不能为空，且不能包含未知字段。')
+            if command=='project.rename' and (type(payload.get('base_metadata_version')) is not int or payload['base_metadata_version']<1):
+                raise YuError('INVALID_INPUT','重命名需要 --base-version，使用 project show 返回的 metadata_version。')
         try: serialized=canonical(payload).encode('utf-8')
         except (ValueError,TypeError,UnicodeError) as exc: raise YuError('INVALID_INPUT','JSON 包含不支持的值。') from exc
         if len(serialized)>8*1024*1024:raise YuError('INPUT_TOO_LARGE','单次 JSON 不能超过 8 MiB。')
@@ -152,7 +156,22 @@ class App:
                 data={'effect':'changed','project_id':project_id,'name':payload['name'].strip(),'metadata_version':1,'working_scene':'draft','lifecycle':'active'}
             else:
                 self._project(project_id,True);ctx=Context(self.db,self.data_dir,project_id,cid)
-                if command=='source.import':
+                if command=='project.rename':
+                    project=self._project(project_id,True)
+                    if payload['base_metadata_version']!=project['metadata_version']:
+                        raise YuError('BASE_REVISION_CONFLICT','项目元信息已变化，请重新读取项目后再重命名。',
+                                      details=[{'expected':payload['base_metadata_version'],'actual':project['metadata_version']}],
+                                      next_action='运行 project show 核对当前名称和 metadata_version，再用新的 request-id 提交。')
+                    name=payload['name'].strip();changed=name!=project['name']
+                    version=project['metadata_version']+int(changed)
+                    if changed:
+                        self.db.execute('UPDATE projects SET name=?,metadata_version=?,updated_at=? WHERE id=?',
+                                        (name,version,now(),project_id))
+                        ctx.changed_refs.append({'project_id':project_id,'field':'name','before':project['name'],'after':name})
+                    data={'effect':'changed' if changed else 'noop','project_id':project_id,'name':name,
+                          'previous_name':project['name'],'metadata_version':version,
+                          'working_scene':project['working_scene'],'lifecycle':project['lifecycle']}
+                elif command=='source.import':
                     from .source import import_source
                     data=import_source(ctx,payload,prepared)
                 elif command=='draft.apply':
@@ -165,7 +184,7 @@ class App:
                 if self.db.execute(f'SELECT 1 FROM {table} WHERE project_id=? AND change_id=? AND sealed=0',(project_id,cid)).fetchone():
                     raise YuError('INTEGRITY_FAILURE','提交包含未封存版本。')
             insert(self.db,'changes',id=cid,project_id=project_id,command=command,effect=data.get('effect','changed'),request_id=request_id,request_hash=request_hash,
-                   actor_json=canonical({'kind':'cli'}),reason=payload.get('reason','创建项目'),causal_change_ids_json=canonical(sorted(set(ctx.causal_change_ids))),
+                   actor_json=canonical({'kind':'cli'}),reason=(f"项目重命名：{data['previous_name']} → {data['name']}" if command=='project.rename' else payload.get('reason','创建项目')),causal_change_ids_json=canonical(sorted(set(ctx.causal_change_ids))),
                    changed_refs_json=canonical(ctx.changed_refs),result_json=canonical(data),created_at=now())
             seq=self.db.execute('SELECT seq FROM changes WHERE id=?',(cid,)).fetchone()[0]
             result=self._envelope(command,project_id,request_id,data,cid,seq)

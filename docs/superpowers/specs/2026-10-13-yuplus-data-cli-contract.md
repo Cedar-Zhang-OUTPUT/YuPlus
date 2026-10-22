@@ -331,3 +331,12 @@ changes 在最终结果准备好后插入，版本引用它的外键延迟到 co
 最小链路实现已通过 86 项运行测试，覆盖请求重放、重复材料、旧 base、因果重复消费、表达指南、传递失效、多项目隔离和无变化不造版本；安装后的 CLI 演示也已通过。文件保存失败后的重试已验证，真实异常断电恢复、外部集成、完整复核记录命令及跨机器分发仍需后续验收。
 
 SQLite 外键依赖每个连接开启 foreign_keys；DDL 中的 STRICT 表约束存储类型，JSON 内部字段仍由 CLI 校验。参考：[SQLite 外键](https://www.sqlite.org/foreignkeys.html)、[STRICT 表](https://www.sqlite.org/stricttables.html)、[触发器](https://www.sqlite.org/lang_createtrigger.html)。输入使用 [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core)。
+
+
+### 已实现补充：project.rename（v0.3.5）
+
+CLI：`project rename --project ID --name NAME --base-version N --request-id REQUEST_ID --json`。使用 `project show` 返回的 `metadata_version` 作为 N，不接受 JSON `--input`。名称去除首尾空白后不能为空，N 必须是正整数。项目必须存在且未归档。
+
+领域输入：`{name: string, base_metadata_version: integer}`。返回 data：`{effect: changed|noop, project_id, previous_name, name, metadata_version, working_scene, lifecycle}`；标准 meta 提供变更 ID、历史游标和幂等重放标记。
+
+在单个写事务内核对元信息版本，变化时更新名称、updated_at 并将 metadata_version 加一；记录新旧名称。相同名称返回 noop，不改项目时间和版本。旧版本返回 `BASE_REVISION_CONFLICT`（退出码 4），请求 ID 改参数返回 `IDEMPOTENCY_CONFLICT`，失败不写历史。同参数重试返回原回执，不回滚后续改名。项目 ID 和所有业务关系保持不变，现有只读 `/api/view` 在下一次读取时返回新名称，无需新增 HTTP 写接口或数据库迁移。

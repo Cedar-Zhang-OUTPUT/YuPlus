@@ -35,3 +35,15 @@
 Docx 比较实际 revision；其他受支持资源使用元数据修改时间 `mtime:<latest_modify_time>`。收录这类资源时，将实际取得的标记写入 `snapshot.provenance.remote_marker`。如果内容读取前后标记不同，不能宣称是同一版本的完整快照；不编造标记。缺少可比较的收录基线就是 unknown，接口成功不等于内容未变。已知更新在后续检查失败时仍保留，直到新快照使旧观察失效。飞书失败不阻塞本地工作。
 
 用户要求同步，或更新属于已经授权的项目维护时：按相应 Skill 读取新版，追加真实来源快照，更新相关 draft，再更新依赖 review。不重写无关对象；有冲突时不能把新材料自动当成用户的新决定。纯措辞反馈仍先保存 draft 编写依据。
+
+## 项目重命名
+
+对应英文 `references/cli.md` 的 “Rename a project”。用户要求重命名时，明确已有项目 ID，用 `project show --project PROJECT_ID --json` 读取当前名称和 `metadata_version`，然后执行：
+
+```sh
+yu --data-dir DATA_DIR project rename --project PROJECT_ID --name '新项目名称' --base-version METADATA_VERSION --request-id REQUEST_ID --json
+```
+
+`--base-version` 使用刚读到的整数 `metadata_version`。名称去除首尾空白后不能为空。返回 `effect`、`project_id`、`name`、`previous_name`、`metadata_version`、`working_scene`、`lifecycle`，变更记录保留新旧名称。与当前名称相同时返回 `noop`，不增加元信息版本。重试复用相同请求 ID 和参数；版本冲突时先重新读取并核对用户意图，再用新请求 ID 提交。
+
+保留项目 ID、材料文件、来源身份、对象版本、群监控绑定与历史。不要新建项目替代，不移动数据目录，也不因重命名而改写 draft/review。成功后刷新原页面，项目列表、面包屑和新复制的引用会使用新名称；历史文档正文及先前已复制或导出的内容保留原有文字。
