@@ -2,6 +2,7 @@
 import http.client
 import json
 import os
+import sqlite3
 from pathlib import Path
 import subprocess
 import sys
@@ -25,8 +26,8 @@ assert val('--as')=='user' and val('--format')=='json'
 if args[:3]==['im','chats','get']:data={'chat_id':'oc_test','tenant_key':'tenant','name':'城市展项目群'}
 elif args[:2]==['im','+chat-messages-list']:
  rows=state['roots']; start=val('--start'); end=val('--end')
- def stamp(x):return datetime.fromisoformat(x.replace('Z','+00:00')).timestamp()*1000
- rows=[r for r in rows if (not start or int(r['create_time'])>=stamp(start)) and (not end or int(r['create_time'])<=stamp(end))]
+ def stamp(x):return int(x) if str(x).isdigit() else datetime.fromisoformat(x.replace('Z','+00:00')).timestamp()*1000
+ rows=[r for r in rows if (not start or stamp(r.get('filter_time',r['create_time']))>=stamp(start)) and (not end or stamp(r.get('filter_time',r['create_time']))<=stamp(end))]
  index=int(val('--page-token','0'));page=rows[index:index+1];more=index+1<len(rows)
  data={'messages':page,'total':len(page),'has_more':more,'page_token':str(index+1) if more else None}
 elif args[:2]==['im','+threads-messages-list']:
@@ -99,3 +100,48 @@ class MonitorE2ETests(unittest.TestCase):
         self.assertEqual(monitor['pending_count'],0);self.assertNotIn(run['token'],raw.decode());self.assertNotIn('payload_json',raw.decode())
         self.assertEqual(len(view['monitor_runs']),2)
         self.assertTrue(any('60万' in json.dumps(r,ensure_ascii=False) for r in view['object_revisions']))
+
+    def use_local_time_fixture(self):
+        self.env['TZ']='Asia/Shanghai'
+        state=json.loads(self.state.read_text())
+        state['roots'][0]['create_time']='2025-12-11 14:52'
+        state['replies'][0]['create_time']='2025-12-11 14:53:01'
+        state['roots'][1].update(create_time='2025-12-11 14:54',update_time='2025-12-11 15:02')
+        self.state.write_text(json.dumps(state))
+        return state
+
+    def test_local_time_full_cli_draft_review_chain(self):
+        self.use_local_time_fixture()
+        self.test_full_cli_service_chain_retry_and_restore()
+        with sqlite3.connect(self.data/'yuplus.sqlite') as db:
+            stored=db.execute("SELECT created_at,remote_updated_at,payload_json FROM monitor_messages WHERE message_id='om_new'").fetchall()
+        self.assertEqual(len(stored),1)
+        self.assertEqual(stored[0][:2],('2025-12-11T06:54:00.000000Z','2025-12-11T07:02:00.000000Z'))
+        self.assertEqual(json.loads(stored[0][2])['create_time'],'2025-12-11 14:54')
+
+    def test_interrupted_history_retries_checkpoint_without_duplicate_messages(self):
+        state=self.use_local_time_fixture()
+        state['roots'][1].update(filter_time='2025-12-11 14:54',create_time='bad')
+        self.state.write_text(json.dumps(state))
+        mid=self.monitor('add',{'chat_id':'oc_test'})['data']['monitor_id']
+        run=self.monitor('begin',{'monitor_id':mid})['data'];auth={k:run[k] for k in ('run_id','token')}
+        self.monitor('fetch',{**auth,'page_budget':1})
+        error=self.monitor('fetch',{**auth,'page_budget':20},ok=False)
+        self.assertEqual(error['error']['code'],'FEISHU_UNAVAILABLE')
+        with sqlite3.connect(self.data/'yuplus.sqlite') as db:
+            checkpoint=db.execute('SELECT cursor_json,fetch_complete FROM monitor_runs WHERE id=?',(run['run_id'],)).fetchone()
+            self.assertEqual(json.loads(checkpoint[0])['page_token'],'1')
+            self.assertEqual(checkpoint[1],0)
+            self.assertEqual(db.execute('SELECT count(*) FROM monitor_messages').fetchone()[0],1)
+        state['roots'][1]['create_time']='2025-12-11 14:54'
+        self.state.write_text(json.dumps(state))
+        self.assertTrue(self.monitor('fetch',{**auth,'page_budget':20})['data']['fetch_complete'])
+        pending=self.monitor('pending',auth)['data']['messages']
+        self.assertEqual([m['message_id'] for m in pending],['om_old','om_reply','om_new'])
+        self.assertEqual(self.monitor('pending',auth)['data']['messages'],pending)
+        for msg in pending:
+            self.monitor('resolve',{**auth,'message_versions':[msg['id']],'outcome':'no_change','reason':'模拟消息无业务改动'})
+        self.monitor('finish',{**auth,'summary':'完成断点续读验证'})
+        with sqlite3.connect(self.data/'yuplus.sqlite') as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM monitor_messages').fetchone()[0],3)
+            self.assertEqual(db.execute('SELECT history_complete,last_error FROM chat_monitors WHERE id=?',(mid,)).fetchone(),(1,None))

@@ -1,18 +1,15 @@
 """Durable chat intake and fenced Agent work, without a model or scheduler daemon."""
 from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import json
 import re
+from .message_time import message_time
 from .core import YuError, canonical, digest, new_id, now, affected_objects
 
 
 def instant(value):
     try:
-        if type(value) in (int,float) or (isinstance(value,str) and value.isdecimal()):
-            return datetime.fromtimestamp(int(value)/1000,timezone.utc).isoformat(timespec='microseconds').replace('+00:00','Z')
-        parsed=datetime.fromisoformat(value.replace('Z','+00:00'))
-        if parsed.tzinfo is None: raise ValueError()
-        return parsed.astimezone(timezone.utc).isoformat(timespec='microseconds').replace('+00:00','Z')
+        return message_time(value).isoformat(timespec='microseconds').replace('+00:00','Z')
     except (ValueError,TypeError,AttributeError,OverflowError,OSError): raise YuError('INVALID_INPUT','消息时间无效。')
 
 

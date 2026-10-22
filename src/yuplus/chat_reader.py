@@ -15,6 +15,7 @@ import subprocess
 from urllib.parse import parse_qs, urlsplit
 
 from .core import YuError
+from .message_time import message_time
 
 
 def _fail(message='飞书返回的数据不完整或格式无法识别。'):
@@ -33,16 +34,15 @@ def _identifier(value, prefixes, *, remote=False):
 def _time(value, *, bound=False):
     """Validate without replacing the provider's original timestamp."""
     try:
-        if not bound and ((type(value) is int and value >= 0) or
-                          (isinstance(value, str) and value.isascii() and value.isdigit())):
-            return int(value) / 1000
+        if not bound:
+            return message_time(value).timestamp()
         if not isinstance(value, str):
             raise ValueError
         stamp = datetime.fromisoformat(value.replace('Z', '+00:00'))
         if stamp.tzinfo is None:
             raise ValueError
         return stamp.timestamp()
-    except (ValueError, TypeError, OverflowError):
+    except (ValueError, TypeError, OverflowError, OSError):
         if bound:
             raise YuError('INVALID_INPUT', '消息时间范围必须是带时区的 ISO 时间。') from None
         _fail('飞书消息缺少可识别的创建时间。')
