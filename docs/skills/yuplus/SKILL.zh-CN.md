@@ -40,8 +40,8 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 | 接收口述或修改指令 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Spoken input and review instructions”（口述及 review 修改指令） | 已有对话文字无需转写 Skill。确有录音需要转写时，才使用适合的可用工具/Skill，并保留真实取得的内容。 |
 | 保存或追加来源材料 | [cli.md](../../../skills/yuplus/references/cli.md) 的 `source.import`；采集规则查上面相应材料小节 | 复用已经读到的材料；仅将其保存到 Yu+ 不需要重新运行外部 Skill。 |
 | 创建或修改 draft 对象 | [objects.md](../../../skills/yuplus/references/objects.md) 中相关对象条目，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `draft.apply` | 只有需要额外读取材料时才用外部 Skill。业务属性也可用 `yu types show --type TYPE --json` 查询；按 cli.md 的辅助工具说明，只查询需要的输入契约。 |
-| 组织 review 对象 | [objects.md](../../../skills/yuplus/references/objects.md) 中对应成果与依赖关系，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `review.prepare / review.publish` | 根据已读 draft 编写 review，本身不需要再调用飞书或文件读取 Skill。 |
-| 处理 review 反馈 | 下文“先改因，再改果”的顺序；[objects.md](../../../skills/yuplus/references/objects.md) 的相关业务条目或 `expression_guide`，再看 [cli.md](../../../skills/yuplus/references/cli.md) 对应 draft/review 小节 | 反馈带来新材料时，再按其材料类型读取。纯措辞修改不需要重开所有原始材料。 |
+| 进入整理或组织 review 对象 | [Review 固定结构](review-structure.zh-CN.md) 中生成范围和固定栏目，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `review.prepare / review.publish` | 根据已读 draft 编写 review，本身不需要再调用飞书或文件读取 Skill。 |
+| 处理 review 反馈 | 下文“先改因，再改果”的顺序及[Review 固定结构](review-structure.zh-CN.md)；[objects.md](../../../skills/yuplus/references/objects.md) 的相关业务条目或 `expression_guide`，再看 [cli.md](../../../skills/yuplus/references/cli.md) 对应 draft/review 小节 | 反馈带来新材料时，再按其材料类型读取。纯措辞修改不需要重开所有原始材料。 |
 | 打开页面、解释控件、查看版本或排查页面/服务问题 | [cli.md](../../../skills/yuplus/references/cli.md) 的“Local browser and copied references”（本地浏览器与复制引用） | 读取已安装的 `yuplus-visualization` Skill，按需查服务、界面或故障参考；已读则复用。纯界面问题无需重读完整项目。 |
 | 接收更新 Prompt 或页面引用 | 下文先改 draft 的顺序；[cli.md](../../../skills/yuplus/references/cli.md) 的本地浏览器与复制引用小节 | 定位或刷新页面才查可视化说明，业务修改用 Yu+ CLI。 |
 | 将项目 Review 导出到飞书 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Export saved Review”（导出已保存成果） | 按需读取 `lark-doc` 的创建/导入、回读与对应格式说明；需要附件时才读相应媒体指引。 |
@@ -85,13 +85,13 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 
 ### 信息整理 — review
 
-用户要求将已收集的信息整理成成果时，选择相关 draft 依据，运行 `review prepare`，组织连贯正文，再用 `review publish` 保存。保留真实 draft 条目和来源证据的关联。如需加入新的事实解读或采用口径，先落到 draft，再用于 review。R05 Q&A 仍展示 D15 的同一份数据，不另复制 review 文档。
+进入整理场景或收到 Review 请求时，按需读取[Review 固定结构](review-structure.zh-CN.md)，已读则复用。检查对应 draft 内容，生成请求范围内所有已有依据的成果，不能只写 Debrief；D09 和 D18 已有内容就必须生成 R02。每份成果只能使用规定的二级栏目及顺序。信息不全可补充，也可直接整理已知部分，不能编造事实或章节；没有 D19 可以暂不生成 R04。选择真实 draft 依据 → `review prepare` → `review publish`，回读核对结构和成果覆盖。新事实或采用口径先落到 draft。R05 仍展示同一个 D15。
 
 用户要求修改并保存 review 时，先改因，再改果：
 
 1. 定位受影响段落及其 draft 依赖；在可靠的情况下复用已知版本。
 2. 用户新补充的事实或编写指令尚未保存时，先收录为来源。
-3. **先修改 draft。** 事实纠正修改相应业务对象；仅措辞、强调、结构或删除要求，创建/修改面向该 review 及其段落的内部 `expression_guide`。保留无关业务事实。
+3. **先修改 draft。** 事实纠正修改相应业务对象；仅措辞、强调、结构或删除要求，创建/修改面向该 review 及其段落的内部 `expression_guide`。保留无关业务事实；编写依据仍须遵守 Review 固定栏目。
 4. 根据新依据运行 `review prepare`，再组织正文，用返回的真实版本及相关 draft 变更 ID 执行 `review publish`。保留未受影响段落；同一成果中其他已经过期的段落，也要处理后再发布。
 5. 检查其他受影响 draft/review 对象，沿实际依赖完成当前请求范围内的联动，说明仍未同步的内容。draft 成功而 review 失败时，保留 draft，并交代剩余工作。
 
@@ -110,7 +110,7 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 1. **继续补充或澄清：** 指出相关 draft 对象中实际存在、最值得补充或澄清的信息，说明对项目有什么用，以及如何提供，例如具体文档、会议纪要、文件或口述。复用已读上下文，不为此扫描全部对象或把对象目录变成填表清单。问题按 D15/D24 的用途规则分流；建议补充不等于自动创建客户 Q&A。
 2. **现在开始整理：** 根据已有信息提供适合当前任务的 review 成果或局部整理范围，未知处保留标注。这只是可选路径，不代表收集已经完成，不默认切换场景，也不在每次上传后都推荐生成主策 Debrief。不能仅因收到材料，就宣称“信息已足够／已完整”。
 
-例如新增场地照片，但尺寸和搭建限制仍未知时：“下一步你可以选：继续补充场地尺寸与搭建限制，上传平面图、踏勘纪要或口述已知限制，便于明确场地条件；也可以先按现有信息整理场地相关的 Review 内容，未确定处保留标注。” 整理目标必须适合当前项目任务；不能把这个示例理解成所有项目都需要补尺寸。
+例如新增场地照片，但尺寸和搭建限制仍未知时：“下一步你可以选：继续补充场地尺寸与搭建限制，上传平面图、踏勘纪要或口述已知限制，便于明确场地条件；也可以进入整理，检查已有对象并按固定结构生成对应成果，未确定处保留标注。” 整理目标必须适合当前项目任务；不能把这个示例理解成所有项目都需要补尺寸。
 
 两个选择要简短具体。不能为了凑第一个选择制造缺口：在已知范围没有明确补充建议时，如实说明，可继续提供新材料或修改意见，也可现在整理。不要反复追问已回答、已推迟或已拒绝的问题；只有新证据改变其价值时才更新建议。用户已选择继续上传时尊重其节奏，简短保留可整理的选项，不轮番推销。如果用户已经要求整理或指定任务，就直接完成，不再要求二次选择。review 中引导用户审阅、反馈或补充相关依据，不自动推向其他阶段。用户要暂停或确无有益后续时，可以到此结束，不制造工作。
 
@@ -253,6 +253,8 @@ D24 使用 `type_key=open_questions`、普通 draft 的 `scope_key=project` 和�
 - 返回 objects[].revision_id 和 meta.change_id 是新依据及修改原因；affected_draft_items、affected_reviews 指示接下来要检查的影响。不要盲目重做整个项目。
 
 #### review.prepare / review.publish
+
+编写前按[Review 固定结构](review-structure.zh-CN.md)确定应生成的成果与栏目。CLI 的 block 校验不强制这些业务栏目，发布前后须核对。
 
 prepare 输入：target（type_key/scope_key、已知 object_id）、cause_change_ids[]、select_basis[{object_id,item_ids}]。已有成果会自动带入现有依赖；首次成果要选择真实 draft 条目。prepare 返回真实 read_basis 和受影响段落，不生成 AI 正文。新建编写依据时，affected_blocks/affected_reviews 可能为空，因为尚无现有依赖过期；此时通过 available_causes[].eligible_blocks 确定本次要求改写的段落。过期影响列表为空不表示用户的修改要求取消。
 

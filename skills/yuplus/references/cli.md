@@ -95,6 +95,8 @@ D24 uses `type_key=open_questions`, ordinary draft scope `project`, and the same
 
 ### review.prepare / review.publish
 
+Before composing, follow [review-structure.md](review-structure.md) for which outputs to generate and their fixed sections. CLI block validation does not enforce that business outline; verify it before and after publishing.
+
 Prepare input: target (type_key/scope_key, known object_id), cause_change_ids[], select_basis[{object_id,item_ids}]. Existing outputs bring their dependencies automatically; initial output needs actual selected draft items. Prepare returns real read_basis and affected blocks, not AI-written content. For a new expression guide, affected_blocks/affected_reviews may be empty because no existing dependency is stale; use available_causes[].eligible_blocks to identify the requested rewrite scope. Empty stale-impact lists do not cancel the user’s instruction.
 
 Publish input: reason, documents[]. Each document supplies target, base_revision, read_basis, structure_cause_change_ids[], plus set_blocks/remove_blocks/title/block_order as needed. set_blocks has block_id, markdown, dependencies[], cause_change_ids[]. Preserve stable IDs. The CLI stores a complete reconstructed document.

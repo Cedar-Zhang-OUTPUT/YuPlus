@@ -16,7 +16,7 @@ If the original referenced item was deleted and several items were added, descri
 
 The live “复制更新 Prompt” concerns the selected review object. It carries a compact context: project ID/name, actual data directory, capture time, current object/revision IDs, block-level basis hints and missing-evidence identifiers. It is not a full source export or a CLI input payload. The page has only copied it; the user sends the Prompt to the Agent to request execution.
 
-Use the installed business `yuplus` skill, reading its relevant review/CLI reference only if needed:
+Use the installed business `yuplus` skill, consulting its `references/review-structure.md` fixed outline and relevant CLI guidance on demand (reuse once read):
 
 1. Reread the current target, actual old/current draft items and necessary sources from that data directory. A copied Prompt may be stale; preserve concurrent edits.
 2. If the user supplied new facts or expression/structure requirements, capture the instruction and update the relevant business draft or scoped expression guide first. If existing draft changes already justify synchronization, use those actual causes.
