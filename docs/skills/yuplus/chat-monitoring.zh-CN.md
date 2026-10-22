@@ -40,7 +40,9 @@ yu --data-dir DATA_DIR monitor fetch --project PROJECT_ID --input fetch.json --j
 | `fetch` | `run_id`、`token`；可选 `page_budget`（默认 20，1–100）；分页检查点失效时才用 `restart_window:true` |
 | `pending` | `run_id`、`token`；可选 `limit`（默认 25，1–100） |
 | `steps` | `run_id`、`token`；可选 `limit`（默认 25，1–100）、前一页 `next_after_step` 返回的 `after_step` |
-| `read`、`capture` | `run_id`、`token`、`message_version` |
+| `read` | `run_id`、`token`、`message_version` |
+| `capture`（优先：讨论片段） | `run_id`、`token`、`message_versions`（1–100 个实际版本）、可读 `title` |
+| `capture`（旧版单消息） | `run_id`、`token`、`message_version`；仅用于可独立理解的发言，不逐条收录 |
 | `step` | `run_id`、`token`、稳定 `step_key`、`command`、业务 `input`、`message_versions` |
 | `discard-step` | `run_id`、`token`、`step_key`、`reason`；仅用于未提交且被拒绝的步骤 |
 | `resolve` | `run_id`、`token`、`message_versions`、`outcome`、`reason`；`applied` / `clarification` 还需真实 draft `change_ids` |
@@ -53,8 +55,8 @@ yu --data-dir DATA_DIR monitor fetch --project PROJECT_ID --input fetch.json --j
 1. 读指定绑定，已暂停/解除则结束，不自行恢复。定时执行前，使用宿主工具核验当前主机、会话、真实任务范围及数据目录与保存的回执一致，再 `begin`。复制或迁移数据库不授权沿用旧主机回执，须实际核验后重新绑定；独立 CLI 无法认证 Codex 宿主身份，仅有已保存 `host_id` 不足以证明执行环境正确。`begin` 未到期返回 `due:false`；到期返回 `run_id`、`token`、`resumed`、`lease_seconds:600`。不能抢占有效项目租约；长时间分析时到期前 `renew`。恢复得到新 token，旧执行器无法继续写入。
 2. 分段 `fetch`，直到 `fetch_complete:true`。普通消息、话题及必要复查全部完成后，`pending` 才开放全局时间顺序队列。首次不设最早历史时间。固定窗口与分页进度持久化；预算耗尽或话题失败是未完成工作，不是历史收集完成。本次唤起不足以做完时保留可续进度。
 3. 有限量读取 `pending`，先检查 `unfinished_steps`。消息按创建时间、稳定消息身份及版本排序，先处理最早前缀，不跳到较晚结论。历史已经拉取不等于模型上下文已阅读全部历史。
-4. 对相关证据执行 `capture`，将真实消息版本保存为飞书消息来源，返回 `source_version_id`，用于 draft 依据和决策指令来源。只读相关当前对象及必要来源；相关文档/附件按对应材料 Skill 读取。附件链接不证明附件正文已读。
-5. 业务修改走 `monitor step`，每个预期提交使用稳定 `step_key` 并明确对应消息版本。支持 `source.import`、`draft.apply`、`review.publish`；`review prepare` 仍是独立只读命令。普通事实写 draft，区分建议、转述与真实决定。按用途遵守对象说明的 D15/D24 规则：具体客户澄清问答进入 D15；尚待探索、讨论的项目议题进入 D24，不取决于是谁提出。既定行动和已采用结论更新相关 draft 及决策历史；测试或操作上下文澄清留在对话中。会议或群聊中的问题不自动归入 D15；两类问题都保留消息证据。不编造共识。
+4. 收录前按需读[群聊材料处理](chat-materials.zh-CN.md)：先解释相关发言，再用 `message_versions` 和 `title` 合并 capture 讨论片段。独立文件、云文档和会议纪要实际下载/读取，通过 `monitor step` → `source.import` 保存本地资产及发送消息定位。附件标签不是事实，普通闲聊以适当的 `no_change` 留在队列。复用相关对象与已读来源。
+5. 来源导入和 draft 写入可覆盖多个消息版本。draft 仍需覆盖最早未处理前缀：先处置前面的无关闲聊；交错议题分别保留主题并引用各自片段/材料，覆盖实际已处理前缀，不为闲聊伪造事实。业务修改走 `monitor step`，每个预期提交使用稳定 `step_key` 并明确对应消息版本。支持 `source.import`、`draft.apply`、`review.publish`；`review prepare` 仍是独立只读命令。普通事实写 draft，区分建议、转述与真实决定。按用途遵守对象说明的 D15/D24 规则：具体客户澄清问答进入 D15；尚待探索、讨论的项目议题进入 D24，不取决于是谁提出。既定行动和已采用结论更新相关 draft 及决策历史；测试或操作上下文澄清留在对话中。会议或群聊中的问题不自动归入 D15；两类问题都保留消息证据。不编造共识。
 6. 已有 review 受影响时，保留真实 draft `change_id`，按当前依据 prepare，再通过另一个监控 step 发布；保留无关段落。绑定群不意味着自动新建整套 review。恢复 review 可以引用本轮已 resolve 的消息版本，仍须使用真正保存的 draft 原因。
 7. `resolve` 最早已处理前缀，outcome 为 `applied`、`no_change` 或 `clarification`，写具体原因。采用/待澄清必须有覆盖这些消息版本的真实 `draft.apply` 回执；一句总结或仅保存来源不够。`no_change` 不制造项目更新。继续分批处理直到没有未处置消息。
 8. `finish` 校验拉取完成、没有未处置消息、没有未完成步骤、已有受影响 review 已同步后，才保存完成。区分无新消息、无需业务变化、已保存 draft/review 变化及已记录的问题。完成被拒绝时继续指定工作，不声称成功。
@@ -78,3 +80,5 @@ yu --data-dir DATA_DIR monitor fetch --project PROJECT_ID --input fetch.json --j
 - 同一失败反复出现：保留进度，实际需要用户处理或持续故障时汇报；无变化的失败、空检查、`due:false` 不重复通知。项目确有保存变化或问题需要用户判断时，简要报告，提供真实证据/对象链接。
 
 浏览器“监控群聊”显示保存的覆盖范围、检查/完成时间、结果、待处理消息、历史澄清消息计数和错误。历史计数不代表未解决的 Q&A；历史收集完成不代表所有消息处理完成。陈旧调度回执要用宿主工具核验，逾期没有结果不证明 Agent 正在运行。增量读取重叠五分钟，复查最近24小时已知消息，持续检查已发现话题，并每日复查当前项目对象引用的消息；不保证发现更早且未被引用消息的全部编辑及此前未发现的旧话题。覆盖限于 API 可见历史；缺失消息不直接判为撤回，不可读附件保持未读取。
+
+分组 capture 返回 `source_version_id`、`source_id`、`change_id`、覆盖的 `message_versions` 和 `reused`。输入按时间归一化，重试保持相同成员与标题。返回的来源版本可作为 draft 依据及决策指令信源。CLI 不自动识别话题或读取附件；单消息 capture 仅保留兼容能力。片段资源类型为 `chat_segment`，不发明 conversation 命令，不先逐条导入成员。

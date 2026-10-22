@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.6](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.6)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.7](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.7)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -134,6 +134,15 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 ```
 
 保留项目 ID、来源、draft/review、群监控及历史，记录新旧名称。名称不能为空；同名修改不增加版本；版本冲突时重新读取并核对。刷新页面即可显示新名称。
+
+### 项目删除
+
+```sh
+./yu --data-dir .local/work project delete --project PROJECT_ID --base-version METADATA_VERSION --request-id delete_001 --json
+./yu --data-dir .local/work project list --include-deleted --json
+```
+
+版本来自 `project show`。软删除后，正常列表与页面隐藏项目、禁止业务写入，本地群监控暂停；保留材料和历史，不清除共享文件池。回执的 `scheduler_actions` 需由 Agent 使用宿主工具同步处理，不能把本地暂停当成已停宿主任务。本版没有永久清除/恢复命令。
 
 ### 查询和按需恢复上下文
 

@@ -44,6 +44,18 @@ yu --data-dir DATA_DIR project rename --project PROJECT_ID --name 'New project n
 
 Renaming keeps the project ID, material files, source identities, object revisions, monitoring bindings and history. Do not create a replacement project, move its data directory, or rewrite draft/review just to rename it. Refresh the existing page after success to update the project list, breadcrumb and newly copied references. Existing document text and old copied/exported content retain their historical wording.
 
+### Delete a project
+
+Only for an explicit user request to delete the identified project. Resolve ambiguity before writing, read `project show` for its current name and `metadata_version`, then run:
+
+```sh
+yu --data-dir DATA_DIR project delete --project PROJECT_ID --base-version METADATA_VERSION --request-id REQUEST_ID --json
+```
+
+Deletion is **soft deletion**, using lifecycle `archived`: the normal CLI list and browser hide it, business writes are blocked, local monitors are paused and active leases are invalidated atomically. Original files, object versions and history remain; this does not free disk space or delete a Feishu group/document. Never recursively remove the shared data directory or object pool. `project list --include-deleted --json` discovers retained projects, and `project show` can inspect one explicitly. There is no permanent purge/restore command in this release; do not invent one or edit SQLite.
+
+The response includes `deletion_mode:soft`, `retained_data:true`, new metadata version and `scheduler_actions`. These actions contain the saved monitor/scheduler receipts, not proof that host tasks were stopped. Use the host's native automation tool to pause/remove this project's actual task; if shared with other authorized projects, remove only this project's scope. Reuse the current user's deletion authorization. If host access is unavailable, report the remaining scheduler cleanup; local writes are already blocked. Do not claim complete host shutdown from the local result alone. Retrying an uncertain delete uses the identical request ID and base version; stale metadata must be reread before a fresh request.
+
 `draft/review show --revision REVISION_ID` retrieves an old version; `review list` discovers review identities and scope_key (currently omitted by review show); reuse a known scope or read this list when needed. Omit `--after-cursor` on the first history page. Its returned `next_cursor` is an opaque next-page token bound to the query and project. A numeric cursor means “strictly after this known change sequence”. Do not advance to `meta.history_cursor` while unread pages remain. If you already know the objects relevant to the request, read them directly rather than walking history from the beginning.
 
 `source show` returns metadata by default; `--include-body` explicitly requests body text. It has no field-selection or block-range flag. `draft show` returns a whole object, not just a selected item. Use the smallest existing object/source query and reuse it.
@@ -60,6 +72,8 @@ yu --data-dir DATA_DIR review publish --project PROJECT_ID --request-id REQUEST_
 All core inputs contain `api_version:"1"` and the matching dotted `command`. Writes need a unique request ID; `review prepare` is read-only. Unknown business fields are not required, but valid IDs, types, evidence and concurrency inputs are technical requirements.
 
 ### source.import
+
+For monitored group material, follow [chat-materials.md](chat-materials.md): grouped `monitor capture` produces one conversation-segment source; independent attachments/documents use `source.import` through a monitor step with copied local assets. An attachment’s `locator` and draft evidence locators can retain actual sending-message links/identities. Do not paste retrieval keys into business fields.
 
 - `target.mode=create`: provider, resource_type, and remote provider_key/canonical_url when applicable. `target.mode=append`: source_id and actual base_snapshot_id.
 - snapshot: title, provider_revision (string or null), captured_at (RFC3339), capture_scope, extraction_profile, provenance, plus body and/or assets. `advance_head` and reason are explicit.

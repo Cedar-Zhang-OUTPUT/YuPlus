@@ -47,9 +47,12 @@ For another Skill, locate its actual installed entry in the environment's Skill 
 
 **Save dated schedules structurally.** When collecting or changing project timing, consult the [D09 rules and examples](references/objects.md#d09-时间节点或区间milestones) on demand. Every concrete calendar point or complete interval must use D09 `time_kind` and `start` / `end` so it appears in the Gantt chart, not only in a prose item. Split multiple noncontiguous dates/ranges into separate items; retain TBC/proposal status and evidence. Only genuinely undated timing stays prose. Reuse guidance already read and verify the affected saved entries after writing.
 
+**Group conversations are contextual evidence.** Before turning fetched chat messages into sources or draft items, read [chat-materials.md](references/chat-materials.md). Capture coherent discussion/decision segments, retrieve and locally save independent files/documents/minutes, and keep resource keys and processing logs out of business prose. Fetching all history does not mean importing every message as a material.
+
 ## Orient without restarting
 
 - Establish the executable, data directory and project ID. Reuse them when already known. If several projects fit and the target is unclear, ask one project-selection question before writing. Create a project when requested; do not force one project per installation.
+- For an explicitly requested project deletion, read only [cli.md, “Delete a project”](references/cli.md#delete-a-project). Delete the identified project through CLI, retain the shared file pool and history, and handle its actual host scheduler bindings without affecting other projects.
 - For a project rename, read only [cli.md, “Rename a project”](references/cli.md#rename-a-project). Use the existing project ID and metadata version; this is a project metadata change, not a draft/review rewrite.
 - On initial setup or environment failure, follow [setup and material access](references/materials.md). Check Yu+ and Feishu CLI availability then, not every turn. Feishu failure does not prevent local-file or spoken-input work.
 - In a new or resumed conversation, recover only the context needed for this request: project identity and the relevant objects, sources or decisions. In the same conversation, reuse already-read content. After compaction, long interruption, suspected external changes or a version conflict, refresh the affected slice. Do not load every object, reference file or the full history at startup or each turn.

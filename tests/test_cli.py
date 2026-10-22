@@ -92,6 +92,17 @@ class CliAcceptanceTests(unittest.TestCase):
         self.assertIn(first["data"]["project_id"], json.dumps(listing))
         self.assertIn(second["data"]["project_id"], json.dumps(listing))
 
+    def test_delete_preserves_history_and_files_but_blocks_business_writes(self):
+        project, source, draft, review, _ = self.initial_chain()
+        self.invoke('project','delete','--project',project,'--request-id','missing_version',code=2)
+        deleted=self.invoke('project','delete','--project',project,'--base-version','1','--request-id','delete_once')
+        self.assertTrue(deleted['data']['retained_data'])
+        self.assertEqual(self.invoke('project','list')['data']['projects'],[])
+        self.assertEqual(self.invoke('project','list','--include-deleted')['data']['projects'][0]['project_id'],project)
+        self.assertEqual(self.invoke('source','show','--project',project,'--source',source['data']['source_id'])['data']['source_id'],source['data']['source_id'])
+        error=self.write(project,'draft.apply',example('04-draft-initial.input.json'),'write_deleted',code=5)
+        self.assertEqual(error['error']['code'],'PROJECT_ARCHIVED')
+
     def test_rename_preserves_full_project_chain_and_reports_errors(self):
         project, source, draft, review, _ = self.initial_chain()
         queries=[('source','show','--source',source['data']['source_id'],'--include-body'),

@@ -29,7 +29,7 @@ def read_snapshot(data_dir):
 
 
 def require_project(db, pid):
-    if not pid or not db.execute('SELECT 1 FROM projects WHERE id=?', (pid,)).fetchone():
+    if not pid or not db.execute("SELECT 1 FROM projects WHERE id=? AND lifecycle='active'", (pid,)).fetchone():
         raise YuError('PROJECT_NOT_FOUND', '项目不存在。')
 
 
@@ -170,7 +170,7 @@ def browser_view(db, data_dir, project_id=None):
     arrays = ('objects', 'object_revisions', 'sources', 'source_versions', 'changes', 'decisions',
               'revision_sources', 'revision_dependencies', 'review_checks', 'exports', 'source_files', 'blobs')
     view = {key: [] for key in arrays}
-    view.update(projects=[dict(row) for row in db.execute('SELECT * FROM projects ORDER BY created_at,id')],
+    view.update(projects=[dict(row) for row in db.execute("SELECT * FROM projects WHERE lifecycle='active' ORDER BY created_at,id")],
                 project_activity={}, catalog=catalog, basis_status_by_key={},
                 meta={'demo': False, 'mode': 'live', 'data_dir': str(Path(data_dir).resolve()),
                       'project_id': project_id, 'generated_at': now()})
@@ -178,7 +178,7 @@ def browser_view(db, data_dir, project_id=None):
         row = db.execute("SELECT id,reason,created_at FROM changes WHERE project_id=? AND effect='changed' ORDER BY seq DESC LIMIT 1", (project['id'],)).fetchone()
         view['project_activity'][project['id']] = {'change_id': row['id'], 'summary': row['reason'], 'at': row['created_at']} if row else None
     from .monitor import summaries
-    view['chat_monitors'] = summaries(db)
+    view['chat_monitors'] = [m for m in summaries(db) if m['project_id'] in {p['id'] for p in view['projects']}]
     view['monitor_runs'] = []
     if not project_id:
         return view

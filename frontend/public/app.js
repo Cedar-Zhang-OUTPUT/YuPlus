@@ -487,7 +487,7 @@ function renderInspector() {
       n.textContent = "「最新已收录版本」不等于飞书当前最新版本；这里只显示已保存的检查结果。";
       remote.append(n);
     }
-    if (src.canonical_url) body.append(remote);
+    if (src.canonical_url && !["message", "chat_segment"].includes(src.resource_type)) body.append(remote);
 
     // 快照
     const vers = DATA.source_versions.filter((v) => v.source_id === src.id).sort((a, b) => b.version - a.version);
@@ -2104,7 +2104,7 @@ function viewSources(pid) {
       if (s.remote_observation && s.remote_observation.conclusion === "changed") badges.append(tag("远端有更新", "orange", true));
       if (!s.check_error && s.remote_observation?.conclusion === "unchanged") badges.append(tag("检查时远端未变化", "green", true));
       if (s.remote_observation?.conclusion === "unknown") badges.append(tag("缺少比较基线", "gray"));
-      if (!s.last_checked_at && s.provider === "feishu") badges.append(tag("尚未检查远端", "gray"));
+      if (!s.last_checked_at && s.provider === "feishu" && !["message", "chat_segment"].includes(s.resource_type)) badges.append(tag("尚未检查远端", "gray"));
       g2.append(badges);
       row.append(g2);
       const rt = el("div", "tiny muted");

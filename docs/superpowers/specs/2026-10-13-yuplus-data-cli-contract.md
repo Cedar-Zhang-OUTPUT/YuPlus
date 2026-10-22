@@ -340,3 +340,12 @@ CLI：`project rename --project ID --name NAME --base-version N --request-id REQ
 领域输入：`{name: string, base_metadata_version: integer}`。返回 data：`{effect: changed|noop, project_id, previous_name, name, metadata_version, working_scene, lifecycle}`；标准 meta 提供变更 ID、历史游标和幂等重放标记。
 
 在单个写事务内核对元信息版本，变化时更新名称、updated_at 并将 metadata_version 加一；记录新旧名称。相同名称返回 noop，不改项目时间和版本。旧版本返回 `BASE_REVISION_CONFLICT`（退出码 4），请求 ID 改参数返回 `IDEMPOTENCY_CONFLICT`，失败不写历史。同参数重试返回原回执，不回滚后续改名。项目 ID 和所有业务关系保持不变，现有只读 `/api/view` 在下一次读取时返回新名称，无需新增 HTTP 写接口或数据库迁移。
+
+
+### v0.3.7 补充：讨论片段与项目删除
+
+`monitor capture` 支持 `{run_id,token,message_versions:[1–100个实际版本ID],title}`。成员按时间排序，不能混入同消息的多个版本；记录为 `feishu/chat_segment`，一份信源包含所选原文、参与者、时间及核实的消息/群定位。稳定身份由群与成员消息身份生成，重试复用同成员与标题。返回 source_version_id、source_id、change_id、message_versions、reused；CLI 不负责判断话题边界。保留旧 message_version 单消息参数，与 message_versions 互斥。片段成员仍参加监控复查，片段不使用文档 revision 扫描。无需新数据库迁移。
+
+`project delete --project ID --base-version N --request-id REQUEST_ID --json` 使用 project show 的 metadata_version，校验正整数、项目存在/活动及版本一致；失败原子回滚，同请求重试返回原回执。删除为软删除（lifecycle=archived），更新元信息版本、archived_at/updated_at 并记变更历史，暂停本地群监控、使租约失效。默认 project list 和只读页面隐藏项目，业务写入拒绝；显式 project show 与 list --include-deleted 可检查保留身份，原数据不物理清除。
+
+返回 effect、project_id、name、lifecycle、metadata_version、deletion_mode=soft、retained_data=true、scheduler_actions。scheduler_actions 是待协调的真实宿主调度回执，CLI 不自动操作宿主。共同调度任务仅移除此项目范围；不清理共享文件池。本版不提供永久清除或恢复命令。

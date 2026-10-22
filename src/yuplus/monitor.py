@@ -63,7 +63,7 @@ class Monitor:
                 'scheduler-bind':{'monitor_id','version','schedule'},'update':{'monitor_id','version','interval_minutes'},
                 **{a:{'monitor_id','version'} for a in ('pause','resume','remove')},'begin':{'monitor_id','force'},
                 'fetch':auth|{'page_budget','restart_window'},'pending':auth|{'limit'},'steps':auth|{'limit','after_step'},
-                'read':auth|{'message_version'},'renew':auth,'capture':auth|{'message_version'},
+                'read':auth|{'message_version'},'renew':auth,'capture':auth|{'message_version','message_versions','title'},
                 'step':auth|{'step_key','command','input','message_versions'},'discard-step':auth|{'step_key','reason'},
                 'resolve':auth|{'message_versions','outcome','reason','change_ids'},'finish':auth|{'summary'}}
         if action not in fields or set(p)-fields[action]:raise YuError('INVALID_INPUT','未知 monitor 命令或输入字段。')
@@ -160,8 +160,13 @@ class Monitor:
                       SELECT 1 FROM sources s JOIN source_versions sv ON sv.project_id=s.project_id AND sv.source_id=s.id
                       JOIN revision_sources rs ON rs.project_id=sv.project_id AND rs.source_version_id=sv.id
                       JOIN objects o ON o.project_id=rs.project_id AND o.current_revision_id=rs.revision_id
-                      WHERE s.project_id=? AND s.provider='feishu' AND s.resource_type='message'
-                        AND s.provider_key=? || ':' || mm.message_id))) ORDER BY mm.message_id''',
+                      WHERE s.project_id=? AND s.provider='feishu' AND ((s.resource_type='message' AND s.provider_key=? || ':' || mm.message_id)
+                         OR (s.resource_type='chat_segment' AND EXISTS (
+                           SELECT 1 FROM monitor_steps st, json_each(st.message_versions_json) member
+                           JOIN monitor_messages evidence ON evidence.id=member.value
+                           WHERE evidence.monitor_id=mm.monitor_id AND evidence.message_id=mm.message_id
+                             AND st.command='source.import' AND st.result_json IS NOT NULL
+                             AND json_extract(st.result_json,'$.data.snapshot_id')=sv.id)))))) ORDER BY mm.message_id''',
                     (m['id'],shifted(stamp,-86400),int(recheck),pid,m['identity']+':'+m['chat_id']))]
                 cursor={'phase':'roots','page_token':None,'threads':json.loads(m['threads_json']),'thread_index':0,'recheck_ids':ids,'detail_index':0,'daily_recheck':recheck}
                 self.db.execute("INSERT INTO monitor_runs(id,monitor_id,project_id,status,window_start,window_end,cursor_json,initial,created_at) VALUES(?,?,?,'fetching',?,?,?,?,?)",(rid,m['id'],pid,start,stamp,canonical(cursor),int(not m['history_complete']),stamp))
@@ -316,6 +321,7 @@ class Monitor:
             self.db.execute('UPDATE monitor_steps SET result_json=? WHERE run_id=? AND step_key=?',(canonical(result),run['id'],step['step_key']))
         return result
     def capture(self,pid,p):
+        if 'message_versions' in p:return self.capture_segment(pid,p)
         vid=p.get('message_version');selected={**p,'message_versions':[vid]};run,m,rows=self.selected(pid,selected);r=rows[0];msg=r['message']
         if r['source_version_id']:return {'source_version_id':r['source_version_id'],'reused':True}
         key=f'{m["identity"]}:{m["chat_id"]}:{r["message_id"]}'
@@ -340,6 +346,54 @@ class Monitor:
         with self.transaction():
             self.guard(pid,p);self.db.execute('UPDATE monitor_messages SET source_version_id=? WHERE id=?',(snapshot,vid))
         return {'source_version_id':snapshot,'source_id':result['data']['source_id'],'change_id':result['meta']['change_id']}
+    def capture_segment(self,pid,p):
+        if 'message_version' in p or not isinstance(p.get('title'),str) or not p['title'].strip():
+            raise YuError('INVALID_INPUT','讨论片段需要 title 与 message_versions，不同时接受 message_version。')
+        run,m,rows=self.selected(pid,p)
+        rows.sort(key=lambda r:(r['created_at'],r['message_id'],r['version']))
+        if len({r['message_id'] for r in rows})!=len(rows):
+            raise YuError('INVALID_INPUT','同一讨论片段不能混入同一消息的多个版本。')
+        ids=[r['id'] for r in rows]
+        membership=sorted(r['message_id'] for r in rows)
+        key=f'{m["identity"]}:segment_{digest(membership)[:32]}:{m["chat_id"]}:{membership[0]}'
+        from .source import _remote_identity
+        def location(row):
+            target={'provider':'feishu','resource_type':'chat_segment','provider_key':key,'canonical_url':row['message'].get('message_app_link')}
+            if isinstance(target['canonical_url'],str):
+                try:return _remote_identity(target)[1]
+                except YuError:pass
+            return m['chat_url']
+        old=self.db.execute("SELECT id,latest_snapshot_id FROM sources WHERE project_id=? AND provider='feishu' AND resource_type='chat_segment' AND provider_key=?",(pid,key)).fetchone()
+        target={'mode':'append','source_id':old['id'],'base_snapshot_id':old['latest_snapshot_id']} if old else {
+            'mode':'create','provider':'feishu','resource_type':'chat_segment','provider_key':key,'canonical_url':location(rows[0])}
+        parts=[p['title'].strip(), f'群聊：{m["chat_name"]}',
+               f'片段范围（UTC）：{rows[0]["created_at"]} — {rows[-1]["created_at"]}',
+               '以下为所选讨论片段的原始消息，不代表完整群历史。']
+        for row in rows:
+            msg=row['message'];sender=msg.get('sender',{})
+            name=sender.get('name') or sender.get('id') or '未知发言者' if isinstance(sender,dict) else str(sender)
+            text=msg.get('content','');text=text if isinstance(text,str) else canonical(text)
+            parts.extend(['',f'{name} · {msg.get("create_time",row["created_at"])}',
+                          f'出处：{location(row)}',('[消息已撤回]\n' if msg.get('deleted') else '')+(text or '[无文本消息]')])
+        payload={'api_version':'1','command':'source.import','target':target,
+                 'snapshot':{'title':p['title'].strip(),'provider_revision':None,'captured_at':max(r['observed_at'] for r in rows),
+                             'capture_scope':{'kind':'whole_resource'},'extraction_profile':'feishu-chat-segment-v1',
+                             'body':{'format':'text','text':'\n'.join(parts)},'provenance':{'method':'lark-cli-chat-segment'}},
+                 'advance_head':True,'reason':'保存有上下文的项目讨论片段'}
+        step_key='segment_'+digest(ids)[:48]
+        oldstep=self.db.execute('SELECT request_json,result_json FROM monitor_steps WHERE run_id=? AND step_key=?',(run['id'],step_key)).fetchone()
+        if oldstep:
+            original=json.loads(oldstep['request_json'])
+            if original['snapshot']['title']!=p['title'].strip():raise YuError('IDEMPOTENCY_CONFLICT','同一片段重试需保留原 title。')
+            payload=original
+        result=self.step(pid,{**p,'message_versions':ids,'step_key':step_key,'command':'source.import','input':payload})
+        snapshot=result['data']['snapshot_id']
+        with self.transaction():
+            self.guard(pid,p)
+            for vid in ids:self.db.execute('UPDATE monitor_messages SET source_version_id=? WHERE id=?',(snapshot,vid))
+        return {'source_version_id':snapshot,'source_id':result['data']['source_id'],
+                'change_id':result['meta']['change_id'],'message_versions':ids,'reused':bool(oldstep and oldstep['result_json']) or result['meta']['replayed']}
+
     def resolve(self,pid,p):
         outcome=p.get('outcome');reason=p.get('reason')
         if outcome not in ('applied','no_change','clarification') or not isinstance(reason,str) or not reason.strip():raise YuError('INVALID_INPUT','需要明确处置 outcome 与 reason。')

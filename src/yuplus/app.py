@@ -11,7 +11,7 @@ from .core import Context, YuError, canonical, digest, new_id, now, insert, get_
 
 CONTRACTS=Path(__file__).parent/'contracts'
 CORE_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'}
-WRITE_COMMANDS={'project.create','project.rename','source.import','draft.apply','review.publish'}
+WRITE_COMMANDS={'project.create','project.rename','project.delete','source.import','draft.apply','review.publish'}
 ID_PATTERN=re.compile(r'^[A-Za-z][A-Za-z0-9_-]{0,127}$')
 
 class App:
@@ -108,6 +108,9 @@ class App:
                 raise YuError('INVALID_INPUT','项目名称不能为空，且不能包含未知字段。')
             if command=='project.rename' and (type(payload.get('base_metadata_version')) is not int or payload['base_metadata_version']<1):
                 raise YuError('INVALID_INPUT','重命名需要 --base-version，使用 project show 返回的 metadata_version。')
+        elif command=='project.delete':
+            if set(payload)!={'base_metadata_version'} or type(payload.get('base_metadata_version')) is not int or payload['base_metadata_version']<1:
+                raise YuError('INVALID_INPUT','删除需要 --base-version，使用 project show 返回的 metadata_version。')
         try: serialized=canonical(payload).encode('utf-8')
         except (ValueError,TypeError,UnicodeError) as exc: raise YuError('INVALID_INPUT','JSON 包含不支持的值。') from exc
         if len(serialized)>8*1024*1024:raise YuError('INPUT_TOO_LARGE','单次 JSON 不能超过 8 MiB。')
@@ -156,7 +159,23 @@ class App:
                 data={'effect':'changed','project_id':project_id,'name':payload['name'].strip(),'metadata_version':1,'working_scene':'draft','lifecycle':'active'}
             else:
                 self._project(project_id,True);ctx=Context(self.db,self.data_dir,project_id,cid)
-                if command=='project.rename':
+                if command=='project.delete':
+                    project=self._project(project_id,True)
+                    if payload['base_metadata_version']!=project['metadata_version']:
+                        raise YuError('BASE_REVISION_CONFLICT','项目元信息已变化，请重新读取后再删除。')
+                    stamp=now();schedules=[]
+                    for monitor in self.db.execute("SELECT id,schedule_json FROM chat_monitors WHERE project_id=? AND status!='removed'",(project_id,)).fetchall():
+                        schedule=json.loads(monitor['schedule_json'])
+                        if schedule:schedules.append({'monitor_id':monitor['id'],'schedule':schedule})
+                        schedule['state']='pending'
+                        self.db.execute("UPDATE chat_monitors SET status='paused',version=version+1,schedule_json=? WHERE id=?",(canonical(schedule),monitor['id']))
+                    self.db.execute('DELETE FROM monitor_leases WHERE project_id=?',(project_id,))
+                    self.db.execute("UPDATE projects SET lifecycle='archived',archived_at=?,updated_at=?,metadata_version=metadata_version+1 WHERE id=?",(stamp,stamp,project_id))
+                    ctx.changed_refs.append({'project_id':project_id,'field':'lifecycle','before':'active','after':'archived'})
+                    data={'effect':'changed','project_id':project_id,'name':project['name'],'lifecycle':'archived',
+                          'metadata_version':project['metadata_version']+1,'deletion_mode':'soft',
+                          'scheduler_actions':schedules,'retained_data':True}
+                elif command=='project.rename':
                     project=self._project(project_id,True)
                     if payload['base_metadata_version']!=project['metadata_version']:
                         raise YuError('BASE_REVISION_CONFLICT','项目元信息已变化，请重新读取项目后再重命名。',
@@ -184,7 +203,7 @@ class App:
                 if self.db.execute(f'SELECT 1 FROM {table} WHERE project_id=? AND change_id=? AND sealed=0',(project_id,cid)).fetchone():
                     raise YuError('INTEGRITY_FAILURE','提交包含未封存版本。')
             insert(self.db,'changes',id=cid,project_id=project_id,command=command,effect=data.get('effect','changed'),request_id=request_id,request_hash=request_hash,
-                   actor_json=canonical({'kind':'cli'}),reason=(f"项目重命名：{data['previous_name']} → {data['name']}" if command=='project.rename' else payload.get('reason','创建项目')),causal_change_ids_json=canonical(sorted(set(ctx.causal_change_ids))),
+                   actor_json=canonical({'kind':'cli'}),reason=(f"项目重命名：{data['previous_name']} → {data['name']}" if command=='project.rename' else f"删除项目：{data['name']}（保留历史）" if command=='project.delete' else payload.get('reason','创建项目')),causal_change_ids_json=canonical(sorted(set(ctx.causal_change_ids))),
                    changed_refs_json=canonical(ctx.changed_refs),result_json=canonical(data),created_at=now())
             seq=self.db.execute('SELECT seq FROM changes WHERE id=?',(cid,)).fetchone()[0]
             result=self._envelope(command,project_id,request_id,data,cid,seq)
@@ -206,7 +225,7 @@ class App:
         return base64.urlsafe_b64encode(canonical({'v':1,'project_id':pid,'command':command,'seq':seq,'id':ident}).encode()).decode()
     def _read(self,command,payload,pid):
         if command=='project.list':
-            return {'projects':[{'project_id':r['id'],**{k:r[k] for k in ('name','working_scene','lifecycle','metadata_version')}} for r in self.db.execute('SELECT * FROM projects ORDER BY created_at,id')]}
+            return {'projects':[{'project_id':r['id'],**{k:r[k] for k in ('name','working_scene','lifecycle','metadata_version')}} for r in self.db.execute("SELECT * FROM projects WHERE lifecycle='active' OR ? ORDER BY created_at,id",(payload.get('include_deleted') is True,))]}
         if command=='doctor':
             return {'sqlite_version':sqlite3.sqlite_version,'data_dir':str(self.data_dir),'schema_version':self.db.execute('PRAGMA user_version').fetchone()[0],'journal_mode':'wal'}
         if command=='types.show':

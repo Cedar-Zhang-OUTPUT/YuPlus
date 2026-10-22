@@ -9,7 +9,7 @@ from .app import App
 from .core import YuError
 
 COMMANDS={
-    'project.create','project.rename','project.list','project.show','source.import','source.list','source.show',
+    'project.create','project.rename','project.delete','project.list','project.show','source.import','source.list','source.show',
     'draft.apply','draft.list','draft.show','review.prepare','review.publish','review.list','review.show',
     'changes.list','decisions.list','types.show','doctor','serve','start','stop','status',
     'backup.create','backup.verify','backup.restore','source.check',
@@ -56,13 +56,14 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.6）',
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.7）',
                   epilog='可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
     parser.add_argument('--data-dir')
     parser.add_argument('--port',type=int,default=7801,help='serve 本地端口（0 自动分配）')
-    parser.add_argument('--base-version',type=int,help='project rename: project show 返回的 metadata_version')
+    parser.add_argument('--include-deleted',action='store_true',help='project list: 包含软删除项目')
+    parser.add_argument('--base-version',type=int,help='project rename/delete: project show 返回的 metadata_version')
     parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
     parser.add_argument('--monitor')
     parser.add_argument('--output');parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
@@ -84,6 +85,9 @@ def main(argv=None):
             if len(raw)>8*1024*1024:raise YuError('INPUT_TOO_LARGE','单次 JSON 不能超过 8 MiB。')
             try:payload=parse_json(raw.decode('utf-8'))
             except UnicodeDecodeError as exc:raise YuError('INVALID_INPUT','输入必须是 UTF-8。') from exc
+        elif command=='project.delete':
+            if args.input:raise YuError('INVALID_INPUT','删除项目使用 --project 与 --base-version，不接受 --input。')
+            payload={'base_metadata_version':args.base_version}
         elif command in {'project.create','project.rename'}:
             if not args.name:raise YuError('INVALID_INPUT','创建或重命名项目需要 --name。')
             if args.input:raise YuError('INVALID_INPUT','项目名称通过 --name 提供，不接受 --input。')
@@ -91,6 +95,7 @@ def main(argv=None):
             if command=='project.rename':payload['base_metadata_version']=args.base_version
         else:
             payload={}
+            if command=='project.list':payload['include_deleted']=args.include_deleted
             mapping={'source_id':args.source,'snapshot_id':args.snapshot,'object_id':args.object,'revision_id':args.revision,'type_key':args.type_key}
             if args.monitor:payload['monitor_id']=args.monitor
             payload.update({k:v for k,v in mapping.items() if v is not None})

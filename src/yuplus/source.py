@@ -162,7 +162,7 @@ def _remote_identity(target: dict) -> tuple[str, str]:
     if target['provider'] == 'feishu':
         if url.scheme != 'https' or not (host.endswith('.feishu.cn') or host.endswith('.larksuite.com') or host.endswith('.larkoffice.com')):
             raise YuError('INVALID_INPUT', 'Feishu sources require a supported HTTPS Feishu/Lark document link.')
-        if target['resource_type'] == 'message':
+        if target['resource_type'] in {'message', 'chat_segment'}:
             return _message_identity(key, url, host, port)
         match = re.fullmatch(r'/(docx|docs|doc|sheets|sheet|base|bitable|file|slides)/([A-Za-z0-9_-]+)', path)
         if not match:

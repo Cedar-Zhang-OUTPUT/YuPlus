@@ -21,6 +21,10 @@ Read this for first setup, a changed environment, or the relevant material sourc
 - Each new service start checks saved Feishu sources in the background; `source check` runs an on-demand scan. Read [operations.md](operations.md) for comparison markers and handling observed updates. Checks save observations/errors only, without importing content or changing draft/review. Refresh the page to see results; no recurring scheduler or push notifications are provided.
 - Sending a result to Feishu is an external action, separate from local import. Use the user's actual instruction and destination. Yu+ has no export-recording command yet; do not pretend an externally created link has been recorded as a versioned export.
 
+## Materials shared in a group
+
+For group-origin documents, files, images or meeting minutes, read [chat-materials.md](chat-materials.md) before deciding what to save. Save readable local content with copied assets, preserve the verified message locator as provenance, and keep the material separate from the contextual discussion segment. Receiving a file tag is not reading the file.
+
 ## Local files, images and video
 
 Use an available PDF/document/media skill or direct tool reading when appropriate. Preserve original bytes with `assets[].storage="copy"` unless the user intentionally prefers an external reference (such as a very large video). External references can become unavailable or change.

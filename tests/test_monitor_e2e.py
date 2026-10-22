@@ -145,3 +145,46 @@ class MonitorE2ETests(unittest.TestCase):
         with sqlite3.connect(self.data/'yuplus.sqlite') as db:
             self.assertEqual(db.execute('SELECT count(*) FROM monitor_messages').fetchone()[0],3)
             self.assertEqual(db.execute('SELECT history_complete,last_error FROM chat_monitors WHERE id=?',(mid,)).fetchone(),(1,None))
+
+    def test_group_discussion_and_attachment_become_two_readable_sources(self):
+        reader=helpers.FakeReader()
+        self.state.write_text(json.dumps({'roots':[
+            reader.msg('om_file',1000,'<file key="file_fixture" name="项目 Brief.txt"/>'),
+            reader.msg('om_question',2000,'快闪日也有晚宴？'),
+            reader.msg('om_answer',3000,'是的')], 'replies':[]}))
+        mid=self.monitor('add',{'chat_id':'oc_test'})['data']['monitor_id']
+        run=self.monitor('begin',{'monitor_id':mid})['data'];auth={k:run[k] for k in ('run_id','token')}
+        self.monitor('fetch',{**auth,'page_budget':20})
+        messages=self.monitor('pending',auth)['data']['messages'];ids=[m['id'] for m in messages]
+        segment=self.monitor('capture',{**auth,'message_versions':ids[1:],'title':'活动形式 · 快闪日晚宴确认'})['data']
+        attachment=self.root/'项目 Brief.txt';attachment.write_text('项目希望通过快闪活动开展品牌展示。')
+        imported=self.step(auth,ids[0],'attachment','source.import',{
+            'api_version':'1','command':'source.import','target':{'mode':'create','provider':'local','resource_type':'file','provider_key':'feishu-file-fixture'},
+            'snapshot':{'title':'项目 Brief.txt','provider_revision':None,'captured_at':'2026-10-22T00:00:00Z',
+                        'capture_scope':{'kind':'whole_resource'},'extraction_profile':'text-verbatim-v1',
+                        'body':{'format':'text','text':attachment.read_text()},'provenance':{'method':'downloaded-chat-attachment'},
+                        'assets':[{'asset_id':'brief_file','role':'original','display_name':attachment.name,'mime_type':'text/plain',
+                                   'local_path':str(attachment),'storage':'copy',
+                                   'locator':{'message_id':'om_file','message_url':'https://applink.feishu.cn/client/chat/open?openChatId=oc_test'}}]},
+            'advance_head':True,'reason':'保存实际文件内容与聊天出处'})['data']
+        draft=self.monitor('step',{**auth,'message_versions':ids,'step_key':'brief_facts','command':'draft.apply','input':{
+            'api_version':'1','command':'draft.apply','reason':'依据文件及完整问答维护项目事实','objects':[{
+                'op_id':'brief','type_key':'client_brief','scope_key':'project','base_revision':None,
+                'set_items':[{'item_id':'activity','data':{'requirement':'快闪活动开展品牌展示，快闪日包含晚宴。'},
+                              'epistemic_kind':'source_statement','source_refs':[
+                                  {'evidence_id':'brief','source_version_id':imported['snapshot_id'],'asset_id':'brief_file','kind':'supports'},
+                                  {'evidence_id':'discussion','source_version_id':segment['source_version_id'],'kind':'supports'}],
+                              'dependencies':[]}]}],'decisions':[]}})
+        self.monitor('resolve',{**auth,'message_versions':ids,'outcome':'applied','reason':'已读取文件并结合问答更新业务事实','change_ids':[draft['data']['meta']['change_id']]})
+        self.monitor('finish',{**auth,'summary':'一份文件、一段讨论，维护一条业务事实'})
+        sources=self.cli(['source','list','--project',self.pid])['data']['sources']
+        self.assertEqual(len(sources),2)
+        self.assertEqual({s['cached_title'] for s in sources},{'项目 Brief.txt','活动形式 · 快闪日晚宴确认'})
+        with sqlite3.connect(self.data/'yuplus.sqlite') as db:
+            self.assertEqual(db.execute("SELECT count(*) FROM sources WHERE resource_type='message'").fetchone()[0],0)
+        saved=self.cli(['draft','show','--project',self.pid,'--object',draft['data']['data']['objects'][0]['object_id']])['data']
+        self.assertNotIn('file_fixture',json.dumps(saved['items']))
+        self.assertEqual(len(saved['items']),1)
+        attachment.unlink()
+        source=self.cli(['source','show','--project',self.pid,'--source',imported['source_id'],'--include-body'])['data']
+        self.assertEqual(source['snapshot']['body']['text'],'项目希望通过快闪活动开展品牌展示。')

@@ -245,3 +245,14 @@ class MonitorTests(unittest.TestCase):
         verify_backup(backups[0]);db=sqlite3.connect(backups[0]/'yuplus.sqlite')
         try:self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],1)
         finally:db.close()
+
+    def test_project_delete_pauses_monitor_invalidates_lease_and_returns_host_receipt(self):
+        auth=self.begin()
+        schedule={'automation_id':'task_fixture','thread_id':'thread_fixture','host_id':'local','state':'active','interval_minutes':60}
+        self.call('scheduler-bind',{'monitor_id':self.mon,'version':1,'schedule':schedule})
+        result=self.app.execute('project.delete',{'base_metadata_version':1},project_id=self.pid,request_id='delete_monitor_project')['data']
+        self.assertEqual(result['scheduler_actions'][0]['schedule']['automation_id'],'task_fixture')
+        self.assertEqual(self.call('show',{'monitor_id':self.mon})['status'],'paused')
+        with self.assertRaises(YuError):self.call('fetch',{**auth,'page_budget':10})
+        with self.assertRaises(YuError):self.begin()
+        self.assertEqual(self.app.db.execute('SELECT count(*) FROM monitor_leases').fetchone()[0],0)

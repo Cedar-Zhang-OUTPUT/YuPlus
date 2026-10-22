@@ -90,6 +90,16 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(json.loads(raw)['data_dir'], str(self.data.resolve()))
         self.assertEqual(self.request('/api/view?project=missing')[0], 404)
 
+    def test_deleted_project_hidden_from_running_service_and_files_retained(self):
+        source, original=self.source();self.draft()
+        before=self.view(self.pid);asset=before['source_versions'][0]['assets'][0]
+        self.app.execute('project.delete',{'base_metadata_version':1},project_id=self.pid,request_id='delete_project')
+        self.assertEqual([p['id'] for p in self.view()['projects']],[self.other])
+        self.assertEqual(self.request('/api/view?project='+self.pid)[0],404)
+        self.assertEqual(self.request(asset['url'])[0],404)
+        self.assertTrue(original.exists())
+        self.assertTrue((self.data/'objects'/asset['storage_key']).is_file())
+
     def test_rename_is_visible_to_running_service_without_changing_project_contents(self):
         self.source();self.draft()
         before=self.view(self.pid)

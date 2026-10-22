@@ -96,3 +96,27 @@ class CoreTests(unittest.TestCase):
         with self.assertRaises(YuError) as err:
             self.app.execute('project.rename',{**valid,'base_metadata_version':2},project_id=pid,request_id='rename_archived')
         self.assertEqual(err.exception.code,'PROJECT_ARCHIVED')
+
+    def test_project_delete_is_soft_versioned_and_idempotent(self):
+        pid=self.create()['data']['project_id']
+        other=self.create('保留项目','project_2')['data']['project_id']
+        before=self.app.cursor(pid)
+        with self.assertRaises(YuError) as err:
+            self.app.execute('project.delete',{'base_metadata_version':2},project_id=pid,request_id='stale_delete')
+        self.assertEqual(err.exception.code,'BASE_REVISION_CONFLICT')
+        self.assertEqual(self.app.cursor(pid),before)
+        payload={'base_metadata_version':1}
+        result=self.app.execute('project.delete',payload,project_id=pid,request_id='delete_project')
+        self.assertEqual(result['data']['deletion_mode'],'soft')
+        replay=self.app.execute('project.delete',payload,project_id=pid,request_id='delete_project')
+        self.assertTrue(replay['meta']['replayed'])
+        self.assertEqual(replay['data'],result['data'])
+        self.assertEqual([r['project_id'] for r in self.app.execute('project.list')['data']['projects']],[other])
+        self.assertEqual(len(self.app.execute('project.list',{'include_deleted':True})['data']['projects']),2)
+        deleted=self.app.execute('project.show',project_id=pid)['data']
+        self.assertEqual(deleted['lifecycle'],'archived');self.assertEqual(deleted['metadata_version'],2)
+        with self.assertRaises(YuError) as err:
+            self.app.execute('project.rename',{'name':'不能改','base_metadata_version':2},project_id=pid,request_id='rename_deleted')
+        self.assertEqual(err.exception.code,'PROJECT_ARCHIVED')
+        for payload in [{},{'base_metadata_version':True},{'base_metadata_version':0}]:
+            with self.assertRaises(YuError):self.app.execute('project.delete',payload,project_id=other,request_id='bad_delete')
