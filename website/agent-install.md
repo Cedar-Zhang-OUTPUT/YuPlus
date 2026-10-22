@@ -5,16 +5,16 @@
 ## 当前发行版与可信来源
 
 - 支持平台：macOS。
-- GitHub Release：**v0.3.11**；Python 包 `yuplus-local` 的版本为 **0.3.11**，两者对应同一发行版。
+- GitHub Release：**v0.3.12**；Python 包 `yuplus-local` 的版本为 **0.3.12**，两者对应同一发行版。
 - 官方仓库：https://github.com/Cedar-Zhang-OUTPUT/YuPlus
-- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.11
-- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.11/YuPlus-v0.3.11.tar.gz
-- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.11/SHA256SUMS.txt
-- 安装包 SHA-256：`fafae54b085d3e51bcc20807454d69f0678354f5f224aa4a5d660af51749a16c`
+- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.12
+- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.12/YuPlus-v0.3.12.tar.gz
+- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.12/SHA256SUMS.txt
+- 安装包 SHA-256：`b368dc66734e9f8066fa38cad82baab8f8106f390ba20da497f56ce73af687a8`
 
 固定下载上述版本。不要将 main 分支、旧开发目录或演示数据冒充正式安装。版本发布后如发现错误，报告具体问题，不改写原发布包或擅自修改应用绕过校验。
 
-v0.3.11 更新 Review 工作流 Skill：进入整理时检查对应 draft，生成请求范围内已有依据的成果，不只生成 Debrief；各成果按原始业务表格使用固定二级栏目。D09 与 D18 已有内容时生成推进要素；缺少创作者资源时可暂不生成创作者 Brief。信息不足可补充或直接整理已知部分，修改仍先改 draft 再改 review。英文执行参考与中文审阅稿同步更新。保留此前的 UI、群聊监控及项目管理能力；数据库仍为 schema 3，本次无新增迁移。升级不会自动重写已有成果。
+v0.3.12 补齐 `draft delete`、`review delete`、`source delete`，以及对应 `restore` 命令。删除保留历史和文件；删除最后一个 Review 段落会保存空版本并隐藏成果，仍要求真实 draft 修改依据。普通列表和导出不再包含已删除根对象，历史引用可追溯。restore 重新启用原身份：来源原内容恢复展示，draft/Review 的空版本需按依据重新写入内容。Skill 与中文审阅稿已同步，保留 v0.3.11 的固定 Review 结构和生成规则。数据库仍为 schema 3，无新增迁移。升级不会删除材料或改写已有成果；只有用户明确要求时执行删除。
 
 ## 1. 识别已有环境
 
@@ -36,10 +36,10 @@ v0.3.11 更新 Review 工作流 Skill：进入整理时检查对应 draft，生�
 
 ```sh
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.11/YuPlus-v0.3.11.tar.gz \
-  --output YuPlus-v0.3.11.tar.gz
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.12/YuPlus-v0.3.12.tar.gz \
+  --output YuPlus-v0.3.12.tar.gz
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.11/SHA256SUMS.txt \
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.12/SHA256SUMS.txt \
   --output SHA256SUMS.txt
 shasum -a 256 -c SHA256SUMS.txt
 ```
@@ -47,8 +47,8 @@ shasum -a 256 -c SHA256SUMS.txt
 同时核对计算出的摘要与本文件上面的固定摘要。下载或校验失败时停止执行，不忽略错误继续解压。校验成功后：
 
 ```sh
-tar -xzf YuPlus-v0.3.11.tar.gz
-cd YuPlus-v0.3.11
+tar -xzf YuPlus-v0.3.12.tar.gz
+cd YuPlus-v0.3.12
 ```
 
 读取包内 README.md 及安装入口说明。安装包包含 CLI 源码、前端静态资源、两份 Skill 和安装器，不需要另外搭建数据库服务或 Node 前端服务。
@@ -63,9 +63,9 @@ cd YuPlus-v0.3.11
 
 已有自定义安装时，显式传入其应用前缀，例如 `./install.sh --prefix '/实际应用目录'`；安装器会沿用该前缀安装记录中的数据和 Skill 目录。仅在用户有意选择新位置时传 `--data-dir` 或 `--skills-dir`，不指向 `.preview` 或验收目录。
 
-从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.11 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
+从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.12 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
 
-v0.3.11 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
+v0.3.12 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
 
 安装入口会复用满足 Python ≥3.12、SQLite ≥3.51.3 的运行环境；缺少时通过官方 uv 安装器准备私有 Python。之后安装 `yuplus-local`、`yuplus` 与 `yuplus-visualization` 两份 Skill，初始化数据目录并检查飞书认证。需要网络下载运行时与依赖；不修改 shell 配置。
 
@@ -73,11 +73,11 @@ v0.3.11 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不
 
 如果已有 Skill 是符号链接、非安装器管理或包含用户修改，安装器会拒绝覆盖。保留这些文件，说明具体路径和冲突，由用户选择处理方式。不要先删除旧 Skill 再重试。
 
-升级 v0.1/v0.2 系列数据库时，v0.3.11 首次访问会迁移到 schema 3，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的库。安装后查询包版本应为 `0.3.11`，并确认 `doctor` 返回 `schema_version: 3`。
+升级 v0.1/v0.2 系列数据库时，v0.3.12 首次访问会迁移到 schema 3，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的库。安装后查询包版本应为 `0.3.12`，并确认 `doctor` 返回 `schema_version: 3`。
 
 ## 4. 读取已安装 Skill，并检查环境
 
-读取两份已安装 Skill 的 `installation.json`，取得真实 CLI、Python 和数据目录；核对它们与应用安装记录一致。读取 `yuplus/SKILL.md` 与 `yuplus-visualization/SKILL.md`，按主文件指引读取当前步骤需要的参考文档，避免重复载入已读内容。升级后刷新当前会话中旧版 Skill 指引；确认 `yuplus/references/review-structure.md` 已随安装更新，在用户请求整理或纠正成果时按需读取。新 Skill 尚未被当前会话自动发现时，可直接读取已安装文件继续。`docs/skills/` 中的中文副本仅供用户审阅，不安装，也不作为 Agent 执行参考读取。
+读取两份已安装 Skill 的 `installation.json`，取得真实 CLI、Python 和数据目录；核对它们与应用安装记录一致。读取 `yuplus/SKILL.md` 与 `yuplus-visualization/SKILL.md`，按主文件指引读取当前步骤需要的参考文档，避免重复载入已读内容。升级后刷新当前会话中旧版 Skill 指引；确认 `yuplus/references/review-structure.md` 与 `references/deletion.md` 已随安装更新，分别在整理/纠正成果、删除/重新启用时按需读取。新 Skill 尚未被当前会话自动发现时，可直接读取已安装文件继续。`docs/skills/` 中的中文副本仅供用户审阅，不安装，也不作为 Agent 执行参考读取。
 
 飞书能力依赖本机 `lark-cli`。如已存在，使用可用的 `lark-shared` 指引检查认证；无 Skill 时先查 CLI 自身帮助，不猜命令。缺少飞书 CLI 或未登录时明确告知，但继续完成本地功能的启动。不要擅自安装飞书、替用户登录或扩大权限，不输出凭据。
 
@@ -101,7 +101,7 @@ CLI --data-dir DATA_DIR status --json
 
 ## 6. 群聊监控的安装边界
 
-v0.3.11 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
+v0.3.12 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
 
 默认间隔60分钟，可按用户要求调整；首次收集全部可访问历史，再按时间顺序维护 draft 和已有受影响 review。没有宿主定时工具时只能手动同步，不宣称自动检查已接通。真实群聊与定时唤起需在用户指定目标后验收；已保存调度回执不等于真实运行成功。
 
