@@ -659,3 +659,14 @@ html.reading-draft { overflow-anchor:none; }
 @media (prefers-reduced-motion: reduce) {
   .monitor-panel > header, .monitor-chevron, .monitor-disclosure { transition: none; }
 }
+
+
+/* Each header sticks within its own object, then leaves with the card bottom. */
+.card.object-card { overflow:visible; }
+.object-card > header {
+  position:sticky;
+  top:calc(var(--toolbar-height, 70px) + var(--object-header-offset, 0px));
+  z-index:4;
+  background:var(--bg-elevated);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+}

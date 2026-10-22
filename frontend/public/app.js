@@ -1100,7 +1100,7 @@ function viewDraft(pid) {
     section.setAttribute("aria-label", `${typeCode(o.type_key)} ${typeName(o.type_key)}`);
     if (o.id) section.append(objectBody(o, pid));
     else {
-      const card = el("div", "card");
+      const card = el("div", "card object-card");
       const header = el("header");
       header.append(codeChip(typeCode(o.type_key), (themeOf(o.type_key) || {}).hue));
       const title = el("h3"); title.textContent = typeName(o.type_key); header.append(title);
@@ -1241,7 +1241,7 @@ function objectBody(o, pid) {
   const isOld = rev && current && rev.id !== current.id;
   const code = typeCode(o.type_key);
 
-  const card = el("div", "card");
+  const card = el("div", "card object-card");
   const head = el("header");
   head.style.padding = "18px 22px";
   if (code) head.append(codeChip(code, (themeOf(o.type_key) || {}).hue || "gray"));
@@ -1822,7 +1822,7 @@ function reviewDocument(o, pid, kindMeta) {
     }
   }
 
-  const card = el("div", "card");
+  const card = el("div", "card object-card");
   const head = el("header");
   head.style.padding = "18px 22px";
   head.append(codeChip(kindMeta ? kindMeta.code : "R", "indigo"));
@@ -2560,6 +2560,20 @@ function go(hash) {
   } else location.hash = hash;
 }
 
+// Native sticky headers stay bounded by their own card. Only measure the
+// stacked directory offset when layout changes; no scroll-time repositioning.
+function updateObjectHeaderOffset() {
+  const layout = document.querySelector(".draft-layout");
+  if (!layout) return;
+  const directory = layout.querySelector(".draft-directory");
+  const stream = layout.querySelector(".draft-stream");
+  const stacked = directory && stream &&
+    Math.abs(directory.getBoundingClientRect().left - stream.getBoundingClientRect().left) < 10;
+  const extra = stacked ? directory.getBoundingClientRect().height + 24 : 0;
+  layout.style.setProperty("--object-header-offset", `${extra}px`);
+}
+const objectHeaderLayoutObserver = new ResizeObserver(updateObjectHeaderOffset);
+
 const toolbarSizeObserver = new ResizeObserver(() => {
   document.documentElement.style.setProperty("--toolbar-height", `${$("toolbar").getBoundingClientRect().height}px`);
 });
@@ -2610,6 +2624,9 @@ function renderStage(updateChrome = true) {
   renderInspectorExtra();
   highlightMoney(stage);
   initProseToggles();
+  objectHeaderLayoutObserver.disconnect();
+  for (const target of document.querySelectorAll(".draft-directory, .draft-stream")) objectHeaderLayoutObserver.observe(target);
+  updateObjectHeaderOffset();
   const projectDock = document.querySelector(".project-create-dock");
   if (projectDock) projectDockObserver.observe(projectDock);
   restoreDraftAnchor(anchor);
