@@ -14,7 +14,7 @@ import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timelin
 import { moneyMatches, formatMinor } from "./data/money-text.js";
 import { projectMonitors, projectMonitorSummary, monitorSummary, monitorPrompt, monitorRuns, monitorRunStatus, safeChatUrl } from "./data/monitoring.js";
 let pageLoadedAt = new Date();
-const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, versionOf: {} };
+const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, monitorExpanded: {}, versionOf: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
 const $ = (id) => document.getElementById(id);
@@ -829,14 +829,41 @@ function themeHueForProject(pid) {
 // Shared read-only monitor panel; all controls inspect data or copy a scoped intent.
 function projectMonitorPanel(pid) {
   const monitors = projectMonitors(DATA, pid);
-  const panel = el("section", "card");
+  const panel = el("section", "card monitor-panel");
   panel.style.marginTop = "20px";
   panel.setAttribute("aria-label", "监控群聊");
   const header = el("header");
   const title = el("h3", "grow"); title.textContent = "监控群聊";
   header.append(title, tag(projectMonitorSummary(DATA, pid), monitors.some(m => monitorSummary(m).attention) ? "orange" : "gray"));
+  const toggle = el("button", "chipbtn monitor-toggle");
+  toggle.type = "button";
+  const toggleLabel = el("span");
+  const chevron = el("span", "monitor-chevron");
+  chevron.setAttribute("aria-hidden", "true");
+  toggle.append(toggleLabel, chevron);
+  header.append(toggle);
   panel.append(header);
+  const region = el("div", "monitor-disclosure");
+  region.id = `monitor-details-${pid}`;
+  toggle.setAttribute("aria-controls", region.id);
+  const clip = el("div", "monitor-disclosure-clip");
   const body = el("div", "body");
+  clip.append(body);
+  region.append(clip);
+  function updateDisclosure() {
+    const expanded = S.monitorExpanded[pid] === true;
+    panel.classList.toggle("is-expanded", expanded);
+    toggle.setAttribute("aria-expanded", String(expanded));
+    toggle.setAttribute("aria-label", `${expanded ? "收起" : "展开"}监控群聊`);
+    toggleLabel.textContent = expanded ? "收起" : "展开";
+    region.inert = !expanded;
+    region.setAttribute("aria-hidden", String(!expanded));
+  }
+  toggle.onclick = () => {
+    S.monitorExpanded[pid] = !S.monitorExpanded[pid];
+    updateDisclosure();
+  };
+  updateDisclosure();
   if (!monitors.length) {
     const note = el("p", "small muted");
     note.textContent = "尚未绑定监控群聊。可在 Codex 中指定这个项目需要监控的飞书群。";
@@ -908,7 +935,7 @@ function projectMonitorPanel(pid) {
     note.textContent = "仅显示已保存的检查与同步结果。历史范围限于当前飞书身份可访问的消息；历史收集完成不等于全部消息已处理。复制 Prompt 不会执行操作。";
     body.append(note);
   }
-  panel.append(body);
+  panel.append(region);
   return panel;
 }
 
