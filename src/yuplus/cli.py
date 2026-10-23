@@ -59,7 +59,7 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.15）',
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.16）',
                   epilog='案例库 library：只保存文件夹名称和链接；内容由 Agent 按需用飞书 CLI 查找，不下载、缓存或索引。\nlibrary delete/restore 仅移除/恢复本地登记，不删除飞书文件夹。\n可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')

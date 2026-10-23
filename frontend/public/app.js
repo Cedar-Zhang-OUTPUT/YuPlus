@@ -4,6 +4,7 @@
    没有页面内聊天或评论。业务写入一律在 Codex 中由 Agent 通过 Yu+ CLI 完成。
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { loadingProgress } from "./data/loading-progress.js";
 import { exportHistory } from "./data/export-history.js";
 import { libraryView } from "./data/case-library.js";
 import { createProjectPromptTemplate } from "./data/project-create.js";
@@ -2871,17 +2872,24 @@ function renderInspectorExtra() {
 function render() { if (DATA) renderStage(); }
 
 let loadGeneration = 0;
+let activeLoading;
 async function loadRoute(force=false) {
   const generation = ++loadGeneration;
+  activeLoading?.stop();
+  activeLoading = null;
   const route = parseRoute();
   if (DATA && !force && (DATA.meta.demo || DATA.meta.project_id === route.pid)) {
     render();
   } else {
     const content = el('div','content');
-    content.append(empty('◷','正在读取项目内容',['从本机 Yu+ 数据目录读取已保存内容。']));
+    const progress = loadingProgress();
+    activeLoading = progress;
+    content.append(progress.element);
     $('stage').replaceChildren(content);
     try {
       const loaded = await loadView(route.pid);
+      if (generation !== loadGeneration || parseRoute().pid !== route.pid) return;
+      await progress.finish();
       if (generation !== loadGeneration || parseRoute().pid !== route.pid) return;
       DATA = loaded;
       DATA.meta.project_id = route.pid;
@@ -2889,6 +2897,7 @@ async function loadRoute(force=false) {
       pageLoadedAt = new Date();
       render();
     } catch (error) {
+      progress.stop();
       if (generation !== loadGeneration) return;
       const failure = el('div','content');
       failure.append(empty('!','无法读取项目内容',[error.message,'请确认本地服务地址及数据目录；读取失败不表示项目为空。']));
@@ -2897,6 +2906,9 @@ async function loadRoute(force=false) {
       // Retain navigation, but never render a different project's cached data.
       DATA = undefined;
       return;
+    } finally {
+      progress.stop();
+      if (activeLoading === progress) activeLoading = null;
     }
   }
   if (S.route?.view === 'draft' && S.route.objId) scrollToDraft(S.route.objId);

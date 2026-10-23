@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.15](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.15)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.16](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.16)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -166,8 +166,8 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - 一个数据目录管理多个项目，项目业务操作显式指定项目，拒绝跨项目的证据与对象引用。
 - 保存飞书、网页等来源的身份和 Agent 提供的内容；本地文件可复制或登记外部路径；口述保存原话及归属。
 - 24 类 draft 对象按需建立，内部条目有稳定 ID；无业务信息完整度门槛。D24“开放性问题”保留尚待探索、讨论或判断的议题；D15 保存具体客户澄清问答，R05 使用 D15 的同一份数据。
-- v0.3.15 新增工作空间案例库登记（独立于项目）：`library add/list/show/update/delete/restore`，只保存名称、链接及登记元数据；内容由 Agent 使用飞书 CLI 按需查找，不在 Yu+ 缓存。删除与恢复只影响本地登记，不改变飞书文件夹。
-- v0.3.15 将旧库升级为 schema 4，迁移前保存完整备份；不自动搬迁原有 Q&A 内容。升级前停止旧服务，安装后重启，回退时恢复升级前备份到新目录。
+- v0.3.16 新增工作空间案例库登记（独立于项目）：`library add/list/show/update/delete/restore`，只保存名称、链接及登记元数据；内容由 Agent 使用飞书 CLI 按需查找，不在 Yu+ 缓存。删除与恢复只影响本地登记，不改变飞书文件夹。
+- v0.3.16 将旧库升级为 schema 4，迁移前保存完整备份；不自动搬迁原有 Q&A 内容。升级前停止旧服务，安装后重启，回退时恢复升级前备份到新目录。
 - 来源快照、draft/review 版本及决策只追加。更新比较基础版本，重放同键同请求返回原回执。
 - review 更新校验相关 draft 变更、段落因果履历和依赖有效性；CLI 不判断自然语言的分析是否正确。
 - 一个 draft 批次或一次 review 发布分别原子提交。draft 已保存而 review 发布失败时，保留 draft，读取新的依据后继续。
