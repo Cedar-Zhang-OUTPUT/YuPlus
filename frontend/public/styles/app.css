@@ -202,6 +202,13 @@ nav button .n, .navrow .n { margin-left:auto; font-size:12px; color:var(--label-
 .item .field dd.money { font-variant-numeric:tabular-nums; font-weight:600; }
 .money { color:var(--red); font-variant-numeric:tabular-nums; font-weight:600; }
 .item .prose { font-size:14.5px; line-height:1.68; }
+.draft-qa-item .ihead { align-items:flex-start; margin-bottom:14px; }
+.draft-qa-item .ihead .grow { display:none; }
+.draft-qa-item .topic {
+  flex:1 1 240px; min-width:0;
+  font-size:20px; font-weight:700; line-height:1.5;
+}
+.draft-qa-item .prose { font-size:16px; line-height:1.8; }
 .collapsible-prose:not(.is-expanded) { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
 .collapsible-prose.is-collapsible { cursor:pointer; }
 .collapsible-prose:focus-visible { outline:2px solid var(--blue); outline-offset:3px; border-radius:4px; }

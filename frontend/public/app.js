@@ -1492,6 +1492,7 @@ function deliveryTimeline(o, rev) {
 /* 单条 draft 条目 */
 function itemCard(o, rev, it, hue) {
   const d = el("div", "item");
+  if (o.type_key === "qa") d.classList.add("draft-qa-item");
   d.style.setProperty("--h", hue);
 
   const head = el("div", "ihead");
