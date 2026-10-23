@@ -37,9 +37,9 @@ class App:
         # executescript commits any pending transaction, so put BEGIN in the script.
         # Concurrent starters serialize on BEGIN and re-check user_version afterwards.
         initial_version=self.db.execute('PRAGMA user_version').fetchone()[0]
-        if initial_version in (1,2,3):
+        if initial_version in (1,2,3,4):
             from .backup import create_backup
-            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_schema4'))
+            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_schema5'))
         # SQLite requires FK enforcement off before starting a table rebuild;
         # add_open_questions validates all references before commit.
         if initial_version in (0,1,2):self.db.execute('PRAGMA foreign_keys=OFF')
@@ -58,7 +58,7 @@ class App:
                         self.db.execute(pending);pending=''
                 if pending.strip() and not all(x.strip().startswith('--') or not x.strip() for x in pending.splitlines()):
                     raise YuError('INTEGRITY_FAILURE','Schema 文件不完整。')
-            elif version not in (1,2,3,4): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
+            elif version not in (1,2,3,4,5): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
             if version in (0,1):
                 pending=''
                 for line in (CONTRACTS/'monitor-schema.sql').read_text().splitlines(keepends=True):
@@ -74,6 +74,9 @@ class App:
                     pending+=line
                     if sqlite3.complete_statement(pending):
                         self.db.execute(pending);pending=''
+            if version in (0,1,2,3,4):
+                self.db.execute("ALTER TABLE case_libraries ADD COLUMN kind TEXT NOT NULL DEFAULT 'feishu_folder' CHECK(kind IN ('feishu_folder','website'))")
+                self.db.execute('PRAGMA user_version=5')
             self.db.execute('COMMIT')
         except BaseException:
             self.db.execute('ROLLBACK');raise

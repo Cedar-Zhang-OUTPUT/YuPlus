@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.18](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.18)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.19](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.19)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -214,6 +214,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 - [可视化界面信息展示 Spec](docs/superpowers/specs/2026-10-13-yuplus-visualization-information-spec.md)：完整对象、来源、关联与历史的展示需求，用于选择 UI example，不规定布局和风格。
 - [数据库与 CLI 契约](docs/superpowers/specs/2026-10-13-yuplus-data-cli-contract.md)
 - [最小链路实施计划](docs/superpowers/plans/2026-10-13-yuplus-minimal-cli.md)
+- [ADR-0001：找案例画板预览与程序自动刷新](docs/adr/0001-case-finding-whiteboard-preview.md)：已接受、待实现，与现有项目对象无直接关联。
 
 首版面向 macOS 本地使用。开发侧验证安装、重启、备份恢复和来源检查；真实 Agent 使用验收以及跨机器分发/升级验收由用户在发布后进行，不宣称已完成。
 
@@ -222,3 +223,5 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 子目改写/删除使用 `draft apply` 的 `set_items`/`remove_items`；Review 段落使用 `review publish` 的 `set_blocks`/`remove_blocks`，保留先 draft 后 review 的因果要求。整份对象及来源支持 `draft delete`、`review delete`、`source delete`（`--input` JSON），均为保留文件和历史的软删除。删除最后一个 Review 段落会隐藏空成果。`list --include-deleted` 查询保留记录；对应 `restore` 命令可重新启用原身份，draft/Review 的当前空内容需另按依据写回。详细契约与用法见 [Skill 删除指引](skills/yuplus/references/deletion.md)。
 
 飞书成果导出使用 Skill 的 `references/export.md` 完成准备、写入和回读；核验后由 `yu export record` 保存标题、链接、版本和时间，`yu export list --project ID` 查询。Review 页的历史图标只展示已保存记录。
+
+案例库支持 `kind=feishu_folder` 和 `kind=website` 两种源，均仅保存类型、名称和链接。前端提供两条独立的新增 Prompt；网站通过浏览器/网页工具按需查找，飞书文件夹通过飞书 CLI 查找。`library delete/restore` 均只影响本地登记。schema 5 为旧记录补充飞书文件夹类型，迁移前自动完整备份，保留原项目和案例库身份。

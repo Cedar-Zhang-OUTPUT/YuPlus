@@ -26,7 +26,7 @@ class LibraryTests(unittest.TestCase):
         first=self.app.execute('library.add',payload,request_id='same')
         again=self.app.execute('library.add',payload,request_id='same')
         self.assertEqual(first['data'],again['data']);self.assertTrue(again['meta']['replayed'])
-        self.assertEqual(first['meta']['library_policy']['storage'],'folder_metadata_only')
+        self.assertEqual(first['meta']['library_policy']['storage'],'source_metadata_only')
         self.assertEqual(again['meta']['library_policy']['deletion'],'local_registration_only')
         row=first['data'];self.assertEqual(row['url'],URL)
         with self.assertRaises(YuError):self.app.execute('library.add',{**payload,'name':'different'},request_id='same')
@@ -57,7 +57,7 @@ class LibraryTests(unittest.TestCase):
         old.db.execute('DROP TABLE case_library_requests');old.db.execute('DROP TABLE case_libraries');old.db.execute('PRAGMA user_version=3');old.close()
         migrated=App(legacy)
         try:
-            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],4)
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],5)
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
             self.assertEqual(migrated.execute('library.list')['data']['libraries'],[])
         finally:migrated.close()
@@ -79,6 +79,11 @@ class LibraryTests(unittest.TestCase):
         self.assertIsNone(restored['deleted_at'])
         self.assertEqual(restored['url'],URL)
         self.assertEqual(run('library','list')['libraries'][0]['id'],added['id'])
+        site=run('library','add','--request-id','cli_site','--input','-',payload={'api_version':'1','command':'library.add','kind':'website','name':'网站','url':'https://example.com/cases'})
+        self.assertEqual(run('library','show','--library',site['id'])['kind'],'website')
+        gone=run('library','delete','--request-id','cli_site_delete','--input','-',payload={'api_version':'1','command':'library.delete','library_id':site['id'],'base_version':1})
+        back=run('library','restore','--request-id','cli_site_restore','--input','-',payload={'api_version':'1','command':'library.restore','library_id':site['id'],'base_version':gone['version']})
+        self.assertEqual(back['kind'],'website')
 
 
     def test_http_view_is_workspace_scoped_and_read_only(self):
@@ -109,4 +114,49 @@ class LibraryTests(unittest.TestCase):
         for table in ['sources','source_versions','blobs','source_files','objects']:
             self.assertEqual(self.app.db.execute('SELECT count(*) FROM '+table).fetchone()[0],0)
         self.assertFalse((self.data/'objects').exists())
-        self.assertEqual(self.app.execute('library.show',{'library_id':row['id']})['meta']['library_policy']['lookup'],'on_demand_via_feishu_cli')
+        self.assertEqual(self.app.execute('library.show',{'library_id':row['id']})['meta']['library_policy']['lookup'],'on_demand_by_kind')
+
+    def test_website_lifecycle_validation_backup_and_no_materials(self):
+        url='https://Example.com:443/cases/?tag=art#selected'
+        row=self.write('add',kind='website',name='网站案例',url=url)
+        self.assertEqual(row['kind'],'website')
+        self.assertEqual(row['url'],'https://example.com/cases/?tag=art#selected')
+        with self.assertRaises(YuError):self.write('add',kind='website',name='重复',url=row['url'])
+        updated=self.write('update',library_id=row['id'],base_version=1,name='新网站名称',url=row['url'])
+        self.assertEqual(updated['kind'],'website')
+        with read_snapshot(self.data) as db:
+            self.assertEqual(browser_view(db,self.data)['case_libraries'][0]['kind'],'website')
+        self.write('delete',library_id=row['id'],base_version=2)
+        self.assertEqual(self.app.execute('library.list')['data']['libraries'],[])
+        restored=self.write('restore',library_id=row['id'],base_version=3)
+        self.assertEqual(restored['kind'],'website')
+        backup=self.root/'web-backup';create_backup(self.data,backup)
+        target=self.root/'web-restored';restore_backup(backup,target)
+        with read_snapshot(target) as db:
+            self.assertEqual(browser_view(db,target)['case_libraries'][0]['kind'],'website')
+        for table in ['sources','source_versions','blobs','objects']:
+            self.assertEqual(self.app.db.execute('SELECT count(*) FROM '+table).fetchone()[0],0)
+        for bad in ['',None,'javascript:alert(1)','file:///tmp/example','https://user:pass@example.com','https://example.com:bad','https://exa mple.com']:
+            with self.subTest(url=bad),self.assertRaises(YuError):self.write('add',kind='website',name='无效',url=bad)
+        with self.assertRaises(YuError):self.write('add',kind='unknown',name='无效',url='https://example.com')
+        http=self.write('add',kind='website',name='HTTP',url='http://example.org:80')
+        self.assertEqual(http['url'],'http://example.org/')
+
+    def test_schema_four_migration_keeps_folder_identity_and_backup(self):
+        legacy=self.root/'legacy4';old=App(legacy)
+        row=old.execute('library.add',{'api_version':'1','command':'library.add','name':'旧文件夹','url':URL},request_id='folder')['data']
+        project=old.execute('project.create',{'name':'旧项目'},request_id='old_project')['data']['project_id']
+        old.db.execute('ALTER TABLE case_libraries DROP COLUMN kind')
+        old.db.execute('PRAGMA user_version=4');old.close()
+        migrated=App(legacy)
+        try:
+            saved=migrated.execute('library.show',{'library_id':row['id']})['data']
+            self.assertEqual(saved['kind'],'feishu_folder')
+            self.assertEqual(saved['version'],row['version'])
+            self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],5)
+        finally:migrated.close()
+        backups=list((self.root/'legacy4-migration-backups').iterdir());self.assertEqual(len(backups),1)
+        with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:
+            self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],4)
+            self.assertNotIn('kind',[r[1] for r in db.execute('PRAGMA table_info(case_libraries)')])

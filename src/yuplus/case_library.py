@@ -1,11 +1,11 @@
-"""Workspace-wide Feishu folder registry. Contents stay on Feishu and are looked up by the Agent via Feishu CLI."""
+"""Workspace-wide source registry; contents stay remote and are read on demand."""
 import json
 import re
 from urllib.parse import urlsplit
 from .core import YuError, canonical, digest, new_id, now
 
 ACTIONS={'add','list','show','update','delete','restore'}
-POLICY={'storage':'folder_metadata_only','lookup':'on_demand_via_feishu_cli','deletion':'local_registration_only'}
+POLICY={'storage':'source_metadata_only','lookup':'on_demand_by_kind','deletion':'local_registration_only'}
 
 def envelope(app,*args,**kwargs):
     result=app._envelope(*args,**kwargs)
@@ -27,6 +27,28 @@ def folder_url(value):
         raise YuError('INVALID_INPUT','需要 https 飞书共享文件夹链接（/drive/folder/…），不能是文档或群聊链接。') from None
     return f'https://{host}/drive/folder/{match[1]}'
 
+def website_url(value):
+    if not isinstance(value,str) or len(value)>4096 or any(ord(c)<32 for c in value) or '\\' in value:
+        raise YuError('INVALID_INPUT','请提供 http 或 https 网站链接。')
+    try:
+        url=urlsplit(value.strip())
+        host=(url.hostname or '').encode('idna').decode('ascii').lower()
+        if url.scheme not in ('http','https') or not host or re.search(r'\s|[%/?#]',host) or url.username is not None or url.password is not None:
+            raise ValueError()
+        port=url.port
+        if ':' in host:host='['+host+']'
+        if port is not None and port != (443 if url.scheme=='https' else 80):host+=':'+str(port)
+        from urllib.parse import urlunsplit, quote
+        return urlunsplit((url.scheme,host,quote(url.path or '/',safe="/%:@!$&'()*+,;=-._~"),quote(url.query,safe="/%?:@!$&'()*+,;=-._~"),quote(url.fragment,safe="/%?:@!$&'()*+,;=-._~")))
+    except (ValueError,UnicodeError):
+        raise YuError('INVALID_INPUT','需要有效的 http 或 https 网站链接，不能包含登录凭据。') from None
+
+def source_url(value,kind):
+    if kind=='feishu_folder':return folder_url(value)
+    if kind=='website':return website_url(value)
+    raise YuError('INVALID_INPUT','kind 必须为 feishu_folder 或 website。')
+
+
 def listed(db,include_deleted=False):
     if not db.execute("SELECT 1 FROM sqlite_master WHERE name='case_libraries'").fetchone():return []
     return [dict(r) for r in db.execute('SELECT * FROM case_libraries'+('' if include_deleted else ' WHERE deleted_at IS NULL')+' ORDER BY created_at DESC,id')]
@@ -39,9 +61,9 @@ def execute(app,command,payload,project_id,request_id):
         if set(payload)-{'include_deleted'} or type(payload.get('include_deleted',False)) is not bool:raise YuError('INVALID_INPUT','无效列表参数。')
         return envelope(app,command,None,None,{'libraries':listed(app.db,payload.get('include_deleted',False))})
     allowed={'library_id'} if action=='show' else {'api_version','command','library_id','base_version'}
-    if action in ('add','update'):allowed|={'name','url'}
+    if action in ('add','update'):allowed|={'name','url','kind'}
     if action=='add':allowed-={'library_id','base_version'}
-    if set(payload)-allowed:raise YuError('INVALID_INPUT','案例库只登记文件夹名称和链接及管理元数据，不接收正文、附件、目录清单或内容索引。')
+    if set(payload)-allowed:raise YuError('INVALID_INPUT','案例库只登记类型、名称和链接及管理元数据，不接收正文、附件、目录清单或内容索引。')
     if action!='show':
         if payload.get('api_version')!='1' or payload.get('command')!=command:raise YuError('INVALID_INPUT','需要 api_version: 1 和匹配的 command。')
         if not isinstance(request_id,str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,127}',request_id):raise YuError('INVALID_INPUT','写操作需要合法 --request-id。')
@@ -51,7 +73,7 @@ def execute(app,command,payload,project_id,request_id):
     if action in ('add','update'):
         name=payload.get('name')
         if not isinstance(name,str) or not name.strip() or len(name)>200:raise YuError('INVALID_INPUT','案例库名称不能为空，最多 200 字。')
-        name=name.strip();url=folder_url(payload.get('url'))
+        name=name.strip()
     fingerprint=digest({'command':command,'input':payload})
     app.db.execute('BEGIN' if action=='show' else 'BEGIN IMMEDIATE')
     try:
@@ -70,15 +92,17 @@ def execute(app,command,payload,project_id,request_id):
         if row and row['version']!=payload['base_version']:raise YuError('VERSION_CONFLICT','案例库已变化，请重新读取。')
         if row and row['deleted_at'] and action!='restore':raise YuError('INVALID_INPUT','案例库已移除，请先恢复。')
         if row and not row['deleted_at'] and action=='restore':raise YuError('INVALID_INPUT','案例库未被移除。')
+        kind=payload.get('kind',row['kind'] if row else 'feishu_folder')
+        if action in ('add','update'):url=source_url(payload.get('url'),kind)
         identity=row['id'] if row else new_id('lib')
         stamp=now()
         if action in ('add','update'):
             duplicate=app.db.execute('SELECT id,deleted_at FROM case_libraries WHERE url=? AND id<>?',(url,identity)).fetchone()
-            if duplicate:raise YuError('ALREADY_EXISTS','该文件夹已保存；已移除的记录可恢复。',details=[dict(duplicate)])
+            if duplicate:raise YuError('ALREADY_EXISTS','该链接已保存；已移除的记录可恢复。',details=[dict(duplicate)])
         if action=='add':
-            app.db.execute('INSERT INTO case_libraries(id,name,url,version,created_at,updated_at) VALUES(?,?,?,1,?,?)',(identity,name,url,stamp,stamp))
+            app.db.execute('INSERT INTO case_libraries(id,name,url,kind,version,created_at,updated_at) VALUES(?,?,?,?,1,?,?)',(identity,name,url,kind,stamp,stamp))
         elif action=='update':
-            app.db.execute('UPDATE case_libraries SET name=?,url=?,version=version+1,updated_at=? WHERE id=?',(name,url,stamp,identity))
+            app.db.execute('UPDATE case_libraries SET name=?,url=?,kind=?,version=version+1,updated_at=? WHERE id=?',(name,url,kind,stamp,identity))
         else:
             app.db.execute('UPDATE case_libraries SET deleted_at=?,version=version+1,updated_at=? WHERE id=?',(stamp if action=='delete' else None,stamp,identity))
         result=dict(app.db.execute('SELECT * FROM case_libraries WHERE id=?',(identity,)).fetchone())
