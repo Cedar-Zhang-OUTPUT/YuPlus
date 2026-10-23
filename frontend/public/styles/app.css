@@ -700,6 +700,8 @@ html.reading-draft { overflow-anchor:none; }
 /* Case libraries reuse the workspace card, type and creation dock language. */
 .library-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:24px; }
 .library-card { min-width:0; margin:0; }
+.library-remove { color:var(--red); background:color-mix(in srgb,var(--red) 8%,transparent); }
+.library-remove:hover { background:color-mix(in srgb,var(--red) 14%,transparent); }
 .library-card header { flex-wrap:wrap; }
 .library-card h3 { overflow-wrap:anywhere; }
 .library-link { color:var(--blue); }
@@ -718,7 +720,7 @@ html.reading-draft { overflow-anchor:none; }
 
 /* Review export actions reuse the existing inspector and control tokens. */
 .review-export-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.export-history-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:10px}
+.export-history-toggle{width:22px;height:22px;padding:0;border:0}
 .export-history-toggle[aria-expanded="true"]{color:var(--blue);background:color-mix(in srgb,var(--blue) 8%,transparent)}
 .export-document-link{color:var(--blue);font-weight:600;overflow-wrap:anywhere}
 .export-history .relrow{align-items:flex-start}

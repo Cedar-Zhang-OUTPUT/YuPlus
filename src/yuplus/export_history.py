@@ -20,7 +20,7 @@ def validate(payload):
     except ValueError:
         raise YuError('INVALID_INPUT','需要可打开的 https 飞书云文档链接。') from None
     if not isinstance(payload['content_sha256'],str) or not re.fullmatch(r'[a-f0-9]{64}',payload['content_sha256']):
-        raise YuError('INVALID_INPUT','需要导出 manifest 中的 review_markdown_sha256。')
+        raise YuError('INVALID_INPUT','需要最终发布稿的 SHA256（64 位小写十六进制）。')
     basis=payload['view_basis']
     if not isinstance(basis,list) or not basis or len(basis)>1000:
         raise YuError('INVALID_INPUT','需要实际导出的非空成果版本清单。')

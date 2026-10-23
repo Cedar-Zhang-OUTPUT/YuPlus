@@ -46,7 +46,7 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 | 处理 review 反馈 | 下文“先改因，再改果”的顺序及[Review 固定结构](review-structure.zh-CN.md)；[objects.md](../../../skills/yuplus/references/objects.md) 的相关业务条目或 `expression_guide`，再看 [cli.md](../../../skills/yuplus/references/cli.md) 对应 draft/review 小节 | 反馈带来新材料时，再按其材料类型读取。纯措辞修改不需要重开所有原始材料。 |
 | 打开页面、解释控件、查看版本或排查页面/服务问题 | [cli.md](../../../skills/yuplus/references/cli.md) 的“Local browser and copied references”（本地浏览器与复制引用） | 读取已安装的 `yuplus-visualization` Skill，按需查服务、界面或故障参考；已读则复用。纯界面问题无需重读完整项目。 |
 | 接收更新 Prompt 或页面引用 | 下文先改 draft 的顺序；[cli.md](../../../skills/yuplus/references/cli.md) 的本地浏览器与复制引用小节 | 定位或刷新页面才查可视化说明，业务修改用 Yu+ CLI。 |
-| 将项目 Review 导出到飞书 | [export.zh-CN.md](export.zh-CN.md)，包括回读后记录保存 | 按需读取 `lark-doc` 的创建/导入、回读与对应格式说明；需要附件时才读相应媒体指引。 |
+| 将项目 Review 导出到飞书 | [export.zh-CN.md](export.zh-CN.md)，包括回读后记录保存 | 按需读取 `lark-doc` 的编写/创建、格式、媒体及回读指引；有必要制作原生排期时读取 `lark-base`。发布可读 Review 及相关引用，不发布技术包。 |
 | 处理 CLI 错误 | [cli.md](../../../skills/yuplus/references/cli.md) 的“Results and recovery”（回执与错误恢复）；必要时查失败命令的契约/帮助 | 只有涉及外部工具时，才查对应外部 Skill 的错误处理说明。 |
 
 使用其他 Skill 时，从运行环境的 Skill 列表找到实际已安装的条目，先读其 `SKILL.md`；如果相关指令在本会话中已经可用，就直接复用。后续只读当前任务需要的引用文件。不要假设 Yu+ 会自动加载或安装其他 Skill。指定 Skill 不可用时，使用工具/CLI 的实际帮助或其他合适的可用读取工具；确实缺能力就说明，不编造命令或安装路径。
@@ -151,7 +151,7 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 - 下载资产时遵守所安装飞书 CLI 的路径规则，然后把实际生成的本地路径交给 Yu+。不同工具可能接受不同路径形式。
 - 用户说明来源更新时，按需将新内容与保存的快照对照；追加来源，更新受影响 draft 条目，再更新受影响 review。不能覆盖旧证据，也不要假设所有对象都受影响。没有实质变更时如实说明未新增内容变更。
 - 每次新服务启动会后台检查已保存的飞书来源，`source check` 可按需检查。比较标记和更新处理见[运维参考](operations.zh-CN.md)。检查只保存观察结果和错误，不收录正文、不改写 draft/review。刷新页面查看结果；没有周期定时器或推送通知。
-- 把成果发到飞书是独立于本地导入的外部操作，需要用户实际指令与目的地。Yu+ 暂无导出记录命令，不能把外部新建链接说成已保存为有版本的导出记录。
+- 把成果发到飞书是独立于本地导入的外部操作，需要用户实际指令与目的地。远端回读核验后用 export record 保存回执；仅新建链接不代表已登记。
 
 群内分享的文件、文档、图片与会议纪要，按[群聊材料处理](chat-materials.zh-CN.md)保存可读本地内容和消息出处，与上下文讨论片段区分；收到文件标签不等于读过文件。
 
@@ -282,7 +282,7 @@ publish 输入：reason、documents[]。每份文档包含 target、base_revisio
 
 复制的引用/Prompt 是定位上下文，不是写入 JSON。绑定数据目录、项目、对象/条目/段落和所看版本，再读取目标当前内容。用户要求同步已有 draft 变化时，复用真实且尚未消费的 draft 原因，执行 prepare/publish，不为此伪造新修改。新事实或措辞要求仍先改 draft。不能用过期页面快照覆盖较新内容。检查请求范围内其他受影响实例，写入成功后刷新页面。
 
-### 准备完整本地导出
+### 准备内部导出依据快照
 
 使用安装 Yu+ 的 Python：
 
@@ -292,7 +292,7 @@ PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output
 
 模块以一致的已保存快照读取，在业务数据目录外生成 `review.md` 和 `manifest.json`；不改项目记录，不发布远端。内容包括全部当前 Review 实例、同一份 D15 Q&A、引用/当前 draft 版本、溯源关系、来源全文及登记资产元信息。检查 `references_complete`、警告、缺失引用和依据新鲜度。按授权修复缺失/过期内容，或明确保留并说明，不能静默称其已同步。资产元信息不会上传媒体，也不核验外部原文件是否仍可用。
 
-用 manifest 中的版本 ID 与哈希辅助远端回读核验。后续项目变更不改变这份固定导出快照。本地包不代表飞书导出成功，也不代表已保存导出历史；远端发布遵循材料参考。
+这两个文件仅供内部核对，不能原样发布技术正文或完整溯源附录。按 export.zh-CN.md 另写可读发布稿，回执摘要计算自最终发布稿，版本依据来自固定 manifest。后续项目变化不改变导出依据。本地包不代表飞书发布或登记成功。
 
 ### 当前未实现
 

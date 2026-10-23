@@ -46,7 +46,7 @@ export function libraryView(libraries, state, copy, fullTime) {
     const body = el('div', 'body');
     if (!url) body.append(el('p', 'small muted', '链接不可用，请让 Agent 检查这条案例库记录。'));
     body.append(el('p', 'tiny muted', `保存于 ${fullTime(library.created_at)}`));
-    const remove = el('button', 'chipbtn', '复制移除 Prompt');
+    const remove = el('button', 'chipbtn library-remove', '复制移除 Prompt');
     remove.type = 'button';
     remove.setAttribute('aria-label', `复制移除案例库 ${library.name} 的提示词`);
     remove.onclick = () => copy(libraryRemovalPrompt(library), remove);

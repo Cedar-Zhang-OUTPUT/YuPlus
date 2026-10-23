@@ -127,7 +127,7 @@ Use `yu --data-dir DATA_DIR start --json` for managed startup/reuse, `status` to
 
 A copied reference/Prompt is navigation context, not a write payload. Bind its data directory, project, object/item/block and viewed revision, then reread the current target. If the user wants synchronization after an existing draft change, reuse the genuine unconsumed draft cause and run prepare/publish; do not invent another draft edit. New facts or wording instructions first update their draft basis. Never overwrite newer content from a stale copied snapshot. Check all affected instances within the requested scope and refresh the browser after successful writes.
 
-## Prepare a complete local export
+## Prepare an internal export evidence snapshot
 
 Use the Python environment in which Yu+ is installed:
 
@@ -137,7 +137,7 @@ PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output
 
 This module reads one consistent saved snapshot and writes `review.md` plus `manifest.json` outside the business data directory. It does not mutate project records or publish remotely. The bundle contains all current Review instances, the same D15 Q&A, cited/current draft versions, provenance, source text and registered asset metadata. Inspect `references_complete`, warnings, missing references, and basis freshness. Resolve incomplete/stale content as authorized, or explicitly preserve and report it; never silently label it synchronized. Asset metadata does not upload media or verify that an external original is still available.
 
-Use the manifest's version IDs and hashes for remote readback. A later project change does not change this fixed export snapshot. A prepared bundle is not a successful Feishu export or a persisted export-history record. Follow [export.md](export.md) for external publication and verified receipt recording.
+Both files are internal evidence, not publication drafts: never publish the technical text or full provenance appendix verbatim. Follow [export.md](export.md) to author readable Review and hash the final publication draft for the receipt, retaining the fixed manifest's version basis. Later project changes do not change that basis. Local preparation alone is not successful Feishu publication or receipt recording.
 
 ## Not implemented in this release
 

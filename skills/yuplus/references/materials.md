@@ -19,7 +19,7 @@ Read this for first setup, a changed environment, or the relevant material sourc
 - For downloaded assets, follow that installed Feishu CLI's path rules, then provide the actual resulting local path to Yu+. Different tools may accept different path forms.
 - When the user reports a source update, compare the newly fetched content with the stored snapshot as needed; append the source, update affected draft items, then regenerate affected review content. Do not overwrite old evidence or assume every object is affected. If there is no substantive change, report the no-op.
 - Each new service start checks saved Feishu sources in the background; `source check` runs an on-demand scan. Read [operations.md](operations.md) for comparison markers and handling observed updates. Checks save observations/errors only, without importing content or changing draft/review. Refresh the page to see results; no recurring scheduler or push notifications are provided.
-- Sending a result to Feishu is an external action, separate from local import. Use the user's actual instruction and destination. Yu+ has no export-recording command yet; do not pretend an externally created link has been recorded as a versioned export.
+- Sending a result to Feishu is an external action, separate from local import. Use the user's actual instruction and destination. After remote readback verification, save a receipt with export record; merely creating a link does not record an export.
 
 ## Materials shared in a group
 
