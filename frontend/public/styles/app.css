@@ -696,3 +696,22 @@ html.reading-draft { overflow-anchor:none; }
   .project-prompt-text { flex-basis:100%; }
   .project-prompt-box > .chipbtn { margin-left:auto; }
 }
+
+/* Case libraries reuse the workspace card, type and creation dock language. */
+.library-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:24px; }
+.library-card { min-width:0; margin:0; }
+.library-card header { flex-wrap:wrap; }
+.library-card h3 { overflow-wrap:anywhere; }
+.library-link { color:var(--blue); }
+.library-prompt-box { margin-top:8px; align-items:center; gap:12px; }
+.library-url { flex:1; width:auto; min-width:0; margin:0; font-family:inherit; }
+.library-prompt-box .chipbtn { flex-shrink:0; }
+.library-prompt-box .chipbtn:disabled { opacity:.45; cursor:not-allowed; }
+@media (max-width:720px) {
+  .library-grid { gap:16px; }
+  .library-prompt-box { flex-wrap:wrap; }
+  .library-url { flex-basis:100%; }
+}
+
+.library-tag-gray { --h:var(--gray); }
+.library-tag-blue { --h:var(--blue); }

@@ -79,7 +79,7 @@ class OpenQuestionTests(unittest.TestCase):
         before={t:[tuple(r) for r in old.db.execute('SELECT * FROM '+t)] for t in tables};old.close()
         upgraded=App(path)
         try:
-            self.assertEqual(upgraded.db.execute('PRAGMA user_version').fetchone()[0],3)
+            self.assertEqual(upgraded.db.execute('PRAGMA user_version').fetchone()[0],4)
             self.assertEqual(upgraded.db.execute('PRAGMA foreign_keys').fetchone()[0],1)
             self.assertEqual(upgraded.db.execute('PRAGMA foreign_key_check').fetchall(),[])
             for t,rows in before.items():self.assertEqual([tuple(r) for r in upgraded.db.execute('SELECT * FROM '+t)],rows)

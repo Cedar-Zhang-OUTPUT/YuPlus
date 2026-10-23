@@ -144,3 +144,7 @@ Use the manifest's version IDs and hashes for remote readback. A later project c
 `project context`, project update/archive, diff/history/show helpers beyond those listed, relations queries, review check, exports and GC are not callable. Do not prescribe them as working commands. For today's task use existing show/list/read_basis/history receipts, or honestly state the limitation. Do not treat a user's acceptance as a persisted review-check record until that capability exists.
 
 Installed service management, complete backup/restore and `source check` are available; consult [operations.md](operations.md) only when needed.
+
+## Workspace case libraries
+
+`library add/list/show/update/delete/restore` manages folder registrations outside projects. Read [case-library.md](case-library.md) when using these commands. Yu+ stores title/URL and registration metadata only; find case contents on demand through Feishu CLI. `delete`/`restore` removes/restores the local registration, never the remote folder.

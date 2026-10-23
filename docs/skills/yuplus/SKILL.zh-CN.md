@@ -33,6 +33,7 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 
 | 步骤 | 查阅哪份 Yu+ 参考 | 何时使用其他 Skill |
 | --- | --- | --- |
+| 新增、使用、移除或恢复工作空间案例库 | [case-library.zh-CN.md](case-library.zh-CN.md) | 通过已安装的 `lark-drive` 和飞书 CLI 按需到登记的文件夹查找案例；只保存链接，不保存案例内容；移除只作用于本地登记。 |
 | 首次设置或环境故障 | [materials.md](../../../skills/yuplus/references/materials.md) 的“First setup”（首次设置） | 初次飞书健康检查或相关认证故障时，使用已安装的 `lark-shared` 认证说明；不要每次读材料前都检查。 |
 | 读取飞书材料 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Feishu documents and exports”（飞书文档与导出物） | 文档/wiki 内容用 `lark-doc`，文件下载/导出用 `lark-drive`；其他资源类型选择对应的已安装飞书 Skill。只读本次操作需要的说明。 |
 | 绑定用户指定的飞书群、执行定时检查、查看/暂停/恢复监控或续接失败同步 | [群聊监控](chat-monitoring.zh-CN.md) 中本次所需的绑定、执行或恢复部分 | 群身份及认证问题按需用已安装 `lark-im` / `lark-shared`；真实调度必须通过当前宿主自动化工具。 |

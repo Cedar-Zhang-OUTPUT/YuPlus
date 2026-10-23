@@ -28,7 +28,7 @@ def safe_file(root, name):
 
 def check_db(path):
     with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as db:
-        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3) or db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok' or db.execute('PRAGMA foreign_key_check').fetchone():
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4) or db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok' or db.execute('PRAGMA foreign_key_check').fetchone():
             raise YuError('INTEGRITY_FAILURE', '备份数据库校验失败。')
 
 
@@ -107,7 +107,7 @@ def restore_backup(directory, destination):
             if p.stat().st_size!=info['size'] or file_hash(p)!=info['sha256']: raise YuError('FILE_HASH_MISMATCH','恢复过程中备份发生变化。')
         check_db(dest/'yuplus.sqlite')
         with closing(sqlite3.connect(dest/'yuplus.sqlite')) as restored:
-            if restored.execute('PRAGMA user_version').fetchone()[0] in (2,3):
+            if restored.execute('PRAGMA user_version').fetchone()[0] in (2,3,4):
                 restored.execute("UPDATE chat_monitors SET status=CASE WHEN status='removed' THEN 'removed' ELSE 'paused' END,schedule_json='{}',version=version+1")
                 restored.execute('DELETE FROM monitor_leases')
                 restored.commit()

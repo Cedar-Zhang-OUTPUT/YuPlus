@@ -1,6 +1,6 @@
 ---
 name: yuplus
-description: Use when a lead planner works on a Yu+ project in Codex—collecting materials, organizing project information, reviewing outputs, or deciding the next useful action. Not for developing Yu+ itself or unrelated conversations.
+description: Use when a lead planner works on a Yu+ project in Codex—managing workspace case-library (案例库) folders, collecting materials, organizing project information, reviewing outputs, or deciding the next useful action. Not for developing Yu+ itself or unrelated conversations.
 ---
 
 # Yu+ project copilot
@@ -26,6 +26,7 @@ The files below are Yu+ references, not separate skills. Follow this routing whe
 
 | Step | Yu+ reference to consult | When to use another Skill |
 | --- | --- | --- |
+| Add, use, remove or restore workspace case-library folders | [case-library.md](references/case-library.md) | Use installed `lark-drive` and Feishu CLI to find/read cases in the registered folder on demand. Store links only, never case contents; deletion removes only the local registration. |
 | Install/start/stop, backup/restore, or remote update checks | [operations.md](references/operations.md), only the relevant section | Use installed lark-shared for authentication, and the matching material Skill when an observed update needs importing. |
 | First setup or environment failure | [materials.md](references/materials.md), “First setup” | Use the installed `lark-shared` authentication guidance for the initial Feishu health check or a relevant authentication failure; not before every material read. |
 | Read Feishu material | [materials.md](references/materials.md), “Feishu documents and exports” | Use `lark-doc` for documents/wiki content, `lark-drive` for file download/export; for other resource types select the matching installed Feishu Skill. Read only the guidance for the operation needed. |

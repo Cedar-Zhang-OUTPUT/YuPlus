@@ -37,9 +37,9 @@ class App:
         # executescript commits any pending transaction, so put BEGIN in the script.
         # Concurrent starters serialize on BEGIN and re-check user_version afterwards.
         initial_version=self.db.execute('PRAGMA user_version').fetchone()[0]
-        if initial_version in (1,2):
+        if initial_version in (1,2,3):
             from .backup import create_backup
-            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_open_questions'))
+            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_schema4'))
         # SQLite requires FK enforcement off before starting a table rebuild;
         # add_open_questions validates all references before commit.
         if initial_version in (0,1,2):self.db.execute('PRAGMA foreign_keys=OFF')
@@ -58,7 +58,7 @@ class App:
                         self.db.execute(pending);pending=''
                 if pending.strip() and not all(x.strip().startswith('--') or not x.strip() for x in pending.splitlines()):
                     raise YuError('INTEGRITY_FAILURE','Schema 文件不完整。')
-            elif version not in (1,2,3): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
+            elif version not in (1,2,3,4): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
             if version in (0,1):
                 pending=''
                 for line in (CONTRACTS/'monitor-schema.sql').read_text().splitlines(keepends=True):
@@ -68,6 +68,12 @@ class App:
             if version in (0,1,2):
                 from .migrations import add_open_questions
                 add_open_questions(self.db)
+            if version in (0,1,2,3):
+                pending=''
+                for line in (CONTRACTS/'case-library-schema.sql').read_text().splitlines(keepends=True):
+                    pending+=line
+                    if sqlite3.complete_statement(pending):
+                        self.db.execute(pending);pending=''
             self.db.execute('COMMIT')
         except BaseException:
             self.db.execute('ROLLBACK');raise
@@ -127,6 +133,9 @@ class App:
         return None
     def execute(self,command,payload=None,*,project_id=None,request_id=None,_guard=None,_record=None):
         payload={} if payload is None else payload
+        if command.startswith('library.'):
+            from .case_library import execute
+            return execute(self,command,payload,project_id,request_id)
         self._validate(command,payload,request_id)
         if command not in WRITE_COMMANDS:
             self.db.execute('BEGIN')

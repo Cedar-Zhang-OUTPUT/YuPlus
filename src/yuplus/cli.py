@@ -14,8 +14,10 @@ COMMANDS={
     'changes.list','decisions.list','types.show','doctor','serve','start','stop','status',
     'backup.create','backup.verify','backup.restore','source.check',
 }
+from .case_library import ACTIONS as LIBRARY_ACTIONS
+COMMANDS.update('library.'+action for action in LIBRARY_ACTIONS)
 COMMANDS.update(LIFECYCLE_COMMANDS)
-INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS
+INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS | {'library.'+a for a in LIBRARY_ACTIONS-{'list','show'}}
 MONITOR_ACTIONS={'add','list','show','runs','schedule','scheduler-bind','update','pause','resume','remove',
                  'begin','fetch','pending','steps','read','renew','capture','step','discard-step','resolve','finish'}
 COMMANDS.update('monitor.'+action for action in MONITOR_ACTIONS)
@@ -57,16 +59,16 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.14）',
-                  epilog='可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.15）',
+                  epilog='案例库 library：只保存文件夹名称和链接；内容由 Agent 按需用飞书 CLI 查找，不下载、缓存或索引。\nlibrary delete/restore 仅移除/恢复本地登记，不删除飞书文件夹。\n可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
     parser.add_argument('--data-dir')
     parser.add_argument('--port',type=int,default=7801,help='serve 本地端口（0 自动分配）')
-    parser.add_argument('--include-deleted',action='store_true',help='project/source/draft/review list: 包含软删除记录')
+    parser.add_argument('--include-deleted',action='store_true',help='project/source/draft/review/library list: 包含软删除记录')
     parser.add_argument('--base-version',type=int,help='project rename/delete: project show 返回的 metadata_version')
     parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
-    parser.add_argument('--monitor')
+    parser.add_argument('--monitor');parser.add_argument('--library',help='案例库 ID（library show）')
     parser.add_argument('--output');parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
     parser.add_argument('--include-body',action='store_true',help='source show 显式读取来源正文')
     parser.add_argument('--object');parser.add_argument('--revision');parser.add_argument('--type',dest='type_key')
@@ -96,8 +98,9 @@ def main(argv=None):
             if command=='project.rename':payload['base_metadata_version']=args.base_version
         else:
             payload={}
-            if command in {'project.list','source.list','draft.list','review.list'}:payload['include_deleted']=args.include_deleted
+            if command in {'project.list','source.list','draft.list','review.list','library.list'}:payload['include_deleted']=args.include_deleted
             mapping={'source_id':args.source,'snapshot_id':args.snapshot,'object_id':args.object,'revision_id':args.revision,'type_key':args.type_key}
+            if args.library:payload['library_id']=args.library
             if args.monitor:payload['monitor_id']=args.monitor
             payload.update({k:v for k,v in mapping.items() if v is not None})
             if args.include_body:payload['include_body']=True

@@ -4,6 +4,7 @@
    没有页面内聊天或评论。业务写入一律在 Codex 中由 Agent 通过 Yu+ CLI 完成。
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { libraryView } from "./data/case-library.js";
 import { createProjectPromptTemplate } from "./data/project-create.js";
 import { loadView } from "./data/runtime.js";
 let DATA;
@@ -15,7 +16,7 @@ import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timelin
 import { moneyMatches, formatMinor } from "./data/money-text.js";
 import { projectMonitors, projectMonitorSummary, monitorSummary, monitorPrompt, monitorRuns, monitorRunStatus, safeChatUrl } from "./data/monitoring.js";
 let pageLoadedAt = new Date();
-const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, monitorExpanded: {}, versionOf: {}, projectPrompts: { materials: {}, monitor: {} } };
+const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, monitorExpanded: {}, versionOf: {}, projectPrompts: { materials: {}, monitor: {} }, libraryPrompt: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
 const $ = (id) => document.getElementById(id);
@@ -2458,7 +2459,7 @@ function renderChrome() {
   const tb = $("toolbar"); tb.replaceChildren();
   const r = S.route;
   document.documentElement.classList.toggle("reading-draft", r.view === "draft");
-  tb.classList.toggle("project-toolbar", r.view === "projects");
+  tb.classList.toggle("project-toolbar", ["projects", "libraries"].includes(r.view));
   tb.classList.toggle("catalog-toolbar", r.view === "types");
 
   const crumbs = el("div", "crumbs");
@@ -2482,8 +2483,8 @@ function renderChrome() {
   menu.setAttribute("aria-controls", "navigation");
   menu.setAttribute("aria-expanded", String(document.body.classList.contains("navigation-open")));
   tb.append(menu);
-  if (r.view === "projects") {
-    const heading = el("h1", "largetitle"); heading.textContent = "项目";
+  if (["projects", "libraries"].includes(r.view)) {
+    const heading = el("h1", "largetitle"); heading.textContent = r.view === "libraries" ? "案例库" : "项目";
     tb.append(heading);
   } else {
     tb.append(crumbs);
@@ -2505,6 +2506,7 @@ function renderChrome() {
     return b;
   };
   addNav(sm, "项目", "#/", { icon: "▦", current: S.route.view === "projects" });
+  addNav(sm, "案例库", "#/libraries", { icon: "▤", current: S.route.view === "libraries" });
   addNav(sm, "对象说明", "#/types", { icon: "◇", current: S.route.view === "types", n: String(DATA.catalog.length) });
 
   const sp = $("sideProject"); sp.replaceChildren();
@@ -2545,6 +2547,7 @@ function parseRoute() {
   const parts = raw.split("/").filter(Boolean);
   const r = { view: "projects", pid: null, objId: null, sub: null };
   if (!parts.length) return r;
+  if (parts[0] === "libraries") { r.view = "libraries"; return r; }
   if (parts[0] === "types") { r.view = "types"; return r; }
   if (parts[0] === "p" && parts[1]) {
     r.pid = parts[1];
@@ -2613,6 +2616,7 @@ function renderStage(updateChrome = true) {
 
   let view;
   if (S.route.view === "projects") view = viewProjects();
+  else if (S.route.view === "libraries") view = libraryView(DATA.case_libraries, S.libraryPrompt, copyText, fullTime);
   else if (S.route.view === "types") view = viewCatalog();
   else if (S.route.view === "draft") view = viewDraft(S.route.pid);
   else if (S.route.view === "review") view = viewReview(S.route.pid);

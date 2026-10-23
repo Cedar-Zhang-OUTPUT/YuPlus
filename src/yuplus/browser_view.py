@@ -21,7 +21,7 @@ def read_snapshot(data_dir):
     try:
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
-        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3):
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4):
             raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
         yield db
     finally:
@@ -180,6 +180,8 @@ def browser_view(db, data_dir, project_id=None):
     from .monitor import summaries
     view['chat_monitors'] = [m for m in summaries(db) if m['project_id'] in {p['id'] for p in view['projects']}]
     view['monitor_runs'] = []
+    from .case_library import listed
+    view['case_libraries'] = listed(db)
     if not project_id:
         return view
     if db.execute("SELECT 1 FROM sqlite_master WHERE name='monitor_runs'").fetchone():

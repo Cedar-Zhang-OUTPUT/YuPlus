@@ -302,7 +302,7 @@ def prepare_bundle(data_dir, project_id, output_dir):
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
         try:
-            if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3):
+            if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4):
                 raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
             manifest = collect_snapshot(db, data_dir, project_id)
             db.execute('COMMIT')
