@@ -18,12 +18,19 @@ Read for an export request or history query; reuse once loaded. Export means a *
 | Content | Feishu presentation |
 | --- | --- |
 | Review narrative / Q&A | Clear headings and prose; readable question/answer or deliverable tables where useful. Preserve unanswered questions. |
-| Dates and ranges | Under the time section, prefer a native Base Gantt for meaningful schedules when available. Read installed `lark-base` creation, field, record and view guidance on demand. Keep actual dates and TBC labels; never invent dates to fill a chart. Link/embed the created view only as supported. Otherwise use a readable native timeline table and state the limitation. |
+| Dates and ranges | **A Gantt chart must be visible inside the Feishu document’s 时间节点或区间 section whenever it contains concrete dates or complete intervals.** Follow the mandatory procedure below. Prose, a normal table or a link alone does not satisfy this requirement. |
 | Cloud documents / meeting minutes | Place the original titled link beside the relevant summary or conclusion. Keep the full original accessible; do not paste entire minutes or message logs into Review. |
 | Local files / PDFs | Upload the actual relevant file as an attachment with its original readable filename. Use installed document-media/Drive guidance; position or reference it in the corresponding section as supported. Asset metadata is not an attachment. |
 | Important reference / case images | Insert selected original images beside the relevant content, with a short caption and source. Do not substitute image keys, invent case images or upload every source asset. Case-library lookup uses Feishu CLI on demand; do not import/cache the library into Yu+. |
 
 Use existing project references/assets first. Download/export needed Feishu material with its matching installed Skill. Temporary working files are not new Yu+ sources. Missing permissions/files: keep an available original link and describe the limitation; never claim an attachment or Gantt exists before verification. Supporting resources must serve this publication, not create a second project management system.
+
+## Required in-document Gantt
+
+- Use the exported Review snapshot and its exact D09 basis. Include **every** dated point and complete interval in scope; split noncontiguous dates/ranges. Show points as milestones and intervals as bars on a time axis. Preserve actual date/time precision, timezone and TBC/proposal labels; do not infer missing dates, duration or dependencies. Undated/partially dated items stay as explicit uncertainty below the chart; if none can be plotted, explain that instead of fabricating a chart.
+- Read installed `lark-doc` `references/lark-doc-whiteboard.md` and the required XML guidance once. The supported direct route is Mermaid `gantt` inside `<whiteboard type="mermaid">...</whiteboard>`, placed immediately under **时间节点或区间**. This must become a rendered Feishu whiteboard, not a fenced code block or raw Mermaid text. Use this route when a native Base Gantt cannot be embedded visibly in the document.
+- If using Base, read installed `lark-base` view guidance, create a real `gantt` view and bind the title/start/end fields. Verify the document embeds that actual Gantt view, not its default grid. A titled link to the Base may accompany an in-document chart but cannot replace it. Do not invent embed attributes; use the documented supported route.
+- Read back the inserted block and inspect its preview/rendering: the chart must be visible in the correct section, with all expected milestones/bars and correct dates. A block token or successful document write alone is insufficient. If rendering/insertion cannot be completed or verified, report the export as incomplete and retain the same document for repair; do not silently substitute a table or save a successful export receipt.
 
 ## Publish, verify, record
 

@@ -46,7 +46,7 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 | 处理 review 反馈 | 下文“先改因，再改果”的顺序及[Review 固定结构](review-structure.zh-CN.md)；[objects.md](../../../skills/yuplus/references/objects.md) 的相关业务条目或 `expression_guide`，再看 [cli.md](../../../skills/yuplus/references/cli.md) 对应 draft/review 小节 | 反馈带来新材料时，再按其材料类型读取。纯措辞修改不需要重开所有原始材料。 |
 | 打开页面、解释控件、查看版本或排查页面/服务问题 | [cli.md](../../../skills/yuplus/references/cli.md) 的“Local browser and copied references”（本地浏览器与复制引用） | 读取已安装的 `yuplus-visualization` Skill，按需查服务、界面或故障参考；已读则复用。纯界面问题无需重读完整项目。 |
 | 接收更新 Prompt 或页面引用 | 下文先改 draft 的顺序；[cli.md](../../../skills/yuplus/references/cli.md) 的本地浏览器与复制引用小节 | 定位或刷新页面才查可视化说明，业务修改用 Yu+ CLI。 |
-| 将项目 Review 导出到飞书 | [export.zh-CN.md](export.zh-CN.md)，包括回读后记录保存 | 按需读取 `lark-doc` 的编写/创建、格式、媒体及回读指引；有必要制作原生排期时读取 `lark-base`。发布可读 Review 及相关引用，不发布技术包。 |
+| 将项目 Review 导出到飞书 | [export.zh-CN.md](export.zh-CN.md)，包括回读后记录保存 | 按需读取 `lark-doc` 的编写/创建、格式、媒体及回读指引；有日期的排期必须在文档内显示甘特图，按导出参考使用 `lark-doc` 画板或已核验的 `lark-base` 甘特视图嵌入。发布可读 Review 及相关引用，不发布技术包。 |
 | 处理 CLI 错误 | [cli.md](../../../skills/yuplus/references/cli.md) 的“Results and recovery”（回执与错误恢复）；必要时查失败命令的契约/帮助 | 只有涉及外部工具时，才查对应外部 Skill 的错误处理说明。 |
 
 使用其他 Skill 时，从运行环境的 Skill 列表找到实际已安装的条目，先读其 `SKILL.md`；如果相关指令在本会话中已经可用，就直接复用。后续只读当前任务需要的引用文件。不要假设 Yu+ 会自动加载或安装其他 Skill。指定 Skill 不可用时，使用工具/CLI 的实际帮助或其他合适的可用读取工具；确实缺能力就说明，不编造命令或安装路径。
