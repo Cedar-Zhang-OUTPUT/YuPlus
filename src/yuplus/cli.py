@@ -14,10 +14,13 @@ COMMANDS={
     'changes.list','decisions.list','types.show','doctor','serve','start','stop','status',
     'export.record','export.list','backup.create','backup.verify','backup.restore','source.check',
 }
+from .case_research import ACTIONS as RESEARCH_ACTIONS
+COMMANDS.update("research."+action for action in RESEARCH_ACTIONS)
 from .case_library import ACTIONS as LIBRARY_ACTIONS
+COMMANDS.update({'logo.show','logo.set','logo.reset'})
 COMMANDS.update('library.'+action for action in LIBRARY_ACTIONS)
 COMMANDS.update(LIFECYCLE_COMMANDS)
-INPUT_COMMANDS={'export.record','source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS | {'library.'+a for a in LIBRARY_ACTIONS-{'list','show'}}
+INPUT_COMMANDS={'research.create','research.update','logo.set','logo.reset','export.record','source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS | {'library.'+a for a in LIBRARY_ACTIONS-{'list','show'}}
 MONITOR_ACTIONS={'add','list','show','runs','schedule','scheduler-bind','update','pause','resume','remove',
                  'begin','fetch','pending','steps','read','renew','capture','step','discard-step','resolve','finish'}
 COMMANDS.update('monitor.'+action for action in MONITOR_ACTIONS)
@@ -59,7 +62,7 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.19）',
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.20）',
                   epilog='案例库 library：只保存类型、名称和链接；kind 为 feishu_folder 或 website，分别由 Agent 按需使用飞书 CLI 或浏览器查找，不缓存内容。\nlibrary delete/restore 仅移除/恢复本地登记，不删除飞书文件夹或网站内容。\n可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
@@ -68,6 +71,7 @@ def main(argv=None):
     parser.add_argument('--include-deleted',action='store_true',help='project/source/draft/review/library list: 包含软删除记录')
     parser.add_argument('--base-version',type=int,help='project rename/delete: project show 返回的 metadata_version')
     parser.add_argument('--project');parser.add_argument('--request-id');parser.add_argument('--input')
+    parser.add_argument('--research',help='找案例研究 ID（research show/preview）')
     parser.add_argument('--monitor');parser.add_argument('--library',help='案例库 ID（library show）')
     parser.add_argument('--output');parser.add_argument('--name');parser.add_argument('--source');parser.add_argument('--snapshot')
     parser.add_argument('--include-body',action='store_true',help='source show 显式读取来源正文')
@@ -100,6 +104,7 @@ def main(argv=None):
             payload={}
             if command in {'project.list','source.list','draft.list','review.list','library.list'}:payload['include_deleted']=args.include_deleted
             mapping={'source_id':args.source,'snapshot_id':args.snapshot,'object_id':args.object,'revision_id':args.revision,'type_key':args.type_key}
+            if args.research:payload['research_id']=args.research
             if args.library:payload['library_id']=args.library
             if args.monitor:payload['monitor_id']=args.monitor
             payload.update({k:v for k,v in mapping.items() if v is not None})

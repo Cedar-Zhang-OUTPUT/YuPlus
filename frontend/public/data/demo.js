@@ -1073,6 +1073,10 @@ const DATA = (() => {
       demo: true,
       note: "示例数据 · 非真实客户材料",
     },
+    case_findings: [
+      {id:'case_city_v1', project_id:'prj_city', version:1, created_at:'2026-10-23T03:10:12Z', updated_at:'2026-10-23T03:32:08Z', preview:{image_url:'/demo/case-board-v1.svg', fetched_at:'2026-10-23T03:32:10Z'}},
+      {id:'case_city_v2', project_id:'prj_city', version:2, created_at:'2026-10-23T05:18:36Z', updated_at:'2026-10-23T05:42:19Z', preview:{image_url:'/demo/case-board-v2.svg', fetched_at:'2026-10-23T05:42:22Z'}}
+    ],
     projects, project_activity, sources, source_versions, captures,
     objects, object_revisions, changes, decisions, review_checks, exports,
     catalog, internal_types, REVIEW_KINDS, THEMES, EPISTEMIC, EVIDENCE, CHECKS, PROVIDERS,

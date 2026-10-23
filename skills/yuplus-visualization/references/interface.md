@@ -63,3 +63,12 @@ Available registered image files can appear as previews; supported audio/video u
 ## Case library sources
 
 “案例库” under Browse opens `#/libraries`: workspace-wide Feishu folder and website cards with type, clickable title and saved time. Titles open the original source in a new tab; cards hide full URLs. The bottom “新增案例库” panel has two independent input/prompt rows: Feishu shared folder and website. Each requires a valid link before copying; a website accepts HTTP(S), while the folder row retains Feishu validation. Copying only prepares a request. Follow the business Skill’s `case-library.md` and CLI, then refresh. Removal prompts target the library ID and remove only the local registration; restore preserves its type. Contents remain remote: Feishu CLI reads folders, browser/web tools read websites on demand. This view does not display or claim to have read their contents.
+
+## Workspace avatar
+Hover, focus or click the top-left avatar to reveal **更改头像**. It copies an instruction scoped to the current data directory; attach an image in Codex and follow the Yu+ appearance reference. The browser does not upload or write images. Refresh after the CLI change. Escape closes the menu.
+
+## Find cases
+
+Under the current project, 找案例 opens its independent research view. History lists v1/v2 and creation/update times to the second. The **复制找案例 Prompt** explicitly requests a **new research round**; copying does not create one. Additions, explanation edits and direct Feishu edits stay in the current round. Follow the business Skill’s case-research.md; this is not a draft/review write.
+
+To the left of refresh, **打开飞书画板 ↗** opens the selected version’s verified board link in a new tab, retaining its anchor (document link fallback). A missing link disables the entry. Switching versions switches the target; do not invent a link from a sample image. Preview refresh is the local program’s responsibility. The CLI saves real research rounds; the local service exports the visible board every 60 seconds. Hidden pages stop polling; errors retain the last image, and authentication/permission failures pause polling. Demo versions remain explicitly illustrative. New or newly bound rounds require a page refresh to reload history.

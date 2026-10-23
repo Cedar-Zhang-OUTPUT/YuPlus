@@ -16,6 +16,10 @@ PYTHON SKILL_DIR/scripts/inspect_contract.py command review.publish
 
 Use the Python environment in which Yu+ is installed (in its repository this is `.venv/bin/python`). `SKILL_DIR` is the actual installed skill directory. `draft.apply --type TYPE` narrows the reference to that type; for a multi-type batch inspect only the additional types you will write. The helper does not validate your payload or execute a command. If the installed package lacks these resources, stop guessing and inspect its actual version/help.
 
+## Workspace logo
+
+`logo show`, `logo set`, and `logo reset` operate on the data directory without `--project`. See [appearance.md](appearance.md) only when changing the avatar: image preparation, JSON inputs, version checks and refresh.
+
 ## Project and reads
 
 ```sh
@@ -152,3 +156,7 @@ Installed service management, complete backup/restore and `source check` are ava
 ## Feishu export receipts
 
 `export record --project ID --request-id ID --input receipt.json` persists a verified remote export; `export list --project ID` reads the project’s receipts. Read [export.md](export.md) when exporting or recording results. Local preparation alone creates no receipt.
+
+## Case research
+
+`research create/update --project P --input FILE --request-id KEY` saves only round metadata and Feishu locators. `research list --project P`, `research show --project P --research ID`, and `research preview --project P --research ID` read rounds / fetch a disposable board preview. Use the explicit data directory. New rounds increment `version`; updates use `base_version = metadata_version` and keep the round/board identity. Read [case-research.md](case-research.md#save-the-research-round) before creating, binding or revising a research board.

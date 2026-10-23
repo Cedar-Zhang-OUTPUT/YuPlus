@@ -239,7 +239,7 @@ class MonitorTests(unittest.TestCase):
         old=Path(self.tmp.name)/'legacy';old.mkdir()
         db=sqlite3.connect(old/'yuplus.sqlite');db.executescript((Path(__file__).parents[1]/'src/yuplus/contracts/schema.sql').read_text());db.close()
         migrated=App(old)
-        try:self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],5)
+        try:self.assertEqual(migrated.db.execute('PRAGMA user_version').fetchone()[0],7)
         finally:migrated.close()
         backups=list((Path(self.tmp.name)/'legacy-migration-backups').iterdir());self.assertEqual(len(backups),1)
         verify_backup(backups[0]);db=sqlite3.connect(backups[0]/'yuplus.sqlite')

@@ -10,6 +10,10 @@ import { libraryView } from "./data/case-library.js";
 import { createProjectPromptTemplate } from "./data/project-create.js";
 import { loadView } from "./data/runtime.js";
 let DATA;
+import { caseFindingView } from "./data/case-finding.js";
+let activeCaseFinding;
+import { initLogoMenu } from "./data/logo.js";
+const refreshLogo = initLogoMenu(document.getElementById("logoControl"), () => DATA, copyText);
 import { basisStatus, qaState, openQuestionState } from "./data/selectors.js";
 import { expandBasis, changedBasisDetails } from "./data/provenance.js";
 import { compareBasisItems } from "./data/basis-diff.js";
@@ -18,7 +22,7 @@ import { milestoneDates, parseScheduleTime, timelineScale } from "./data/timelin
 import { moneyMatches, formatMinor } from "./data/money-text.js";
 import { projectMonitors, projectMonitorSummary, monitorSummary, monitorPrompt, monitorRuns, monitorRunStatus, safeChatUrl } from "./data/monitoring.js";
 let pageLoadedAt = new Date();
-const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, monitorExpanded: {}, versionOf: {}, projectPrompts: { materials: {}, monitor: {} }, libraryPrompt: {} };
+const S = { route: null, inspector: null, expanded: {}, showAllTypes: false, directoryCollapsed: true, mainNavCollapsed: false, monitorExpanded: {}, versionOf: {}, projectPrompts: { materials: {}, monitor: {} }, libraryPrompt: {}, caseFinding: {} };
 
 /* ── 基础工具 ───────────────────────────────────────────────────────────── */
 const $ = (id) => document.getElementById(id);
@@ -2462,7 +2466,7 @@ function renderChrome() {
     pb.title = "当前浏览项目：" + proj.name + "（" + proj.id + "）";
     crumbs.append(pb);
     const sep2 = el("span", "sep"); sep2.textContent = "›"; crumbs.append(sep2);
-    const sec = r.view === "review" ? "整理与Review" : r.view === "sources" ? "原始材料" : r.view === "history" ? "变更与决定记录" : "信息收集";
+    const sec = r.view === "case-finding" ? "找案例" : r.view === "review" ? "整理与Review" : r.view === "sources" ? "原始材料" : r.view === "history" ? "变更与决定记录" : "信息收集";
     const b = el("b"); b.textContent = sec; crumbs.append(b);
   }
   const menu = btn("☰", () => {
@@ -2504,6 +2508,7 @@ function renderChrome() {
   if (proj) {
     addNav(sp, "信息收集", `#/p/${proj.id}/draft`, { icon: "✎", current: S.route.view === "draft" });
     addNav(sp, "整理与Review", `#/p/${proj.id}/review`, { icon: "▤", current: S.route.view === "review" });
+    addNav(sp, "找案例", `#/p/${proj.id}/case-finding`, { icon: "⌕", current: S.route.view === "case-finding" });
     addNav(secondary, "原始材料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
     addNav(secondary, "变更与决定记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
   } else {
@@ -2544,7 +2549,7 @@ function parseRoute() {
     r.view = parts[2] || "draft";
     r.objId = parts[3] || null;
     r.sub = parts[3] || null;
-    if (!["draft", "review", "sources", "history"].includes(r.view)) { r.view = "draft"; r.objId = null; }
+    if (!["draft", "review", "case-finding", "sources", "history"].includes(r.view)) { r.view = "draft"; r.objId = null; }
   }
   return r;
 }
@@ -2591,6 +2596,7 @@ function renderStage(updateChrome = true) {
   const anchor = S.route?.view === "draft" && nextRoute.view === "draft" && S.route.pid === nextRoute.pid
     ? draftReadingAnchor() : null;
   projectDockObserver.disconnect();
+  activeCaseFinding?.destroy(); activeCaseFinding = null;
   S.route = parseRoute();
   if (updateChrome) renderChrome();
   const stage = $("stage");
@@ -2610,6 +2616,10 @@ function renderStage(updateChrome = true) {
   else if (S.route.view === "types") view = viewCatalog();
   else if (S.route.view === "draft") view = viewDraft(S.route.pid);
   else if (S.route.view === "review") view = viewReview(S.route.pid);
+  else if (S.route.view === "case-finding") {
+    activeCaseFinding = caseFindingView(DATA, proj, S.caseFinding[proj.id] ||= {}, copyText);
+    view = activeCaseFinding.element;
+  }
   else if (S.route.view === "sources") view = viewSources(S.route.pid);
   else if (S.route.view === "history") view = viewHistory(S.route.pid);
   else view = viewProjects();
@@ -2883,6 +2893,7 @@ async function loadRoute(force=false) {
   if (DATA && !force && (DATA.meta.demo || DATA.meta.project_id === route.pid)) {
     render();
   } else {
+    activeCaseFinding?.destroy(); activeCaseFinding = null;
     const content = el('div','content');
     const progress = loadingProgress();
     activeLoading = progress;
@@ -2894,6 +2905,7 @@ async function loadRoute(force=false) {
       await progress.finish();
       if (generation !== loadGeneration || parseRoute().pid !== route.pid) return;
       DATA = loaded;
+      refreshLogo();
       DATA.meta.project_id = route.pid;
       localFileCapabilities = undefined;
       pageLoadedAt = new Date();
@@ -2907,6 +2919,7 @@ async function loadRoute(force=false) {
       $('stage').replaceChildren(failure);
       // Retain navigation, but never render a different project's cached data.
       DATA = undefined;
+      refreshLogo();
       return;
     } finally {
       progress.stop();

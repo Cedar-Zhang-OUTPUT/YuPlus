@@ -21,7 +21,7 @@ def read_snapshot(data_dir):
     try:
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
-        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5):
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7):
             raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
         yield db
     finally:
@@ -182,11 +182,17 @@ def browser_view(db, data_dir, project_id=None):
     view['monitor_runs'] = []
     from .case_library import listed
     view['case_libraries'] = listed(db)
+    from .appearance import metadata
+    view['logo'] = metadata(db)
+    from .case_research import listed as research_list
+    view['case_findings'] = []
+    view['meta']['case_finding_preview'] = True
     if not project_id:
         return view
     if db.execute("SELECT 1 FROM sqlite_master WHERE name='monitor_runs'").fetchone():
         view['monitor_runs'] = [dict(r) for r in db.execute('SELECT id,monitor_id,project_id,status,created_at AS started_at,completed_at,summary FROM monitor_runs WHERE project_id=? ORDER BY created_at DESC LIMIT 30',(project_id,))]
     require_project(db, project_id)
+    view['case_findings'] = research_list(db,project_id)
     for table in arrays:
         if table in {'blobs', 'object_revisions', 'source_versions', 'source_files'}:
             continue

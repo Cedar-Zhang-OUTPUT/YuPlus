@@ -1,22 +1,24 @@
 ---
 name: yuplus
-description: Use when a lead planner works on a Yu+ project in Codex—managing workspace case-library (案例库) folders and websites, collecting materials, organizing project information, reviewing outputs, or deciding the next useful action. Not for developing Yu+ itself or unrelated conversations.
+description: Use when a lead planner works on a Yu+ project in Codex—changing the workspace avatar/logo, managing workspace case-library (案例库) folders and websites, collecting materials, organizing project information, researching cases (找案例), reviewing outputs, or deciding the next useful action. Not for developing Yu+ itself or unrelated conversations.
 ---
 
 # Yu+ project copilot
 
 Help a lead exhibition planner move information through a project with less searching and repetition. Codex is the working conversation; Yu+ is the durable project record. Use the Yu+ CLI for project writes, never direct SQLite edits. A browser is a read-only view, not the source of project identity or a writing surface.
 
-## Exactly two supported scenarios
+## Choose the workflow
 
-Yu+ currently supports **information collection** and **information organization**. **Draft corresponds to information collection; review corresponds to information organization.**
+The original project workflows are **information collection (draft)** and **information organization (review)**. **Find cases (找案例)** is an independent research workflow; it does not require finishing either of them.
 
 | Scenario | Agent's work |
 | --- | --- |
 | Information collection — draft | Gather enough information for the current task and structure it into the relevant draft objects, preserving materials, sources and relationships. Suggest useful supplements and ways to provide them. “Enough” is task-specific, not a mandatory field count or a gate. |
 | Information organization — review | Organize existing draft objects into the required review objects with coherent content and traceable dependencies, then present them for the user to review. Apply feedback to draft first, then update the affected review objects. |
 
-Infer whether the request concerns collection (draft) or organization (review), and use that distinction for actions and next-step guidance. Extracting information into draft is still collection; AI composition and rewriting from that information is organization. Do not require a mode-selection ceremony or complete information before proceeding to review. Both scenarios can be revisited; review corrections update their draft basis without a forced scene switch. Stored `working_scene` is only a hint, and source is the provenance layer, not a third scenario.
+For a case-research request, read [case-research.md](references/case-research.md) and follow its new-round versus same-round rules. Do not force case research into the draft/review loop or persist its one-off preferences as a long-term profile.
+
+For the original project workflows, infer whether the request concerns collection (draft) or organization (review), and use that distinction for actions and next-step guidance. Extracting information into draft is still collection; AI composition and rewriting from that information is organization. Do not require a mode-selection ceremony or complete information before proceeding to review. Both scenarios can be revisited; review corrections update their draft basis without a forced scene switch. Stored `working_scene` is only a hint, and source is the provenance layer, not a third scenario.
 
 This is a continuous loop: materials and user input → draft objects → review objects → user review → updated materials/instructions and draft → updated review. New materials or feedback can enter at any step, including while a review is being written or after it has been shown. Interpret their effect, record new evidence/instructions as needed, update the relevant draft objects, and synchronize affected existing review objects within the requested scope. Do not require a completed round, a restart, or a formal approval before accepting changes. After an update, present the changed review content and explain remaining work; receiving feedback alone does not establish user acceptance of the next version.
 
@@ -26,6 +28,8 @@ The files below are Yu+ references, not separate skills. Follow this routing whe
 
 | Step | Yu+ reference to consult | When to use another Skill |
 | --- | --- | --- |
+| Start case research, refine its board, or continue an interrupted round | [case-research.md](references/case-research.md); [case-library.md](references/case-library.md) when accessing registered libraries | Browser/web tools for websites and public research; matching Feishu Skills for registered folders, evidence and board authoring. |
+| Change/reset the top-left avatar or logo | [appearance.md](references/appearance.md) | Compress the attached image with an available local image converter; no project context or Feishu access is needed. |
 | Add, use, remove or restore workspace case-library sources | [case-library.md](references/case-library.md) | For `feishu_folder`, use installed `lark-drive` and Feishu CLI; for `website`, use browser/web tools to find/read cases on the registered site on demand. Store links only, never case contents; deletion removes only the local registration. |
 | Install/start/stop, backup/restore, or remote update checks | [operations.md](references/operations.md), only the relevant section | Use installed lark-shared for authentication, and the matching material Skill when an observed update needs importing. |
 | First setup or environment failure | [materials.md](references/materials.md), “First setup” | Use the installed `lark-shared` authentication guidance for the initial Feishu health check or a relevant authentication failure; not before every material read. |
@@ -39,7 +43,7 @@ The files below are Yu+ references, not separate skills. Follow this routing whe
 | Enter organization or compose review objects | [review-structure.md](references/review-structure.md) for generation coverage and the fixed outline; [cli.md](references/cli.md), `review.prepare / review.publish` | Composing review from already-read draft does not by itself require a Feishu or file-reading Skill. |
 | Apply review feedback | The draft-first sequence below and the fixed outline in [review-structure.md](references/review-structure.md); relevant business entries or `expression_guide` in [objects.md](references/objects.md), then the corresponding draft/review sections in [cli.md](references/cli.md) | If feedback includes new material, also follow its material-reading row. A wording-only correction does not require reopening all original materials. |
 | Open the browser, explain controls, inspect versions, or fix a page/service problem | [cli.md](references/cli.md), “Local browser and copied references” | Read the installed `yuplus-visualization` Skill and only its relevant service/interface/troubleshooting reference. Reuse it if already read; pure UI help does not require rereading the whole business project. |
-| Receive an update Prompt or a copied UI reference | The draft-first sequence below; [cli.md](references/cli.md), “Local browser and copied references” | Use visualization guidance only for locating or refreshing the view; use Yu+ CLI for business changes. |
+| Receive a draft/review update Prompt or copied object reference | The draft-first sequence below; [cli.md](references/cli.md), “Local browser and copied references” | Use visualization guidance only for locating or refreshing the view; use Yu+ CLI for business changes. |
 | Export the project's Review to Feishu | [export.md](references/export.md), including verified receipt recording | Use installed `lark-doc` authoring/create, formatting, media and readback guidance as needed; dated schedules require a visible in-document Gantt via `lark-doc` whiteboard guidance or a verified embedded `lark-base` Gantt view (see export.md). Publish readable Review with relevant references, not the technical bundle. |
 | Recover from a CLI error | [cli.md](references/cli.md), “Results and recovery”; the failing command's contract/help as needed | Consult external Skill error guidance only when that external tool is involved. |
 
@@ -100,6 +104,8 @@ At the end of **each user-triggered Yu+ project response**, briefly state, in th
 - **本次读取：** the relevant materials/objects actually consulted; distinguish new reads from reused context.
 - **本次修改：** what was successfully saved, or “无／仅展示预览”; mention partial failure and pending synchronization honestly.
 - **下一步建议：** make the next choices concrete using the current request and known project evidence. Do not execute an optional suggestion merely because you offered it.
+
+For case research, guide supplements/refinement of the current round or an explicitly new round, following case-research.md; do not apply the collection-to-review choices below.
 
 After a collection-only request, present **both choices**, with equal agency for the user:
 

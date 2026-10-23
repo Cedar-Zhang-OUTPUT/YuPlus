@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.19](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.19)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.20](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.20)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -225,3 +225,13 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 飞书成果导出使用 Skill 的 `references/export.md` 完成准备、写入和回读；核验后由 `yu export record` 保存标题、链接、版本和时间，`yu export list --project ID` 查询。Review 页的历史图标只展示已保存记录。
 
 案例库支持 `kind=feishu_folder` 和 `kind=website` 两种源，均仅保存类型、名称和链接。前端提供两条独立的新增 Prompt；网站通过浏览器/网页工具按需查找，飞书文件夹通过飞书 CLI 查找。`library delete/restore` 均只影响本地登记。schema 5 为旧记录补充飞书文件夹类型，迁移前自动完整备份，保留原项目和案例库身份。
+
+## 找案例与工作空间头像（v0.3.20）
+
+找案例独立于 draft/review：`research create/update/list/show/preview` 保存研究轮次和飞书文档/画板定位。新研究新建 vN，同轮补充和用户飞书编辑沿用原画板；幂等请求避免重试产生重复轮次。案例正文、图片及详细索引在飞书，Yu+ 不建立本地案例内容库。
+
+Agent 按 Skill 用飞书 CLI 创建和修改画板；本地服务仅导出预览。前端提供历史切换、缩放、平移和新标签页跳转；可见画板每 60 秒刷新，离开后停止，失败保留旧图，权限错误暂停。预览缓存位于系统缓存目录，不进入业务库或备份。创建/绑定新研究后刷新页面读取新历史。
+
+左上角头像菜单可复制更改提示词；Agent 压缩图片后使用 `logo set`，支持 `logo show/reset`。头像随数据库备份。
+
+当前 schema 7。从 schema 1–6 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。

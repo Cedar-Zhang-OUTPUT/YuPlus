@@ -10,20 +10,22 @@
 
 **名称：** `yuplus`
 
-**触发条件：** 当主策在 Codex 中处理 Yu+ 项目，收集材料、整理项目信息、审阅成果或判断下一步行动时使用。不适用于 Yu+ 软件开发本身或无关对话。
+**触发条件：** 当主策在 Codex 中处理 Yu+ 项目，更改全局头像、管理案例库源、收集材料、整理项目信息、找案例、审阅成果或判断下一步行动时使用。不适用于 Yu+ 软件开发本身或无关对话。
 
 帮助策展主策减少查找和重复传递信息的时间。Codex 承载工作对话，Yu+ 保存可持续追溯的项目记录。项目写入使用 Yu+ CLI，绝不直接修改 SQLite。浏览器是只读查看入口，不能仅凭浏览器画面确定当前项目，也不能通过它修改项目数据。
 
-### 当前明确只有两个场景
+### 选择工作流
 
-Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对应信息收集，review 对应信息整理。**
+原有项目工作流是**信息收集（draft）**和**信息整理（review）**。**找案例**是独立研究工作流，不要求先完成前两者。
 
 | 场景 | Agent 做什么 |
 | --- | --- |
 | 信息收集 — draft | 为当前任务收集足够信息，并整理到相应 draft 对象，保留材料、来源与关联；提示可以补充什么、如何补充。“足够”由当前任务决定，不是必填数量或推进门槛。 |
 | 信息整理 — review | 根据已有 draft 对象组织、改写成所需的 review 对象，保留依赖和来源，然后交给用户 review。反馈先落实到 draft，再更新受影响的 review 对象。 |
 
-根据用户请求判断当前是在收集（draft）还是整理（review），据此行动和引导下一步。把材料中的信息提取到 draft 仍属于收集；AI 根据这些已有信息组织和改写成果，才属于整理。不要求用户先选择模式，也不要求信息收齐才能进入 review。两个场景可以往返；review 回改时先更新 draft 依据，不必要求用户执行场景切换。库中的 `working_scene` 只是提示，source 是来源证据层，不是第三个场景。
+找案例请求按需读取 [找案例参考](case-research.zh-CN.md)，区分新研究与同轮修改；不强行纳入 draft/review 循环，不把单次偏好存为长期画像。
+
+对于原有项目工作流，根据用户请求判断当前是在收集（draft）还是整理（review），据此行动和引导下一步。把材料中的信息提取到 draft 仍属于收集；AI 根据这些已有信息组织和改写成果，才属于整理。不要求用户先选择模式，也不要求信息收齐才能进入 review。两个场景可以往返；review 回改时先更新 draft 依据，不必要求用户执行场景切换。库中的 `working_scene` 只是提示，source 是来源证据层，不是第三个场景。
 
 这是持续循环：材料和用户输入 → draft 对象 → review 对象 → 用户 review → 补充材料/修改意见及 draft 更新 → review 更新。用户可以在任何一步补材料或提修改意见，包括成果写到一半或已经展示之后。Agent 判断影响，按需保存新证据/指令，修改相关 draft，并在当前请求范围内同步受影响的已有 review。接收修改不要求完成一轮、重新开始或正式审批。更新后展示修改后的成果，说明剩余工作；收到反馈不等于用户已认可下一版本。
 
@@ -33,6 +35,8 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 
 | 步骤 | 查阅哪份 Yu+ 参考 | 何时使用其他 Skill |
 | --- | --- | --- |
+| 开启找案例研究、修改其画板或续接中断研究 | [找案例参考](case-research.zh-CN.md)；访问案例库时读 [案例库参考](case-library.zh-CN.md) | 网站及公开研究用浏览器/网页工具；飞书文件夹、证据与画板创作使用对应飞书 Skill。 |
+| 更改/恢复左上角头像或 Logo | [appearance.zh-CN.md](appearance.zh-CN.md) | 用可用的本地图像转换工具压缩附件，无需项目上下文或飞书权限。 |
 | 新增、使用、移除或恢复工作空间案例库 | [case-library.zh-CN.md](case-library.zh-CN.md) | feishu_folder 用 `lark-drive` 和飞书 CLI 到登记文件夹查找；website 用浏览器/网页工具到登记网站查找；只保存链接，不保存案例内容；移除只作用于本地登记。 |
 | 首次设置或环境故障 | [materials.md](../../../skills/yuplus/references/materials.md) 的“First setup”（首次设置） | 初次飞书健康检查或相关认证故障时，使用已安装的 `lark-shared` 认证说明；不要每次读材料前都检查。 |
 | 读取飞书材料 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Feishu documents and exports”（飞书文档与导出物） | 文档/wiki 内容用 `lark-doc`，文件下载/导出用 `lark-drive`；其他资源类型选择对应的已安装飞书 Skill。只读本次操作需要的说明。 |
@@ -45,7 +49,7 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 | 进入整理或组织 review 对象 | [Review 固定结构](review-structure.zh-CN.md) 中生成范围和固定栏目，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `review.prepare / review.publish` | 根据已读 draft 编写 review，本身不需要再调用飞书或文件读取 Skill。 |
 | 处理 review 反馈 | 下文“先改因，再改果”的顺序及[Review 固定结构](review-structure.zh-CN.md)；[objects.md](../../../skills/yuplus/references/objects.md) 的相关业务条目或 `expression_guide`，再看 [cli.md](../../../skills/yuplus/references/cli.md) 对应 draft/review 小节 | 反馈带来新材料时，再按其材料类型读取。纯措辞修改不需要重开所有原始材料。 |
 | 打开页面、解释控件、查看版本或排查页面/服务问题 | [cli.md](../../../skills/yuplus/references/cli.md) 的“Local browser and copied references”（本地浏览器与复制引用） | 读取已安装的 `yuplus-visualization` Skill，按需查服务、界面或故障参考；已读则复用。纯界面问题无需重读完整项目。 |
-| 接收更新 Prompt 或页面引用 | 下文先改 draft 的顺序；[cli.md](../../../skills/yuplus/references/cli.md) 的本地浏览器与复制引用小节 | 定位或刷新页面才查可视化说明，业务修改用 Yu+ CLI。 |
+| 接收 draft/review 更新 Prompt 或对象引用 | 下文先改 draft 的顺序；[cli.md](../../../skills/yuplus/references/cli.md) 的本地浏览器与复制引用小节 | 定位或刷新页面才查可视化说明，业务修改用 Yu+ CLI。 |
 | 将项目 Review 导出到飞书 | [export.zh-CN.md](export.zh-CN.md)，包括回读后记录保存 | 按需读取 `lark-doc` 的编写/创建、格式、媒体及回读指引；有日期的排期必须在文档内显示甘特图，按导出参考使用 `lark-doc` 画板或已核验的 `lark-base` 甘特视图嵌入。发布可读 Review 及相关引用，不发布技术包。 |
 | 处理 CLI 错误 | [cli.md](../../../skills/yuplus/references/cli.md) 的“Results and recovery”（回执与错误恢复）；必要时查失败命令的契约/帮助 | 只有涉及外部工具时，才查对应外部 Skill 的错误处理说明。 |
 
@@ -106,6 +110,8 @@ Yu+ 当前只支持**信息收集**和**信息整理**两个场景。**draft 对
 - **本次读取：** 实际查阅的材料/对象；区分本轮新读取和复用已知上下文。
 - **本次修改：** 成功保存的内容，或“无／仅展示预览”；如实说明部分失败及尚未同步的内容。
 - **下一步建议：** 根据当前请求和已知项目信息，给出具体选择。不能因为自己提出建议，就自动执行可选工作。
+
+找案例的下一步建议遵循 [找案例参考](case-research.zh-CN.md)：补充标准、细化本轮或明确新开一轮，不套用信息收集结束后的“补充材料／进入 Review”引导。
 
 只完成信息收集请求后，明确给出**两个选择**，由用户决定：
 
@@ -305,3 +311,11 @@ PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output
 ## 飞书导出与记录
 
 收到导出或记录查询请求时，按需读取 [export.zh-CN.md](export.zh-CN.md) 对应的英文执行参考 `references/export.md`；已读内容不重复加载。页面短 Prompt 只携带项目 ID 和数据目录，完整流程由该参考维护。回读核验后使用 `export record` 保存，`export list` 查询。中文文件仅供人工审阅。
+
+### 全局头像 CLI
+
+`logo show`、`logo set`、`logo reset` 作用于数据目录，不传 `--project`。更改头像时按需阅读 [头像参考](appearance.zh-CN.md)，其中包含图片压缩、JSON 输入、版本校验和刷新步骤。
+
+## 找案例 CLI
+
+`research create/update --project P --input FILE --request-id KEY` 只保存研究轮次元数据和飞书定位。`research list --project P`、`research show --project P --research ID`、`research preview --project P --research ID` 用于读取研究和获取临时预览；始终明确数据目录。新研究递增 `version`；同轮更新使用 `base_version = metadata_version`，保持轮次和画板身份。创建、关联或续改画板前按需读取 [找案例工作流](case-research.zh-CN.md#保存研究轮次)。

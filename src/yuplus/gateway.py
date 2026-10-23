@@ -39,6 +39,8 @@ class GatewayServer(ThreadingHTTPServer):
             raise YuError('FILE_NOT_FOUND', '未安装可视化页面资源。')
         super().__init__(('127.0.0.1', port), GatewayHandler)
         self.url = f'http://127.0.0.1:{self.server_port}'
+        from .case_preview import PreviewCache
+        self.case_previews = PreviewCache(self.data_dir)
 
 
 class GatewayHandler(BaseHTTPRequestHandler):
@@ -87,6 +89,7 @@ class GatewayHandler(BaseHTTPRequestHandler):
             self.route(url)
         except YuError as exc:
             status = 404 if exc.code.endswith('_NOT_FOUND') else 409 if exc.code in {'FILE_HASH_MISMATCH', 'INTEGRITY_FAILURE'} else 400
+            status = {'AUTH_REQUIRED':401,'FORBIDDEN':403,'FEISHU_UNAVAILABLE':503,'PREVIEW_BUSY':503}.get(exc.code,status)
             self.error(exc.code, exc.message, status)
         except (sqlite3.DatabaseError, OSError, subprocess.SubprocessError) as exc:
             if isinstance(exc, (BrokenPipeError, ConnectionResetError)):
@@ -116,7 +119,39 @@ class GatewayHandler(BaseHTTPRequestHandler):
             query = self.params(url, {'project'})
             with read_snapshot(self.server.data_dir) as db:
                 view = browser_view(db, self.server.data_dir, query.get('project'))
+            for record in view.get('case_findings',[]):
+                record['preview'] = self.server.case_previews.cached(record)
             return self.json_response(view)
+        if path == '/api/case-finding/preview':
+            query = self.params(url, {'project','version'}, ('project','version'))
+            from .case_research import get
+            with read_snapshot(self.server.data_dir) as db:
+                require_project(db,query['project'])
+                record = get(db,query['project'],query['version'])
+            if self.command == 'HEAD':
+                return self.json_response(self.server.case_previews.cached(record) or {})
+            return self.json_response(self.server.case_previews.refresh(record))
+        if path.startswith('/api/case-finding/images/'):
+            self.params(url, set())
+            with read_snapshot(self.server.data_dir) as db:
+                raw,mime = self.server.case_previews.image(db,path.rsplit('/',1)[-1])
+            self.send_response(200)
+            self.send_header('Content-Type',mime)
+            self.send_header('Content-Length',str(len(raw)))
+            self.end_headers()
+            if self.command != 'HEAD':self.wfile.write(raw)
+            return
+        if path == '/api/logo':
+            self.params(url, {'v'})
+            from .appearance import image_bytes
+            with read_snapshot(self.server.data_dir) as db:
+                raw = image_bytes(db)
+            self.send_response(200)
+            self.send_header('Content-Type', 'image/png')
+            self.send_header('Content-Length', str(len(raw)))
+            self.end_headers()
+            if self.command != 'HEAD': self.wfile.write(raw)
+            return
         if path == '/api/assets':
             query = self.params(url, {'project', 'version', 'asset', 'download'}, ('project', 'version', 'asset'))
             if 'download' in query and query['download'] != '1':

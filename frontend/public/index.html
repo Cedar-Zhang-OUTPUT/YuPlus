@@ -11,7 +11,14 @@
 
 <aside id="navigation" aria-label="主导航">
   <div class="brand">
-    <div class="mark">Yu</div>
+    <div class="logo-control" id="logoControl">
+      <button type="button" class="mark logo-trigger" aria-label="头像选项" aria-expanded="false" aria-controls="logoMenu">
+        <span class="logo-fallback">Yu</span><img alt="自定义头像" width="34" height="34" hidden>
+      </button>
+      <div class="logo-menu" id="logoMenu" aria-label="头像选项" aria-hidden="true" inert>
+        <button type="button" class="logo-change" disabled>更改头像</button>
+      </div>
+    </div>
     <div class="brand-name"><b>Yu+</b></div>
     <button type="button" class="chipbtn directory-toggle main-nav-toggle" id="mainNavToggle" aria-label="收起主导航" aria-expanded="true" aria-controls="sideMain sideProject sideProjectSecondary"></button>
   </div>

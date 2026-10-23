@@ -733,3 +733,63 @@ html.reading-draft { overflow-anchor:none; }
 .loading-progress-track{width:min(280px,100%);height:6px;border-radius:999px;background:var(--separator);overflow:hidden}
 .loading-progress-fill{height:100%;width:100%;border-radius:inherit;background:var(--blue);transform-origin:left;transition:transform 450ms ease-out}
 @media(prefers-reduced-motion:reduce){.loading-progress-fill{transition:none!important}}
+
+/* Workspace avatar menu: reserved logo footprint, no layout shift. */
+.logo-control { position:relative; flex:none; z-index:40; }
+.logo-trigger { border:0; padding:0; cursor:pointer; overflow:hidden; font-family:inherit; }
+.brand .logo-fallback { font:inherit; color:inherit; letter-spacing:inherit; }
+.logo-trigger img { width:100%; height:100%; object-fit:contain; background:var(--bg-elevated); }
+.logo-trigger [hidden] { display:none; }
+.logo-menu { position:absolute; left:-6px; top:100%; padding-top:8px; min-width:144px; opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .16s ease,transform .16s ease,visibility .16s; }
+.logo-menu::before { content:""; position:absolute; inset:8px 0 0; border:1px solid var(--separator); background:var(--bg-elevated); border-radius:12px; box-shadow:var(--shadow-2); }
+.logo-menu button { position:relative; box-sizing:border-box; width:100%; min-height:44px; border:0; border-radius:12px; padding:10px 14px; text-align:left; font:inherit; font-size:13px; color:var(--label); background:transparent; cursor:pointer; }
+.logo-menu button:hover { background:var(--bg-fill); }
+.logo-menu button:disabled { color:var(--label-3); cursor:default; }
+.logo-control.is-open .logo-menu { opacity:1; visibility:visible; transform:translateY(0); }
+.logo-trigger:focus-visible,.logo-menu button:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+@media (prefers-reduced-motion:reduce) { .logo-menu { transition:none; } }
+
+/* Find cases: a read-only remote-board viewport, separate from draft/review. */
+.case-finding-page { box-sizing:border-box; height:calc(100dvh - var(--toolbar-height,58px)); min-height:640px; display:flex; flex-direction:column; gap:24px; padding-top:30px; padding-bottom:20px; }
+.case-heading { display:flex; align-items:center; gap:16px; flex:none; flex-wrap:wrap; }
+.case-heading .largetitle { margin:0; }
+.case-version-menu { width:300px; max-height:min(400px,60dvh); }
+.case-version-menu .version-option { min-height:85px; }
+.case-version-menu .version-option small { font-variant-numeric:tabular-nums; line-height:1.7; }
+.case-version-menu .version-option[aria-checked=true] { background:color-mix(in srgb,var(--blue) 8%,var(--bg-elevated)); }
+.case-heading .version-trigger { min-width:88px; }
+.case-demo-label { color:var(--label-3); background:var(--bg-fill); margin-left:auto; }
+.case-board { flex:1; min-height:260px; margin:0; display:flex; flex-direction:column; position:relative; border:1px solid var(--separator); }
+.case-board-tools { flex:none; display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:10px 14px; min-height:48px; border-bottom:1px solid var(--separator); }
+.case-board-status { flex:1; font-size:11px; }
+.case-board-tools .chipbtn { text-decoration:none; white-space:nowrap; }
+.case-board-viewport { flex:1; min-height:160px; position:relative; overflow:hidden; cursor:grab; touch-action:none; background-color:var(--bg-elevated); background-image:radial-gradient(var(--separator) .7px,transparent .7px); background-size:20px 20px; }
+.case-board-viewport.is-dragging { cursor:grabbing; }
+.case-board-image { position:absolute; left:50%; top:50%; max-width:none; pointer-events:none; user-select:none; }
+.case-board [hidden] { display:none !important; }
+.case-board-empty { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:24px; text-align:center; gap:10px; }
+.case-board-empty h3 { font-size:16px; }
+.case-board-glyph { color:var(--label-4); font-size:32px; margin-bottom:6px; }
+.case-board-controls { display:flex; flex:none; justify-content:center; align-items:center; gap:8px; padding:10px; border-top:1px solid var(--separator); background:var(--bg-elevated); }
+.case-board-controls .chipbtn { min-width:32px; min-height:30px; }
+.case-zoom-label { min-width:44px; text-align:center; color:var(--label-3); font-size:12px; font-variant-numeric:tabular-nums; }
+.case-board button:disabled { opacity:.4; cursor:default; }
+.case-board.is-expanded { position:fixed; inset:16px; z-index:70; min-height:0; box-shadow:var(--shadow-3); }
+.case-finding-dock { flex:none; margin:0; border:1px solid var(--separator); box-shadow:var(--shadow-2); }
+.case-finding-dock .body { padding:16px 20px; }
+.case-finding-dock .copyable { display:flex; align-items:center; gap:16px; }
+.case-finding-dock .copyable > .grow { flex:1; font-size:13px; }
+.case-finding-dock button { white-space:nowrap; }
+.case-board-viewport:focus-visible,.case-board button:focus-visible { outline:2px solid var(--blue); outline-offset:-2px; }
+@media(max-width:720px) {
+  .case-finding-page { gap:16px; padding-top:22px; min-height:650px; }
+  .case-heading { gap:12px; }
+  .case-board-status { flex-basis:100%; }
+  .case-finding-dock .copyable { flex-wrap:wrap; }
+  .case-board.is-expanded { inset:8px; }
+}
+
+.case-board-dialog { border:0; padding:0; background:transparent; width:calc(100vw - 32px); height:calc(100dvh - 32px); max-width:none; max-height:none; }
+.case-board-dialog::backdrop { background:rgba(29,29,31,.35); backdrop-filter:blur(4px); }
+
+.case-board-tools a[aria-disabled="true"] { color:var(--label-3); opacity:.55; cursor:default; }
