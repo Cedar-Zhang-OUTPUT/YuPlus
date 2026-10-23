@@ -12,7 +12,7 @@ from .core import Context, YuError, canonical, digest, new_id, now, insert, get_
 CONTRACTS=Path(__file__).parent/'contracts'
 LIFECYCLE_COMMANDS={f'{layer}.{action}' for layer in ('draft','review','source') for action in ('delete','restore')}
 CORE_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS
-WRITE_COMMANDS={'project.create','project.rename','project.delete','source.import','draft.apply','review.publish'} | LIFECYCLE_COMMANDS
+WRITE_COMMANDS={'export.record','project.create','project.rename','project.delete','source.import','draft.apply','review.publish'} | LIFECYCLE_COMMANDS
 ID_PATTERN=re.compile(r'^[A-Za-z][A-Za-z0-9_-]{0,127}$')
 
 class App:
@@ -94,7 +94,12 @@ class App:
         if not isinstance(payload,dict):raise YuError('INVALID_INPUT','输入必须是 JSON 对象。')
         if command in WRITE_COMMANDS and (not isinstance(request_id,str) or not ID_PATTERN.fullmatch(request_id)):
             raise YuError('INVALID_INPUT','写命令需要合法的 --request-id。')
-        if command in CORE_COMMANDS:
+        if command=='export.record':
+            from .export_history import validate
+            validate(payload)
+        elif command=='export.list' and payload:
+            raise YuError('INVALID_INPUT','export list 不接受额外参数。')
+        elif command in CORE_COMMANDS:
             if payload.get('command')!=command:raise YuError('INVALID_INPUT','输入 command 与命令行不一致。')
             errors=list(self.validator.iter_errors(payload))
             if errors:
@@ -206,6 +211,9 @@ class App:
                 elif command=='source.import':
                     from .source import import_source
                     data=import_source(ctx,payload,prepared)
+                elif command=='export.record':
+                    from .export_history import record
+                    data=record(ctx,payload)
                 elif command=='draft.apply':
                     from .draft import apply_draft
                     data=apply_draft(ctx,payload)
@@ -216,7 +224,7 @@ class App:
                 if self.db.execute(f'SELECT 1 FROM {table} WHERE project_id=? AND change_id=? AND sealed=0',(project_id,cid)).fetchone():
                     raise YuError('INTEGRITY_FAILURE','提交包含未封存版本。')
             insert(self.db,'changes',id=cid,project_id=project_id,command=command,effect=data.get('effect','changed'),request_id=request_id,request_hash=request_hash,
-                   actor_json=canonical({'kind':'cli'}),reason=(f"项目重命名：{data['previous_name']} → {data['name']}" if command=='project.rename' else f"删除项目：{data['name']}（保留历史）" if command=='project.delete' else payload.get('reason','创建项目')),causal_change_ids_json=canonical(sorted(set(ctx.causal_change_ids))),
+                   actor_json=canonical({'kind':'cli'}),reason=(f"项目重命名：{data['previous_name']} → {data['name']}" if command=='project.rename' else f"删除项目：{data['name']}（保留历史）" if command=='project.delete' else '飞书导出：'+data['external_title'] if command=='export.record' else payload.get('reason','创建项目')),causal_change_ids_json=canonical(sorted(set(ctx.causal_change_ids))),
                    changed_refs_json=canonical(ctx.changed_refs),result_json=canonical(data),created_at=now())
             seq=self.db.execute('SELECT seq FROM changes WHERE id=?',(cid,)).fetchone()[0]
             result=self._envelope(command,project_id,request_id,data,cid,seq)
@@ -249,6 +257,9 @@ class App:
                 return {'type':items[0]}
             return data
         self._project(pid)
+        if command=='export.list':
+            from .export_history import records
+            return {'exports':records(self.db,pid)}
         if command=='project.show':return {'project_id':pid,**self._project(pid)}
         if command=='review.prepare':
             from .review import prepare_review

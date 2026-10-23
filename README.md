@@ -220,3 +220,5 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 ### 子目、对象与来源删除
 
 子目改写/删除使用 `draft apply` 的 `set_items`/`remove_items`；Review 段落使用 `review publish` 的 `set_blocks`/`remove_blocks`，保留先 draft 后 review 的因果要求。整份对象及来源支持 `draft delete`、`review delete`、`source delete`（`--input` JSON），均为保留文件和历史的软删除。删除最后一个 Review 段落会隐藏空成果。`list --include-deleted` 查询保留记录；对应 `restore` 命令可重新启用原身份，draft/Review 的当前空内容需另按依据写回。详细契约与用法见 [Skill 删除指引](skills/yuplus/references/deletion.md)。
+
+飞书成果导出使用 Skill 的 `references/export.md` 完成准备、写入和回读；核验后由 `yu export record` 保存标题、链接、版本和时间，`yu export list --project ID` 查询。Review 页的历史图标只展示已保存记录。

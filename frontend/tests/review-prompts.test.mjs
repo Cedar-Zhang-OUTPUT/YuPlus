@@ -38,3 +38,14 @@ test('missing evidence is reported, and production prompts use CLI instead of fi
   assert.doesNotMatch(prompt, /更新前端模拟成果/);
   assert.throws(() => reviewContext(DATA, 'prj_city', 'obj_qa'), /成果不存在/);
 });
+
+test('export prompt stays short regardless of project size and routes to the export skill',()=>{
+  const data={projects:[{id:'prj_1',name:'项目'}],meta:{demo:false,data_dir:'/data/我的项目'},objects:null};
+  const text=reviewExportPrompt(data,'prj_1');
+  assert.ok(text.length<300);
+  assert.match(text,/references\/export.md/);
+  assert.match(text,/保存导出记录/);
+  assert.match(text,/"project_id":"prj_1"/);
+  assert.match(text,/"data_dir":"\/data\/我的项目"/);
+  assert.doesNotMatch(text,/<yuplus-context>|documents|revisions/);
+});

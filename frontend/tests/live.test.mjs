@@ -30,11 +30,12 @@ test('production prompts bind real data directory and versions without embedding
   const data=hydrateView(raw());
   for(const prompt of [reviewUpdatePrompt(data,'p','o'),reviewExportPrompt(data,'p')]){
     assert.ok(prompt.includes('/tmp/real-projects'));
-    assert.ok(prompt.includes('"revision_id": "r"'));
     assert.ok(!prompt.includes('frontend/public/data/demo.js'));
     assert.ok(!prompt.includes('真实内容'));
   }
   assert.match(reviewUpdatePrompt(data,'p','o'),/review prepare/);
+  assert.ok(reviewUpdatePrompt(data,'p','o').includes('"revision_id": "r"'));
+  assert.ok(reviewExportPrompt(data,'p').length<300);
 });
 
 test('Q&A uses persisted statuses without assuming a closed question was answered',async()=>{

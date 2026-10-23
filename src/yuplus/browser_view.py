@@ -191,6 +191,11 @@ def browser_view(db, data_dir, project_id=None):
         if table in {'blobs', 'object_revisions', 'source_versions', 'source_files'}:
             continue
         view[table] = [decoded(row) for row in db.execute(f'SELECT * FROM {table} WHERE project_id=? ORDER BY rowid', (project_id,))]
+    from .export_history import records
+    for record in view['exports']:
+        source = next((s for s in view['sources'] if s['id']==record.get('external_source_id')), {})
+        record.update(external_title=source.get('cached_title'), external_url=source.get('canonical_url'))
+    view['exports'] = records(db,project_id) + view['exports']
     for change in view['changes']:
         change.pop('request_hash', None)
     for decision in view['decisions']:

@@ -12,12 +12,12 @@ COMMANDS={
     'project.create','project.rename','project.delete','project.list','project.show','source.import','source.list','source.show',
     'draft.apply','draft.list','draft.show','review.prepare','review.publish','review.list','review.show',
     'changes.list','decisions.list','types.show','doctor','serve','start','stop','status',
-    'backup.create','backup.verify','backup.restore','source.check',
+    'export.record','export.list','backup.create','backup.verify','backup.restore','source.check',
 }
 from .case_library import ACTIONS as LIBRARY_ACTIONS
 COMMANDS.update('library.'+action for action in LIBRARY_ACTIONS)
 COMMANDS.update(LIFECYCLE_COMMANDS)
-INPUT_COMMANDS={'source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS | {'library.'+a for a in LIBRARY_ACTIONS-{'list','show'}}
+INPUT_COMMANDS={'export.record','source.import','draft.apply','review.prepare','review.publish'} | LIFECYCLE_COMMANDS | {'library.'+a for a in LIBRARY_ACTIONS-{'list','show'}}
 MONITOR_ACTIONS={'add','list','show','runs','schedule','scheduler-bind','update','pause','resume','remove',
                  'begin','fetch','pending','steps','read','renew','capture','step','discard-step','resolve','finish'}
 COMMANDS.update('monitor.'+action for action in MONITOR_ACTIONS)

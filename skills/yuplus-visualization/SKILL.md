@@ -1,6 +1,6 @@
 ---
 name: yuplus-visualization
-description: Open and explain the Yu+ project browser, including navigation, sources, versions, basis changes, group monitoring results and copied action prompts. Use for Yu+ interface help and local service problems; business changes belong to the Yu+ project skill.
+description: Open and explain the Yu+ project browser, including navigation, sources, versions, basis changes, export history, group monitoring results and copied action prompts. Use for Yu+ interface help and local service problems; business changes belong to the Yu+ project skill.
 ---
 
 # Yu+ visualization
@@ -29,7 +29,7 @@ Open the verified address and appropriate hash route using an available browser 
 - Original titles open the stored original address in a new tab when present. “查看引用” opens Yu+'s saved snapshot, possibly historical. A local head snapshot is not proof of remote freshness.
 - Resolve requests such as “change this paragraph” from project ID, data directory, object/block/item ID and viewed revision, then reread the current target. Use the installed `yuplus` business skill for the write. If its guidance is already loaded, consult only the relevant reference; do not bounce between full skills recursively.
 - New facts or wording instructions go into the appropriate draft basis before `review prepare` and `review publish`. Never write browser view JSON directly to SQLite or submit copied context as a CLI payload.
-- Full-project Feishu export prepares local saved content, then uses the available Feishu document skill to create, write, and read back a new document. Report only verified results and real links.
+- Full-project Feishu export prepares local saved content, then uses the available Feishu document skill to create, write, and read back a new document. Follow the business Skill’s `references/export.md` to save verified receipts with `export record`; the adjacent history icon displays persisted times and document links. Report only verified results and real links.
 
 Do not apply the business copilot's end-of-turn project footer to pure Yu+ software development, skill authoring, or unrelated questions. When doing actual project business work, follow the business skill's reporting guidance.
 

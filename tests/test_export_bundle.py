@@ -221,5 +221,52 @@ class ExportBundleTests(unittest.TestCase):
         self.assertEqual(sorted(p.name for p in (self.root / 'export').iterdir()), ['manifest.json', 'review.md'])
 
 
+    def receipt(self,manifest):
+        return {'api_version':'1','command':'export.record','external_title':'核验后的导出',
+                'external_url':'https://example.feishu.cn/docx/VerifiedExport?from=share','verified':True,
+                'content_sha256':manifest['review_markdown_sha256'],
+                'view_basis':[{'object_id':r['object_id'],'revision_id':r['revision_id']} for r in manifest['review_instances']+manifest['shared_qa'] if r['revision_id']]}
+
+    def test_record_list_view_backup_and_idempotent_retry(self):
+        from yuplus.browser_view import browser_view,read_snapshot
+        from yuplus.backup import create_backup,restore_backup
+        manifest=self.export();payload=self.receipt(manifest)
+        self.assertEqual(self.app.execute('export.list',project_id=self.pid)['data']['exports'],[])
+        sources=self.app.db.execute('SELECT count(*) FROM sources').fetchone()[0]
+        result=self.app.execute('export.record',payload,project_id=self.pid,request_id='exp_verified')
+        retry=self.app.execute('export.record',payload,project_id=self.pid,request_id='exp_verified')
+        self.assertEqual(result['data'],retry['data']);self.assertTrue(retry['meta']['replayed'])
+        self.assertEqual(len(result['data']['view_basis']),6)
+        self.assertTrue(result['data']['exported_at'])
+        self.assertEqual(result['data']['external_url'],'https://example.feishu.cn/docx/VerifiedExport')
+        self.assertEqual(self.app.db.execute('SELECT count(*) FROM sources').fetchone()[0],sources)
+        self.assertEqual(self.app.execute('export.list',project_id=self.other)['data']['exports'],[])
+        with read_snapshot(self.data) as db:self.assertEqual(browser_view(db,self.data,self.pid)['exports'],[result['data']])
+        backup=self.root/'record-backup';create_backup(self.data,backup);restore_backup(backup,self.root/'restored-record')
+        restored=App(self.root/'restored-record')
+        try:self.assertEqual(restored.execute('export.list',project_id=self.pid)['data']['exports'],[result['data']])
+        finally:restored.close()
+        with self.assertRaises(YuError):self.app.execute('export.record',payload,project_id=self.pid,request_id='exp_duplicate')
+        with self.assertRaises(YuError):self.app.execute('export.record',{**payload,'external_title':'changed'},project_id=self.pid,request_id='exp_verified')
+
+    def test_record_rejects_partial_unsafe_and_cross_project_inputs(self):
+        payload=self.receipt(self.export())
+        for change in [{'verified':False},{'external_url':'javascript:alert(1)'},{'view_basis':[]},
+                       {'content_sha256':'invented'},{'view_basis':[payload['view_basis'][0]]*2},
+                       {'view_basis':[{'object_id':'obj_budget','revision_id':self.budget['revision_id']}]},
+                       {'view_basis':[{'object_id':'obj_secret','revision_id':payload['view_basis'][0]['revision_id']}]}]:
+            with self.subTest(change=change),self.assertRaises(YuError):
+                self.app.execute('export.record',{**payload,**change},project_id=self.pid,request_id='bad_record')
+        self.assertEqual(self.app.execute('export.list',project_id=self.pid)['data']['exports'],[])
+
+    def test_public_cli_record_and_list(self):
+        payload=self.receipt(self.export());file=self.root/'receipt.json';file.write_text(json.dumps(payload))
+        base=[sys.executable,'-m','yuplus','--data-dir',str(self.data)]
+        result=subprocess.run([*base,'export','record','--project',self.pid,'--request-id','public_export','--input',str(file),'--json'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        read=subprocess.run([*base,'export','list','--project',self.pid,'--json'],capture_output=True,text=True)
+        self.assertEqual(read.returncode,0,read.stdout+read.stderr)
+        self.assertEqual(len(json.loads(read.stdout)['data']['exports']),1)
+
 if __name__ == '__main__':
     unittest.main()

@@ -715,3 +715,12 @@ html.reading-draft { overflow-anchor:none; }
 
 .library-tag-gray { --h:var(--gray); }
 .library-tag-blue { --h:var(--blue); }
+
+/* Review export actions reuse the existing inspector and control tokens. */
+.review-export-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.export-history-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:10px}
+.export-history-toggle[aria-expanded="true"]{color:var(--blue);background:color-mix(in srgb,var(--blue) 8%,transparent)}
+.export-document-link{color:var(--blue);font-weight:600;overflow-wrap:anywhere}
+.export-history .relrow{align-items:flex-start}
+.export-history .tiny{margin:8px 0 0}
+@media(max-width:600px){.review-export-actions{max-width:100%;flex-wrap:wrap}}

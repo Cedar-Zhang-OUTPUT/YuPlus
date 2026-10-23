@@ -77,11 +77,9 @@ export function reviewUpdatePrompt(data, projectId, objectId) {
 4. 更新后重新检查依据状态，验证未受影响段落保持完整。报告更新了哪些段落、依据是什么、仍待确认的问题以及新版本；只有保存并核验成功才报告完成。`, context);
 }
 export function reviewExportPrompt(data, projectId) {
-  const context = reviewContext(data, projectId);
-  return attachContext(`请将 Yu+ 项目「${context.project.name}」（${projectId}）的全部「整理与Review」内容整理成一份新的飞书文档，并使用飞书 CLI 实际创建、写入和核验。
-1. 范围是整个项目：主策 Debrief、推进要素、创意审查结果、每一份创作者及轮次的 Brief、客户 Q&A 的问题、回答、状态和来源；不要只导出当前选中的卡片。documents 是点击时版本清单；真实模式先重新读取整个项目的当前实例和版本，历史版本仅用于追溯，不混作当前成果。
-2. 真实模式可用安装 Yu+ 的 Python 执行 python -m yuplus.export_bundle，显式提供 --data-dir、--project、--output，生成完整 Markdown 和版本清单再核对。不要把下方引用快照直接写入 CLI。按成果类型和实例组织目录、标题及完整正文，保留金额、日期、职责、交付边界和未决问题。检查每个段落的依据状态；尚未同步的成果明确标注旧依据及最新变化，不静默改写为已同步，也不把未确认内容写成事实。
-3. 文档应包含可读的来源索引及逐段追溯：成果段落 → draft 对象/条目及引用版本 → 原始来源标题、快照版本、定位信息和可用链接。来源去重，但保留各处引用关系；口述和本地材料注明类型，缺失来源明确说明。不要只列来源 ID。示例材料和示例链接明确标为模拟。
-4. 先阅读已安装的飞书文档 skill，确认飞书 CLI 实际支持的命令与登录状态。新建文档，不覆盖已有文档；分批写入时按原顺序完成全部正文及来源附录。未配置登录或缺少权限时说明具体阻碍，并保留完整 Markdown 等待写入，不虚报成功。
-5. 创建后读取文档核验全部章节、各实例、Q&A 及来源附录均已写入，返回真实文档链接和标题。若部分写入失败，说明进度并在同一新建文档内继续，避免重复建文档。不要编造导出记录或调用尚未实现的 Yu+ exports 命令。`, context);
+  const project = data.projects.find(p => p.id === projectId);
+  if (!project) throw new Error('项目不存在');
+  if (data.meta.demo) return '当前是 Yu+ 前端模拟数据，不执行真实飞书导出。请先打开真实项目，再按 Yu+ Skill 导出为一份新的飞书文档。';
+  const target = JSON.stringify({project_id: projectId, data_dir: data.meta.data_dir});
+  return `请按 Yu+ Skill 的 references/export.md，将此项目全部整理与Review（含客户 Q&A）导出为一份新的飞书文档，核验后保存导出记录并返回链接。项目定位：${target}`;
 }

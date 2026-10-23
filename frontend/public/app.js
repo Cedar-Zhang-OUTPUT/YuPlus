@@ -4,6 +4,7 @@
    没有页面内聊天或评论。业务写入一律在 Codex 中由 Agent 通过 Yu+ CLI 完成。
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { exportHistory } from "./data/export-history.js";
 import { libraryView } from "./data/case-library.js";
 import { createProjectPromptTemplate } from "./data/project-create.js";
 import { loadView } from "./data/runtime.js";
@@ -423,7 +424,9 @@ function openInspector(spec) {
     if (window.innerWidth < 1180) panel.scrollIntoView({ behavior: "smooth", block: "start" }); }
 }
 function closeInspector() {
+  const wasExports = S.inspector?.kind === "exports";
   S.inspector = null; render();
+  if (wasExports) { document.querySelector(".export-history-toggle")?.focus({ preventScroll: true }); return; }
   const heading = document.querySelector("main h1");
   if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
 }
@@ -439,6 +442,13 @@ function renderInspector() {
   // 头部始终挂载，具体分支只负责填充内容
   head.append(h, close);
   box.append(head, body);
+
+  if (spec.kind === "exports") {
+    box.id = "export-history-panel";
+    h.textContent = "导出记录";
+    body.append(exportHistory(DATA, spec.project_id, fullTime));
+    return box;
+  }
 
   if (spec.kind === "source") {
     const src = srcOf(spec.id);
@@ -1650,7 +1660,15 @@ function viewReview(pid) {
   const exportPrompt = btn("复制飞书导出 Prompt", () => copyText(reviewExportPrompt(DATA, pid), exportPrompt), "primary");
   exportPrompt.title = "复制后发送给 Agent，汇总全部成果与来源并新建飞书文档";
   exportPrompt.setAttribute("aria-live", "polite");
-  headingRow.append(h, exportPrompt);
+  const actions = el("div", "review-export-actions");
+  const history = btn("", () => S.inspector?.kind === "exports" ? closeInspector() : openInspector({kind:"exports",project_id:pid}), "export-history-toggle");
+  history.title = "查看导出记录";
+  history.setAttribute("aria-label", "查看导出记录");
+  history.setAttribute("aria-expanded", String(S.inspector?.kind === "exports"));
+  if (S.inspector?.kind === "exports") history.setAttribute("aria-controls", "export-history-panel");
+  history.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 5v6h6M12 7v5l3 2"/></g></svg>';
+  actions.append(exportPrompt, history);
+  headingRow.append(h, actions);
   head.append(headingRow);
   const sub = el("p", "subtitle");
   c.append(head);
@@ -1754,37 +1772,6 @@ function viewReview(pid) {
     main.append(card);
   } else {
     main.append(empty("✎", "尚未生成成果", ["可以让 Agent 基于已有对象整理。"]));
-  }
-
-  // 导出记录
-  const exps = DATA.exports.filter((e) => e.project_id === pid);
-  if (exps.length && sel && sel.type_key === "debrief") {
-    const ec = el("div", "card");
-    const eh = el("header");
-    const eh3 = el("h3"); eh3.textContent = "导出记录"; eh.append(eh3);
-    const eg = el("span", "grow"); eh.append(eg);
-    eh.append(tag("由 Agent 经 CLI 执行", "gray"));
-    ec.append(eh);
-    const eb = el("div", "body");
-    for (const e of exps) {
-      const row = el("div", "relrow");
-      const g = el("div", "grow");
-      const k = el("div", "rel-k"); k.textContent = "飞书文档"; g.append(k);
-      const v = el("div", "rel-v");
-      const a = el("a"); a.href = e.external_url; a.target = "_blank"; a.rel = "noopener noreferrer";
-      a.textContent = e.external_title; v.append(a); g.append(v);
-      const m = el("div", "tiny muted"); m.style.marginTop = "4px";
-      const rev = revOf(e.review_revision_id);
-      m.textContent = `成果版本 v${rev ? rev.version : "?"} · 导出于 ${fullTime(e.exported_at)}`;
-      g.append(m);
-      row.append(g);
-      eb.append(row);
-    }
-    const n = el("p", "tiny muted"); n.style.marginTop = "10px";
-    n.textContent = "导出属于写操作，由 Agent 执行。页面只展示已记录的导出结果，不提供导出按钮。";
-    eb.append(n);
-    ec.append(eb);
-    main.append(ec);
   }
 
   layout.append(main);

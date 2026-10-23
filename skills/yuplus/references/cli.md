@@ -137,14 +137,18 @@ PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output
 
 This module reads one consistent saved snapshot and writes `review.md` plus `manifest.json` outside the business data directory. It does not mutate project records or publish remotely. The bundle contains all current Review instances, the same D15 Q&A, cited/current draft versions, provenance, source text and registered asset metadata. Inspect `references_complete`, warnings, missing references, and basis freshness. Resolve incomplete/stale content as authorized, or explicitly preserve and report it; never silently label it synchronized. Asset metadata does not upload media or verify that an external original is still available.
 
-Use the manifest's version IDs and hashes for remote readback. A later project change does not change this fixed export snapshot. A prepared bundle is not a successful Feishu export or a persisted export-history record. Follow the materials reference for external publication.
+Use the manifest's version IDs and hashes for remote readback. A later project change does not change this fixed export snapshot. A prepared bundle is not a successful Feishu export or a persisted export-history record. Follow [export.md](export.md) for external publication and verified receipt recording.
 
 ## Not implemented in this release
 
-`project context`, project update/archive, diff/history/show helpers beyond those listed, relations queries, review check, exports and GC are not callable. Do not prescribe them as working commands. For today's task use existing show/list/read_basis/history receipts, or honestly state the limitation. Do not treat a user's acceptance as a persisted review-check record until that capability exists.
+`project context`, project update/archive, diff/history/show helpers beyond those listed, relations queries, review check and GC are not callable. Do not prescribe them as working commands. For today's task use existing show/list/read_basis/history receipts, or honestly state the limitation. Do not treat a user's acceptance as a persisted review-check record until that capability exists.
 
 Installed service management, complete backup/restore and `source check` are available; consult [operations.md](operations.md) only when needed.
 
 ## Workspace case libraries
 
 `library add/list/show/update/delete/restore` manages folder registrations outside projects. Read [case-library.md](case-library.md) when using these commands. Yu+ stores title/URL and registration metadata only; find case contents on demand through Feishu CLI. `delete`/`restore` removes/restores the local registration, never the remote folder.
+
+## Feishu export receipts
+
+`export record --project ID --request-id ID --input receipt.json` persists a verified remote export; `export list --project ID` reads the project’s receipts. Read [export.md](export.md) when exporting or recording results. Local preparation alone creates no receipt.
