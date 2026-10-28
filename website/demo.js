@@ -16,8 +16,8 @@
 
   /* ── 词汇（与 Yu+ 前端一致） ─────────────────────────────── */
   const KIND = {
-    statement: ['原文陈述', 'var(--blue)'], supplement: ['用户补充', 'var(--green)'], reported: ['转述', 'var(--teal)'],
-    hypothesis: ['假设', 'var(--orange)'], suggestion: ['建议', 'var(--purple)'], decision: ['采用决定', 'var(--indigo)']
+    statement: ['原文信息', 'var(--blue)'], supplement: ['策划补充', 'var(--green)'], reported: ['转述信息', 'var(--teal)'],
+    hypothesis: ['待验证判断', 'var(--orange)'], suggestion: ['建议方向', 'var(--purple)'], decision: ['当前采用', 'var(--indigo)']
   };
   const THEME = code => {
     const n = +code.slice(1);
@@ -30,7 +30,7 @@
     ['D07', '总预算区间'], ['D08', '策划预算分配'], ['D09', '时间节点或区间'], ['D10', '客户关键决策节点'], ['D11', '合作类型'], ['D12', '竞争对手分析'],
     ['D13', '客户历史合作方与过往项目'], ['D14', '与甲方的会议纪要'], ['D15', '客户 Q&A 问题表'], ['D16', '立项评估结果'], ['D17', '主策策略'], ['D18', '交付细节'],
     ['D19', '内外部资源'], ['D20', '职责边界'], ['D21', '项目评级'], ['D22', '风险点'], ['D23', '评审会结论'], ['D24', '开放性问题']];
-  const OUTPUTS = [['R01', '主策 Debrief'], ['R02', '推进要素'], ['R03', '创意审查结果'], ['R04', '内外部创作者 Brief'], ['R05', '客户 Q&A']];
+  const OUTPUTS = [['R01', '主策 Debrief'], ['R02', '项目推进安排'], ['R03', '创意评审记录'], ['R04', '创作者 Brief'], ['R05', '客户 Q&A']];
   const SOURCES = {
     brief: {kind: '飞书', title: '城市记忆展厅｜项目需求与预算说明（V3）', meta: '飞书文档 · 快照 v1 · 6,140 字'},
     oral: {kind: '口述', title: '主策口述：本轮按 60 万推进', meta: '口述 · 你在 Codex 中 · 原话已保存'}
@@ -68,7 +68,7 @@
   const code = (c, h) => `<span class="code" style="--h:${h || (c[0] === 'R' ? 'var(--indigo)' : THEME(c))}">${c}</span>`;
   const cite = src => `<span class="cite"><span class="pv">${SOURCES[src].kind}</span><span class="tt">${esc(SOURCES[src].title)}</span><span class="ar">↗</span><button type="button" class="vw" data-cite="${src}">查看引用</button></span>`;
   const emptyBox = (glyph, title, text) => `<div class="yu-empty"><div class="eg">${glyph}</div><h3>${title}</h3><p>${text}</p></div>`;
-  const TITLES = {projects: '项目', library: '案例库', types: '对象说明', draft: '信息收集', review: '整理与Review', cases: '找案例', sources: '原始材料', history: '变更与决定记录'};
+  const TITLES = {projects: '项目', library: '案例库', types: '信息分类说明', draft: '项目信息', review: '策划文档', cases: '案例分析', sources: '原始资料', history: '修改与确认记录'};
 
   function render() {
     const v = S.view;
@@ -90,16 +90,16 @@
   }
   function vLibrary() {
     return `<h1 class="lt">案例库</h1><div class="card list">
-      <div class="row"><span class="code" style="--h:var(--blue)">飞书</span><span class="grow"><b>OUTPUT 案例库</b><small>feishu_folder · 只保存链接，内容按需查找</small></span></div>
-      <div class="row"><span class="code" style="--h:var(--gray)">网站</span><span class="grow"><b>示例参考网站</b><small>website · 只保存链接与登记信息</small></span></div></div>
+      <div class="row"><span class="code" style="--h:var(--blue)">飞书</span><span class="grow"><b>OUTPUT 案例库</b><small>飞书共享文件夹 · 内容按需查找</small></span></div>
+      <div class="row"><span class="code" style="--h:var(--gray)">网站</span><span class="grow"><b>示例参考网站</b><small>参考网站 · 内容按需查找</small></span></div></div>
       <p class="hint">移除与恢复只影响本地登记，不改变飞书文件夹。</p>`;
   }
   function vTypes() {
-    return `<h1 class="lt">对象说明</h1><p class="sub">24 类 draft 对象按需建立，不是必须填满的表。</p><div class="types">${CATALOG.map(([c, n]) => `<div class="ty">${code(c)}<span>${n}</span></div>`).join('')}</div>`;
+    return `<h1 class="lt">信息分类说明</h1><p class="sub">了解各类项目信息的用途，按需补充，不必逐项填满。</p><div class="types">${CATALOG.map(([c, n]) => `<div class="ty">${code(c)}<span>${n}</span></div>`).join('')}</div>`;
   }
 
   function vDraft() {
-    if (!S.objects.length) return `<h1 class="lt">信息收集</h1>${emptyBox('✎', '还没有 draft 内容', '在 Codex 里发一份飞书文档或本地文件，Agent 会把信息放进对应对象，并保留来源。')}`;
+    if (!S.objects.length) return `<h1 class="lt">项目信息</h1>${emptyBox('✎', '先放进一份项目资料。', '客户 Brief、会议记录或参考文件都可以。发给 Codex 后，整理需求与条件，并保留原始出处。')}`;
     const obj = S.objects.find(o => o.code === S.selDraft) || S.objects[0];
     const dir = S.objects.map(o => `<button type="button" class="dir${o === obj ? ' on' : ''}" data-obj="${o.code}">${code(o.code)}<span>${o.title}</span><em>${o.items.length}</em></button>`).join('');
     const items = obj.items.map(it => {
@@ -111,21 +111,21 @@
         <div class="ih"><b>${it.topic}</b><span class="grow"></span>${tag(it.kind)}</div>${body}
         <div class="isrc"><span class="lbl">依据</span>${cite(it.src)}</div></article>`;
     }).join('');
-    return `<h1 class="lt">信息收集</h1>
-      <div class="monitor"><b>监控群聊</b><span class="pill">监控 0 个群</span></div>
-      <div class="draft-grid"><nav class="dirlist" aria-label="对象目录">${dir}</nav>
+    return `<h1 class="lt">项目信息</h1>
+      <div class="monitor"><b>项目群更新</b><span class="pill">监控 0 个群</span></div>
+      <div class="draft-grid"><nav class="dirlist" aria-label="信息目录">${dir}</nav>
       <section class="card objcard"><header class="oh">${code(obj.code)}<h2>${obj.title}</h2><span class="grow"></span><span class="ver">当前 v${obj.rev}</span><span class="chipbtn">复制引用</span></header>
       <p class="meta">v${obj.rev} · 更新于 ${obj.time}</p><div class="items">${items}</div></section></div>`;
   }
 
   function vReview() {
-    if (!S.reviews.length) return `<h1 class="lt">整理与Review</h1>${emptyBox('≣', '尚无成果', '可让 Agent 根据现有材料整理。不需要资料齐全，缺少依据的栏目会如实标出。')}`;
+    if (!S.reviews.length) return `<h1 class="lt">策划文档</h1>${emptyBox('≣', '可以先整理一版。', '可以继续补充资料，也可以根据已有信息整理策划文档。暂未确定的内容会标出来，方便讨论。')}`;
     const rv = S.reviews.find(r => r.code === S.selReview) || S.reviews[0];
     const list = OUTPUTS.map(([c, n]) => {
       const has = S.reviews.find(r => r.code === c);
       return `<button type="button" class="outp${has ? '' : ' none'}${has === rv ? ' on' : ''}" ${has ? `data-review="${c}"` : 'disabled'}>${code(c, c === 'R05' ? 'var(--teal)' : 'var(--indigo)')}<span>${n}</span><em>${has ? '1 份' : '—'}</em></button>`;
     }).join('');
-    const banner = rv.stale ? `<div class="stale"><b>⟳ 依据已变化 · 成果尚未同步</b>：1 个段落的 draft 依据已变化，当前成果尚未同步。<div><span class="chipbtn">复制更新 Prompt</span><span class="chipbtn">查看受影响段落</span></div></div>` : '';
+    const banner = rv.stale ? `<div class="stale"><b>⟳ 依据已变化 · 成果尚未同步</b>：预算信息有变化，Debrief 的预算段落待更新。<div><span class="chipbtn">复制更新指令</span><span class="chipbtn">查看受影响段落</span></div></div>` : '';
     const secs = rv.sections.map(sec => `<h3 class="rh">${sec.h}</h3>${sec.blocks.map(b => {
       const k = rv.code + '.' + b.id;
       if (b.unknown) return `<p class="rp unknown">${tx(k, b.text)}</p>`;
@@ -134,18 +134,18 @@
         ${b.old ? `<p class="rp old"><del>${esc(b.old)}</del></p>` : ''}<p class="rp">${tx(k, b.text)}</p>
         <div class="ra"><span class="deps">${deps}</span><span class="grow"></span><button type="button" class="chipbtn" data-trace="${k}">完整追溯路径</button><span class="chipbtn">复制引用</span></div></div>`;
     }).join('')}`).join('');
-    return `<div class="rtop"><h1 class="lt">整理与Review</h1><span class="btn-blue">复制飞书导出 Prompt</span></div>
+    return `<div class="rtop"><h1 class="lt">策划文档</h1><span class="btn-blue">复制生成飞书文档指令</span></div>
       <div class="review-grid"><nav class="card outs" aria-label="成果"><p class="ch">成果</p>${list}</nav>
       <article class="card doc"><header class="dh">${code(rv.code)}<h2>${rv.title}</h2><small>更新于 ${rv.time}</small><span class="grow"></span><span class="vtag${rv.version > 1 ? ' up' : ''}">v${rv.version}</span></header>
       <div class="db">${banner}${secs}</div></article></div>`;
   }
 
   function vCases() {
-    if (!S.cases) return `<h1 class="lt">找案例</h1>${emptyBox('◇', '还没有找案例研究', '在 Codex 里描述方向，Agent 会检索已登记的案例库与公开网络，把入选案例排在飞书画板上。')}`;
+    if (!S.cases) return `<h1 class="lt">案例分析</h1>${emptyBox('◇', '这次想研究什么？', '提供一个项目、一组参考或想探索的方向，分析案例的方法与适用条件，整理成案例参考板。')}`;
     const c = S.cases;
     const cards = c.cards.map((k, i) => `<div class="cc${k.shown ? ' in' : ''}" style="--x:${k.x}px;--y:${k.y}px;--h:${k.h}">
       <div class="art a${i}"></div><p class="cr">参考 · ${k.ref}</p><h4>${k.title}</h4><p>${k.why}</p></div>`).join('');
-    return `<div class="rtop"><h1 class="lt">找案例</h1><span class="vtag">v${c.version}</span><span class="tag" style="--h:var(--gray)"><i></i>示例画板</span></div>
+    return `<div class="rtop"><h1 class="lt">案例分析</h1><span class="vtag">v${c.version}</span><span class="tag" style="--h:var(--gray)"><i></i>示例画板</span></div>
       <section class="card board"><div class="bt"><span class="small">飞书画板 · 可见时每 60 秒自动预览</span><span class="grow"></span>
         <button type="button" class="chipbtn" data-zoom="-1" aria-label="缩小">−</button><button type="button" class="chipbtn" data-zoom="0">适应</button><button type="button" class="chipbtn" data-zoom="1" aria-label="放大">＋</button><span class="chipbtn dim">打开飞书画板 ↗</span></div>
         <div class="vp" id="boardVp" tabindex="0" aria-label="画板：拖动平移，按钮缩放"><div class="canvas" id="boardCanvas">
@@ -153,12 +153,12 @@
         </div></div></section>`;
   }
   function vSources() {
-    if (!S.sources.length) return `<h1 class="lt">原始材料</h1>${emptyBox('❖', '尚未收录材料', '飞书、本地文件和你的口述都会在这里，保留来源身份与版本。')}`;
-    return `<h1 class="lt">原始材料</h1><div class="card list">${S.sources.map(s => `<div class="row"><span class="code" style="--h:${s === 'oral' ? 'var(--purple)' : 'var(--blue)'}">${SOURCES[s].kind}</span><span class="grow"><b>${esc(SOURCES[s].title)}</b><small>${SOURCES[s].meta}</small></span><button type="button" class="chipbtn" data-cite="${s}">查看引用</button></div>`).join('')}</div>`;
+    if (!S.sources.length) return `<h1 class="lt">原始资料</h1>${emptyBox('❖', '尚未收录材料', '飞书、本地文件和你的口述都会在这里，保留来源身份与版本。')}`;
+    return `<h1 class="lt">原始资料</h1><div class="card list">${S.sources.map(s => `<div class="row"><span class="code" style="--h:${s === 'oral' ? 'var(--purple)' : 'var(--blue)'}">${SOURCES[s].kind}</span><span class="grow"><b>${esc(SOURCES[s].title)}</b><small>${SOURCES[s].meta}</small></span><button type="button" class="chipbtn" data-cite="${s}">查看引用</button></div>`).join('')}</div>`;
   }
   function vHistory() {
-    if (!S.history.length) return `<h1 class="lt">变更与决定记录</h1>${emptyBox('◷', '暂无记录', '每次写入都会追加一条记录，旧版本始终可查。')}`;
-    return `<h1 class="lt">变更与决定记录</h1><p class="sub">只追加，不改写。</p><ol class="hist">${S.history.slice().reverse().map(h => `<li class="${h.kind}"><time>${h.t}</time><b>${h.a}</b><span>${h.d}</span></li>`).join('')}</ol>`;
+    if (!S.history.length) return `<h1 class="lt">修改与确认记录</h1>${emptyBox('◷', '暂无记录', '每次写入都会追加一条记录，旧版本始终可查。')}`;
+    return `<h1 class="lt">修改与确认记录</h1><p class="sub">只追加，不改写。</p><ol class="hist">${S.history.slice().reverse().map(h => `<li class="${h.kind}"><time>${h.t}</time><b>${h.a}</b><span>${h.d}</span></li>`).join('')}</ol>`;
   }
 
   /* ── 追溯检查器 ─────────────────────────────────────────── */
@@ -171,7 +171,7 @@
       const s = SOURCES[q.src];
       insp.innerHTML = `<header><b>来源详情</b><button type="button" class="x" data-close aria-label="关闭">✕</button></header><div class="ib">
         <p class="istep">${s.kind}</p><h4>${esc(s.title)}</h4><p class="small">${s.meta}</p>
-        <blockquote>${q.src === 'oral' ? '“本轮按 60 万推进。Debrief 里的预算写简明一点，只说采用口径。”' : '“二、交付要求：首期需提交成片——8 分钟主影片，开馆日循环播放；展墙图文 3 面。三、预算：本项目预算 100 万元（含设备）。”'}</blockquote>
+        <blockquote>${q.src === 'oral' ? '“这轮我方执行预算按 60 万元策划。请更新 Debrief，写清预算总额，未明确的限制不要推定。”' : '“二、交付要求：首期需提交成片——8 分钟主影片，开馆日循环播放；展墙图文 3 面。三、预算：本项目预算 100 万元（含设备）。”'}</blockquote>
         <p class="small">原件与之后的决定分开保存。</p></div>`;
       return;
     }
@@ -185,7 +185,7 @@
     const srcs = [...new Set(b.deps.map(([c, t]) => S.objects.find(x => x.code === c)?.items.find(i => i.topic === t)?.src).filter(Boolean))];
     insp.innerHTML = `<header><b>完整追溯路径</b><button type="button" class="x" data-close aria-label="关闭">✕</button></header><div class="ib">
       <p class="istep"><i>1</i>当前段落</p><div class="ipara">${esc(b.text)}</div>
-      <p class="istep"><i>2</i>使用的 draft 内容</p>${deps}
+      <p class="istep"><i>2</i>所依据的项目信息</p>${deps}
       <p class="istep"><i>3</i>原始来源</p><div class="isrcs"><p class="small">原文引用</p>${srcs.map(cite).join('')}</div>
       <button type="button" class="chipbtn back" data-close>返回阅读</button></div>`;
   }
@@ -254,13 +254,15 @@
   async function think(id, ms = 900) { const li = add('<span class="shimmer">思考中</span>', 'm-think'); await sleep(ms); guard(id); li.remove(); }
   async function tool(id, verb, cmd, out, fn, ms = 700) {
     for (const prev of $$('.m-tool', log)) { prev.lastElementChild.hidden = true; prev.firstElementChild.setAttribute('aria-expanded', 'false'); }
-    const li = add(`<button type="button" class="tool" aria-expanded="false"><span class="st run"></span><span class="verb">${verb}</span><code>${esc(cmd)}</code></button><pre class="tout" hidden>${esc(out)}</pre>`, 'm-tool');
+    const actions = [['yuplus/', '了解当前工作的整理规则'], ['lark-cli docs', '阅读客户需求说明'], ['yu source import', '保存资料与原始出处'], ['yu draft apply', '整理与更新项目信息'], ['yu review prepare', '检查策划文档的依据'], ['yu review publish', '保存策划文档'], ['yu library list', '查看已登记的案例库'], ['案例库 +', '分析案例库与公开网络中的参考'], ['lark-cli whiteboard', '整理飞书案例参考板'], ['yu research create', '保存本轮案例分析']];
+    const action = actions.find(([prefix]) => cmd.startsWith(prefix))?.[1] || verb;
+    const li = add(`<button type="button" class="tool" aria-expanded="false" title="展开技术细节"><span class="st run"></span><span>${esc(action)}</span></button><pre class="tout" hidden>${esc(cmd)}\n${esc(out)}</pre>`, 'm-tool');
     const btn = li.firstElementChild;
     btn.onclick = () => { const o = li.lastElementChild; o.hidden = !o.hidden; btn.setAttribute('aria-expanded', String(!o.hidden)); };
     await sleep(ms); guard(id);
     if (fn) { saving.hidden = false; await fn(); guard(id); saving.hidden = true; }
     btn.firstElementChild.className = 'st ok';
-    li.lastElementChild.hidden = false; btn.setAttribute('aria-expanded', 'true'); toBottom();
+    toBottom();
     await sleep(250);
   }
   async function aiMsg(id, parts) {
@@ -310,15 +312,15 @@
 
   /* ── 四个预设场景 ───────────────────────────────────────── */
   const SCENES = [
-    {key: 'collect', n: '01', label: '收集材料', text: '这是客户的需求文档，收进「城市记忆展厅」，先整理到 draft。\nhttps://example.feishu.cn/docx/CityMemoryV3', run: sCollect},
-    {key: 'organize', n: '02', label: '整理成果', text: '根据现有内容，整理一版主策 Debrief。', needs: 'collect', run: sOrganize},
-    {key: 'revise', n: '03', label: '提出修改', text: '本轮按 60 万推进。Debrief 里的预算写简明一点，只说采用口径。', needs: 'organize', run: sRevise},
-    {key: 'cases', n: '04', label: '找案例', text: '找几个旧工业建筑改造成城市记忆展厅的案例，做成画板。', run: sCases}
+    {key: 'collect', n: '01', label: '添加资料', text: '这是「城市记忆展厅」的客户 Brief，请整理项目目标、受众、预算和交付要求，标出还需要确认的问题。\nhttps://example.feishu.cn/docx/CityMemoryV3', run: sCollect},
+    {key: 'organize', n: '02', label: '整理策划文档', text: '根据已有资料，整理一版主策 Debrief，说明项目背景、职责边界、受众与交付要求；相关推进安排也请一并整理。', needs: 'collect', run: sOrganize},
+    {key: 'revise', n: '03', label: '提出修改', text: '这轮我方执行预算按 60 万元策划。请更新 Debrief，写清预算总额，未明确的限制不要推定。', needs: 'organize', run: sRevise},
+    {key: 'cases', n: '04', label: '案例分析', text: '分析几个旧工业建筑改造成展览空间的案例，重点看它们如何利用原有建筑讲故事，提炼对本项目有启发的空间与叙事方法。', run: sCases}
   ];
 
   async function sCollect(id) {
     await think(id);
-    await tool(id, '读取', 'yuplus/SKILL.md', '技能已加载 · 场景：信息收集（draft）\n按需读取 references/materials.md');
+    await tool(id, '读取', 'yuplus/SKILL.md', '技能已加载 · 场景：项目信息（draft）\n按需读取 references/materials.md');
     await tool(id, '运行', 'lark-cli docs +fetch --doc CityMemoryV3', '《城市记忆展厅｜项目需求与预算说明（V3）》\n6,140 字 · revision 18', null, 900);
     await tool(id, '运行', 'yu source import --project prj_city --input source.json', '{"ok": true, "source_id": "src_brief", "snapshot": 1}', async () => {
       S.sources.push('brief'); hist('chg', '收录来源', '飞书《城市记忆展厅｜项目需求与预算说明（V3）》· 快照 v1', 2);
@@ -338,19 +340,19 @@
       const d18 = D('D18', '交付细节');
       await writeItem(id, d18, {id: 'film', topic: '主影片', kind: 'statement', src: 'brief', fields: [['形态', '成片 · 约 8 分钟'], ['要求', '开馆日循环播放']]});
       await writeItem(id, d18, {id: 'wall', topic: '展墙图文', kind: 'statement', src: 'brief', fields: [['数量', '3 面'], ['要求', '与主影片同一主线']]});
-      S.flash = null; hist('chg', '写入 draft', 'D01 · D07 · D09 · D18，共 7 个条目，均标注原文定位', 0);
+      S.flash = null; hist('chg', '整理项目信息', 'D01 · D07 · D09 · D18，共 7 个条目，均标注原文定位', 0);
     });
     await aiMsg(id, [
       ['本次读取：', '飞书《城市记忆展厅｜项目需求与预算说明（V3）》全文，已保存为来源快照 v1。'],
-      ['本次修改：', '新建 4 个 draft 对象（D01 BD 同步信息、D07 总预算区间、D09 时间节点、D18 交付细节），共 7 个条目，全部是原文陈述并标注定位。'],
-      ['下一步建议：', '可以直接让我整理第一版主策 Debrief。文档里没有受众和客户决策人，补一份开工会纪要会更完整。']
+      ['本次修改：', '整理了项目背景、预算、时间与交付要求，共 7 条信息，均保留原文出处；材料没有明确受众，已保留为待补充。'],
+      ['下一步建议：', '可以补一份开工会纪要或口头说明，澄清受众与客户决策人；也可以先按已有信息整理一版主策 Debrief，由你选择。']
     ]);
   }
 
   async function sOrganize(id) {
     await think(id);
     await tool(id, '读取', 'yuplus/references/review-structure.md', 'R01 固定栏目：BD同步信息 · 职责边界 · 受众 · 交付细节\nD09 + D18 有内容时同时整理 R02');
-    await tool(id, '运行', 'yu review prepare --project prj_city --input prepare.json', '可整理：R01 主策 Debrief、R02 推进要素\n缺少依据：D06 受众、D20 职责边界');
+    await tool(id, '运行', 'yu review prepare --project prj_city --input prepare.json', '可整理：R01 主策 Debrief、R02 项目推进安排\n缺少依据：D06 受众、D20 职责边界');
     await tool(id, '运行', 'yu review publish --project prj_city --input r01.json', '{"ok": true, "object": "R01", "version": 1, "blocks": 6}', async () => {
       const rv = {code: 'R01', title: '主策 Debrief', version: 1, time: '2026-10-16 ' + stamp(3).slice(6), stale: false, sections: []};
       S.reviews.push(rv); show('review', {selReview: 'R01'});
@@ -360,19 +362,19 @@
       await writeBlock(id, rv, '受众', {id: 'aud', unknown: true, deps: [], text: '尚无依据：现有材料没有受众信息。'});
       await writeBlock(id, rv, '交付细节', {id: 'scope', deps: [['D18', '主影片'], ['D18', '展墙图文']], text: '本轮交付主影片 1 支（约 8 分钟、开馆日循环播放）与 3 面展墙图文。'});
       await writeBlock(id, rv, '交付细节', {id: 'budget', deps: [['D07', '客户预算']], text: '本轮项目预算 100 万元（含设备）。'});
-      S.flash = null; hist('chg', '发布 review', 'R01 主策 Debrief v1 · 6 个段落，2 个栏目标为尚无依据', 0);
+      S.flash = null; hist('chg', '生成策划文档', 'R01 主策 Debrief v1 · 6 个段落，2 个栏目标为尚无依据', 0);
     });
     await tool(id, '运行', 'yu review publish --project prj_city --input r02.json', '{"ok": true, "object": "R02", "version": 1, "blocks": 2}', async () => {
-      const rv = {code: 'R02', title: '推进要素', version: 1, time: '2026-10-16 ' + stamp(1).slice(6), stale: false, sections: []};
+      const rv = {code: 'R02', title: '项目推进安排', version: 1, time: '2026-10-16 ' + stamp(1).slice(6), stale: false, sections: []};
       S.reviews.push(rv); show('review', {selReview: 'R02'});
       await writeBlock(id, rv, '时间节点或区间', {id: 'nodes', deps: [['D09', '方向评审'], ['D09', '开馆']], text: '2026-12-20 创意方向评审；2027 年春季开馆。'});
       await writeBlock(id, rv, '交付细节', {id: 'deliver', deps: [['D18', '主影片'], ['D18', '展墙图文']], text: '本轮推进围绕主影片与 3 面展墙图文展开。'});
       S.flash = null; S.selReview = 'R01'; render();
-      hist('chg', '发布 review', 'R02 推进要素 v1 · 2 个段落', 0);
+      hist('chg', '生成策划文档', 'R02 项目推进安排 v1 · 2 个段落', 0);
     });
     await aiMsg(id, [
-      ['本次读取：', '当前 draft 的 4 个对象与 R01、R02 的固定栏目。'],
-      ['本次修改：', '发布 R01 主策 Debrief v1 与 R02 推进要素 v1，每一段都记录了依赖的 draft 条目。「职责边界」「受众」暂无依据，已如实标出，没有编造。'],
+      ['本次读取：', '已保存的项目背景、预算、时间与交付要求。'],
+      ['本次修改：', '生成了主策 Debrief 与项目推进安排，每段都能查看依据。职责边界与受众仍需补充，已明确标出。'],
       ['下一步建议：', '在 Yu+ 面板里任意段落点「完整追溯路径」，可以一路查到飞书原文。']
     ]);
   }
@@ -391,7 +393,7 @@
       hist('dec', '保存决策', 'D07 第 2 版：本轮按 60 万元推进；客户原文 100 万保留', 0);
     });
     await tool(id, '运行', 'yu draft apply --project prj_city --input guide.json', '{"ok": true, "expression_guide": "review:R01", "intent": "rewrite"}', async () => {
-      hist('chg', '写入编写依据', 'R01 · 预算段只说采用口径', 0);
+      hist('chg', '写入编写依据', 'R01 · 预算段只说当前预算与限制', 0);
       const r01 = S.reviews.find(r => r.code === 'R01'); r01.stale = true;
       show('review', {selReview: 'R01'}); stage.scrollTop = 0; await sleep(1300);
     });
@@ -403,18 +405,18 @@
       b.old = b.text; b.text = '本轮我方执行预算按 60 万元推进。'; b.deps = [['D07', '采用预算']];
       const k = 'R01.budget'; tw[k] = 0; S.flash = k; render(); reveal(`[data-block="${k}"]`);
       await sleep(400); await type(id, k, b.text, 30);
-      S.flash = null; hist('chg', '更新 review', 'R01 主策 Debrief v2 · 只改预算这一段；v1 仍可查', 0);
+      S.flash = null; hist('chg', '更新策划文档', 'R01 主策 Debrief v2 · 只改预算这一段；v1 仍可查', 0);
     });
     await aiMsg(id, [
-      ['本次读取：', '你的这句话（保存为口述来源）、D07 与 R01 的当前版本。'],
-      ['本次修改：', 'D07 新增「采用决定：60 万元」，客户原文的 100 万保留为原文陈述；预算段的表达要求记入编写依据；R01 更新到 v2，只改了预算这一段。R02 不受影响。'],
-      ['下一步建议：', '如需同步给团队，可以让我把 R01 导出为飞书文档，回读核验后再给你链接。']
+      ['本次读取：', '你的预算调整说明（已保留原话），以及当前预算信息与主策 Debrief。'],
+      ['本次修改：', '预算信息新增「当前采用：60 万元」，客户原文的 100 万保留为原文信息；预算段的表达要求记入编写依据；主策 Debrief 更新到 v2，只改了预算这一段；项目推进安排不受影响。'],
+      ['下一步建议：', '如需发给团队，可以让我将当前策划文档整理到飞书，核验后返回链接。之后有改动时，可再次要求生成。']
     ]);
   }
 
   async function sCases(id) {
     await think(id);
-    await tool(id, '读取', 'yuplus/references/case-research.md', '找案例是独立工作流 · 新一轮研究建立 v1');
+    await tool(id, '读取', 'yuplus/references/case-research.md', '案例分析是独立工作流 · 新一轮研究建立 v1');
     await tool(id, '运行', 'yu library list --json', '2 个案例库：OUTPUT 案例库（飞书文件夹）· 示例参考网站');
     await tool(id, '检索', '案例库 + 公开网络', '阅读 14 个案例页面 · 截图留证 · 入选 5 个', null, 1400);
     await tool(id, '运行', 'lark-cli whiteboard +create', '飞书画板已创建 · 证据索引已保存到飞书');
@@ -428,13 +430,13 @@
         {title: '示例 E · 保留桁架与砖墙', ref: '视觉', why: '工业肌理作为展墙图文的底色。'}
       ].map((c, i) => ({...c, h: H[i], x: 60 + (i % 3) * 330, y: 150 + Math.floor(i / 3) * 360, shown: false}))};
       view = {x: 0, y: 0, s: .62};
-      show('cases'); hist('chg', '找案例', '研究 v1 · 5 个示例案例 · 画板与证据在飞书', 3);
+      show('cases'); hist('chg', '案例分析', '研究 v1 · 5 个示例案例 · 画板与证据在飞书', 3);
       for (const c of S.cases.cards) { await sleep(420); guard(id); c.shown = true; render(); }
     });
     await aiMsg(id, [
       ['本次读取：', '2 个已登记案例库与公开网络，阅读了 14 个案例页面。'],
-      ['本次修改：', '新建找案例研究 v1，入选 5 个案例；画板与证据索引保存在飞书。Yu+ 只记录版本和画板位置，没有改动 draft 或 review。'],
-      ['下一步建议：', '画板可以拖动和缩放。要换方向就说「开一轮新的找案例」，会建立 v2，v1 保留。']
+      ['本次修改：', '开启案例分析 v1，入选 5 个案例；画板与证据索引保存在飞书。Yu+ 只记录版本和画板位置，没有改动项目信息或策划文档。'],
+      ['下一步建议：', '画板可以拖动和缩放。要换方向就说「开一轮新的案例分析」，会建立 v2，v1 保留。']
     ]);
   }
 

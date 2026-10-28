@@ -5,16 +5,16 @@
 ## 当前发行版与可信来源
 
 - 支持平台：macOS。
-- GitHub Release：**v0.3.21**；Python 包 `yuplus-local` 的版本为 **0.3.21**，两者对应同一发行版。
+- GitHub Release：**v0.3.22**；Python 包 `yuplus-local` 的版本为 **0.3.22**，两者对应同一发行版。
 - 官方仓库：https://github.com/Cedar-Zhang-OUTPUT/YuPlus
-- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.21
-- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.21/YuPlus-v0.3.21.tar.gz
-- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.21/SHA256SUMS.txt
-- 安装包 SHA-256：`37fd0a3454cb70bff4e755a0a4e7c7b10c4088fad289852f6d6cfd139e383fa1`
+- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.22
+- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.22/YuPlus-v0.3.22.tar.gz
+- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.22/SHA256SUMS.txt
+- 安装包 SHA-256：`c6173e5bda7a1b976113d6eb87f5a914f950a212aab734f9a9a880468dfcb68b`
 
 固定下载上述版本。不要将 main 分支、旧开发目录或演示数据冒充正式安装。版本发布后如发现错误，报告具体问题，不改写原发布包或擅自修改应用绕过校验。
 
-v0.3.21 优化信息收集中的客户 Q&A：问题采用 20px 粗体，回答采用 16px 和更舒适的行高，拉开问答间距。本次无新增数据库迁移。
+v0.3.22 更新官网与应用文案：统一使用「项目信息」「策划文档」「案例分析」等名称，同步空白页提示、示例指令及 Skill 界面说明。CLI 类型键、Review 固定结构和数据库 schema 7 保持不变。
 
 v0.3.20 已接通“找案例”真实链路：研究轮次持久保存，Agent 通过飞书 CLI 创建和更新独立画板，前端显示版本历史、缩放/平移、飞书跳转及可见时每 60 秒自动预览。新研究新建 vN，同轮补图、改说明和飞书直接编辑沿用当前画板。案例正文、素材及详细索引放飞书，Yu+ 仅保存研究元数据和定位；临时预览缓存位于业务数据及备份之外。左上角头像菜单支持复制更改提示词，由 Agent 压缩图片并通过 logo CLI 应用。
 
@@ -40,10 +40,10 @@ v0.3.20 已接通“找案例”真实链路：研究轮次持久保存，Agent 
 
 ```sh
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.21/YuPlus-v0.3.21.tar.gz \
-  --output YuPlus-v0.3.21.tar.gz
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.22/YuPlus-v0.3.22.tar.gz \
+  --output YuPlus-v0.3.22.tar.gz
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.21/SHA256SUMS.txt \
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.22/SHA256SUMS.txt \
   --output SHA256SUMS.txt
 shasum -a 256 -c SHA256SUMS.txt
 ```
@@ -51,8 +51,8 @@ shasum -a 256 -c SHA256SUMS.txt
 同时核对计算出的摘要与本文件上面的固定摘要。下载或校验失败时停止执行，不忽略错误继续解压。校验成功后：
 
 ```sh
-tar -xzf YuPlus-v0.3.21.tar.gz
-cd YuPlus-v0.3.21
+tar -xzf YuPlus-v0.3.22.tar.gz
+cd YuPlus-v0.3.22
 ```
 
 读取包内 README.md 及安装入口说明。安装包包含 CLI 源码、前端静态资源、两份 Skill 和安装器，不需要另外搭建数据库服务或 Node 前端服务。
@@ -67,9 +67,9 @@ cd YuPlus-v0.3.21
 
 已有自定义安装时，显式传入其应用前缀，例如 `./install.sh --prefix '/实际应用目录'`；安装器会沿用该前缀安装记录中的数据和 Skill 目录。仅在用户有意选择新位置时传 `--data-dir` 或 `--skills-dir`，不指向 `.preview` 或验收目录。
 
-从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.21 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
+从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.22 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
 
-v0.3.21 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
+v0.3.22 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
 
 安装入口会复用满足 Python ≥3.12、SQLite ≥3.51.3 的运行环境；缺少时通过官方 uv 安装器准备私有 Python。之后安装 `yuplus-local`、`yuplus` 与 `yuplus-visualization` 两份 Skill，初始化数据目录并检查飞书认证。需要网络下载运行时与依赖；不修改 shell 配置。
 
@@ -77,7 +77,7 @@ v0.3.21 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不
 
 如果已有 Skill 是符号链接、非安装器管理或包含用户修改，安装器会拒绝覆盖。保留这些文件，说明具体路径和冲突，由用户选择处理方式。不要先删除旧 Skill 再重试。
 
-升级 schema 1–6 的旧数据库时，v0.3.21 首次访问会迁移到 schema 7，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的 schema 7 库。安装后查询包版本应为 `0.3.21`，并确认 `doctor` 返回 `schema_version: 7`。
+升级 schema 1–6 的旧数据库时，v0.3.22 首次访问会迁移到 schema 7，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的 schema 7 库。安装后查询包版本应为 `0.3.22`，并确认 `doctor` 返回 `schema_version: 7`。
 
 ## 4. 读取已安装 Skill，并检查环境
 
@@ -105,7 +105,7 @@ CLI --data-dir DATA_DIR status --json
 
 ## 6. 群聊监控的安装边界
 
-v0.3.21 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
+v0.3.22 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
 
 默认间隔60分钟，可按用户要求调整；首次收集全部可访问历史，再按时间顺序维护 draft 和已有受影响 review。没有宿主定时工具时只能手动同步，不宣称自动检查已接通。真实群聊与定时唤起需在用户指定目标后验收；已保存调度回执不等于真实运行成功。
 
