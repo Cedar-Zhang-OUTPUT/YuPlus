@@ -24,7 +24,7 @@ Open the verified address and appropriate hash route using an available browser 
 
 ## Keep viewing and writing distinct
 
-- “复制引用”, “复制更新 Prompt”, and “复制飞书导出 Prompt” copy text only. “已复制” does not mean saved, synchronized, or exported.
+- “复制引用”, “复制更新指令”, and “复制生成飞书文档指令” copy text only. “已复制” does not mean saved, synchronized, or exported.
 - Group monitor sync/pause/resume/interval/removal Prompts also copy only. Bind their real data directory, project and monitor, then use the installed `yuplus` monitoring reference when the user asks to execute one. UI navigation or a group link does not authorize scheduling.
 - Original titles open the stored original address in a new tab when present. “查看引用” opens Yu+'s saved snapshot, possibly historical. A local head snapshot is not proof of remote freshness.
 - Resolve requests such as “change this paragraph” from project ID, data directory, object/block/item ID and viewed revision, then reread the current target. Use the installed `yuplus` business skill for the write. If its guidance is already loaded, consult only the relevant reference; do not bounce between full skills recursively.

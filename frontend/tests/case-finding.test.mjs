@@ -14,7 +14,7 @@ test('version list is project-scoped, sorted and timestamp precision is seconds'
  assert.deepEqual(caseVersions({case_findings:[a,{...b,project_id:'other'},b]},'p'),[b,a]);
  assert.match(secondTime('2026-10-23T03:12:34Z'),/^2026-10-23 \d\d:12:34$/);assert.equal(secondTime(null),'—');
  const prompt=caseFindingPrompt({id:'p',name:'城市记忆'},{meta:{demo:false,data_dir:'/tmp/data'}});
- assert.match(prompt,/开启一轮新的找案例研究/);assert.match(prompt,/不要覆盖或续改已有研究/);assert.match(prompt,/project_id：p/);assert.match(prompt,/\/tmp\/data/);assert.doesNotMatch(prompt,/draft|review|source/);
+ assert.match(prompt,/开启一轮新的案例分析/);assert.match(prompt,/不要覆盖或续改已有研究/);assert.match(prompt,/project_id：p/);assert.match(prompt,/\/tmp\/data/);assert.doesNotMatch(prompt,/draft|review|source/);
 });
 test('preview URLs are local and sample images only allowed in explicit demo',()=>{
  for(const url of ['https://external.test/a.png','//external.test/a','/api/assets','/api/case-finding/images/../../bad','javascript:x','data:x'])assert.equal(previewUrl(url),null);

@@ -30,7 +30,7 @@ for(const kind of REVIEW_KINDS.filter(k=>k.persistable)) {
   test(`empty ${kind.code} keeps the review shell and all category navigation`,()=>{
     const env=setup();env.S.route.objId=kind.type_key;
     const page=env.render();const visible=text(page);
-    assert.ok(visible.includes('整理与Review'));
+    assert.ok(visible.includes('策划文档'));
     assert.ok(visible.includes('监控群聊'));
     assert.ok(visible.includes('尚未生成 '+kind.name));
     for(const category of REVIEW_KINDS)assert.ok(buttons(page).some(b=>text(b).includes(category.name)));

@@ -81,5 +81,5 @@ export function reviewExportPrompt(data, projectId) {
   if (!project) throw new Error('项目不存在');
   if (data.meta.demo) return '当前是 Yu+ 前端模拟数据，不执行真实飞书导出。请先打开真实项目，再按 Yu+ Skill 导出为一份新的飞书文档。';
   const target = JSON.stringify({project_id: projectId, data_dir: data.meta.data_dir});
-  return `请按 Yu+ Skill 的 references/export.md，将此项目全部整理与Review（含客户 Q&A）整理为一份便于人阅读的飞书成果文档，按需配图与引用，核验后保存导出记录并返回链接。项目定位：${target}`;
+  return `请按 Yu+ Skill 的 references/export.md，将此项目全部策划文档（含客户 Q&A）整理为一份便于人阅读的飞书成果文档，按需配图与引用，核验后保存导出记录并返回链接。项目定位：${target}`;
 }

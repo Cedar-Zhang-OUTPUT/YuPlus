@@ -25,13 +25,13 @@ CLI 可初始化新的数据目录，必须有意识地选择目标目录：误�
 | 目的地 | Hash 路由 |
 | --- | --- |
 | 项目列表 | `/#/` |
-| 对象说明 | `/#/types` |
-| 信息收集 | `/#/p/PROJECT_ID/draft` |
+| 信息分类说明 | `/#/types` |
+| 项目信息 | `/#/p/PROJECT_ID/draft` |
 | 指定 draft 对象 | `/#/p/PROJECT_ID/draft/OBJECT_ID` |
-| 整理与 Review | `/#/p/PROJECT_ID/review` |
+| 策划文档 | `/#/p/PROJECT_ID/review` |
 | 指定 Review 或共用 Q&A | `/#/p/PROJECT_ID/review/OBJECT_ID` |
-| 原始材料 | `/#/p/PROJECT_ID/sources` |
-| 变更与决定记录 | `/#/p/PROJECT_ID/history` |
+| 原始资料 | `/#/p/PROJECT_ID/sources` |
+| 修改与确认记录 | `/#/p/PROJECT_ID/history` |
 
 通过可用的 Codex/浏览器打开工具传入完整地址，不关闭或挪用用户的其他标签页。Hash 路由只改变阅读位置，不改变业务状态。复制页面链接不会编码所选历史版本；涉及修改时，要核对页面显示版本并保留其 revision 身份。
 

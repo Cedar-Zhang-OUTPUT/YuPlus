@@ -619,10 +619,10 @@ function renderInspector() {
     for (const u of allUsed) { const k = u.object.id + "::" + u.item.item_id; if (!seen.has(k)) { seen.add(k); dedup.push(u); } }
 
     const useSec = el("section");
-    const ut = el("h4"); ut.textContent = `引用此来源的 draft 条目 · ${dedup.length}`; useSec.append(ut);
+    const ut = el("h4"); ut.textContent = `引用此资料的项目信息 · ${dedup.length}`; useSec.append(ut);
     if (!dedup.length) {
       const p = el("p", "small muted");
-      p.textContent = "尚未有对象引用该来源。材料仍已保存，未被引用不代表未读或出错。";
+      p.textContent = "还没有项目信息引用这份资料。原始资料已保存，可以继续补充或交给 Codex 整理。";
       useSec.append(p);
     }
     for (const u of dedup) {
@@ -656,12 +656,12 @@ function renderInspector() {
     if (code) badge.append(codeChip(code, themeOf(o.type_key) ? themeOf(o.type_key).hue : "gray"));
     const nm = el("span"); nm.style.fontWeight = "600"; nm.style.fontSize = "13.5px"; nm.textContent = typeName(o.type_key);
     badge.append(nm);
-    const kind = el("span", "tiny muted"); kind.textContent = "对象说明"; badge.append(kind);
+    const kind = el("span", "tiny muted"); kind.textContent = "信息分类说明"; badge.append(kind);
     head.prepend(badge);
 
     const sec = el("section");
     const t1 = el("h4"); t1.textContent = "这是什么"; sec.append(t1);
-    const p1 = el("p", "small"); p1.textContent = meta ? meta.meaning : "尚未记录对象说明。";
+    const p1 = el("p", "small"); p1.textContent = meta ? meta.meaning : "尚未记录信息分类说明。";
     sec.append(p1);
     body.append(sec);
 
@@ -687,7 +687,7 @@ function renderInspector() {
     const vs = el("section");
     const vt = el("h4"); vt.textContent = `版本 · ${revsOf(o.id).length} 版`; vs.append(vt);
     if (!revsOf(o.id).length) {
-      const p = el("p", "small muted"); p.textContent = "该对象尚未建立内容，不显示为待完成任务。";
+      const p = el("p", "small muted"); p.textContent = "这类信息还没有内容，可以按项目需要补充。";
       vs.append(p);
     }
     for (const r of revsOf(o.id).slice().reverse()) {
@@ -805,7 +805,7 @@ function viewProjects() {
   };
 
   if (!active.length && !archived.length) {
-    c.append(empty("📁", "还没有项目", ["可以把下方的新建项目提示交给 Agent。"]));
+    c.append(empty("📁", "还没有项目", ["填写下方项目名称，复制指令发给 Codex，即可开始。"]));
   }
   group("当前项目", active);
   group("过往项目", archived);
@@ -820,7 +820,7 @@ function viewProjects() {
   nc.append(nh);
   const nb = el("div", "body");
   const np = el("p", "small muted");
-  np.textContent = "先填写再复制到 Agent 会话框；留空时会保留下划线。文件请随提示词一起发送。";
+  np.textContent = "填写后复制到 Codex；也可以留空后在对话中补充。项目资料请随指令一起发送。";
   nb.append(np);
   nb.append(createProjectPromptTemplate("materials", S.projectPrompts.materials, copyText));
   nb.append(createProjectPromptTemplate("monitor", S.projectPrompts.monitor, copyText));
@@ -843,9 +843,9 @@ function projectMonitorPanel(pid) {
   const monitors = projectMonitors(DATA, pid);
   const panel = el("section", "card monitor-panel");
   panel.style.marginTop = "20px";
-  panel.setAttribute("aria-label", "监控群聊");
+  panel.setAttribute("aria-label", "项目群更新");
   const header = el("header");
-  const title = el("h3", "grow"); title.textContent = "监控群聊";
+  const title = el("h3", "grow"); title.textContent = "项目群更新";
   header.append(title, tag(projectMonitorSummary(DATA, pid), monitors.some(m => monitorSummary(m).attention) ? "orange" : "gray"));
   const toggle = el("button", "chipbtn monitor-toggle");
   toggle.type = "button";
@@ -866,7 +866,7 @@ function projectMonitorPanel(pid) {
     const expanded = S.monitorExpanded[pid] === true;
     panel.classList.toggle("is-expanded", expanded);
     toggle.setAttribute("aria-expanded", String(expanded));
-    toggle.setAttribute("aria-label", `${expanded ? "收起" : "展开"}监控群聊`);
+    toggle.setAttribute("aria-label", `${expanded ? "收起" : "展开"}项目群更新`);
     toggleLabel.textContent = expanded ? "收起" : "展开";
     region.inert = !expanded;
     region.setAttribute("aria-hidden", String(!expanded));
@@ -878,7 +878,7 @@ function projectMonitorPanel(pid) {
   updateDisclosure();
   if (!monitors.length) {
     const note = el("p", "small muted");
-    note.textContent = "尚未绑定监控群聊。可在 Codex 中指定这个项目需要监控的飞书群。";
+    note.textContent = "还未指定项目群。可以告诉 Codex 要跟进哪个飞书群的讨论。";
     body.append(note);
   }
   for (const monitor of monitors) {
@@ -931,7 +931,7 @@ function projectMonitorPanel(pid) {
     }
     group.append(history);
     const actions = el("div"); actions.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;";
-    for (const [action, label] of [["sync","复制立即同步 Prompt"],[monitor.status === "paused" ? "resume" : "pause",monitor.status === "paused" ? "复制恢复 Prompt" : "复制暂停 Prompt"],["interval","复制调整间隔 Prompt"],["remove","复制解除绑定 Prompt"],["inspect","复制查看记录 Prompt"]]) {
+    for (const [action, label] of [["sync","复制立即同步指令"],[monitor.status === "paused" ? "resume" : "pause",monitor.status === "paused" ? "复制恢复指令" : "复制暂停指令"],["interval","复制调整间隔指令"],["remove","复制解除绑定指令"],["inspect","复制查看记录指令"]]) {
       let prompt;
       try { prompt = monitorPrompt(DATA, pid, monitor.id, action); } catch { continue; }
       const button = chipBtn(label, () => copyText(prompt, button));
@@ -944,7 +944,7 @@ function projectMonitorPanel(pid) {
   }
   if (monitors.length) {
     const note = el("p", "tiny muted");
-    note.textContent = "仅显示已保存的检查与同步结果。历史范围限于当前飞书身份可访问的消息；历史收集完成不等于全部消息已处理。复制 Prompt 不会执行操作。";
+    note.textContent = "仅显示已保存的检查与同步结果。历史范围限于当前飞书身份可访问的消息；历史收集完成不等于全部消息已处理。复制指令后需发给 Codex 执行。";
     body.append(note);
   }
   panel.append(region);
@@ -961,7 +961,7 @@ function viewDraft(pid) {
   const h = el("h1", "largetitle");
   h.id = "draft-title";
   h.style.margin = "0 0 6px";
-  h.textContent = "信息收集";
+  h.textContent = "项目信息";
   head.append(h);
   c.append(head);
   c.append(projectMonitorPanel(pid));
@@ -1006,12 +1006,12 @@ function viewDraft(pid) {
     }, 140);
   };
   const navh = el("header");
-  const nh = el("h3"); nh.textContent = "对象目录"; navh.append(nh);
+  const nh = el("h3"); nh.textContent = "信息目录"; navh.append(nh);
   const ng = el("span", "grow"); navh.append(ng);
   const toggle = chipBtn(S.showAllTypes ? "只看有内容" : `全部 ${DATA.catalog.length} 类`, () => { S.showAllTypes = !S.showAllTypes; render(); });
   const switchIcon = el("span", "switch-icon"); switchIcon.textContent = "⇄";
   switchIcon.setAttribute("aria-hidden", "true"); toggle.prepend(switchIcon);
-  toggle.title = "切换全部对象与已有内容";
+  toggle.title = "切换全部分类与已有内容";
   toggle.setAttribute("aria-pressed", String(S.showAllTypes));
   navh.append(toggle);
   const collapse = chipBtn("", () => {
@@ -1025,7 +1025,7 @@ function viewDraft(pid) {
   });
   collapse.classList.add("directory-toggle");
   function updateDirectoryToggle() {
-    const label = directoryPreview ? "固定展开对象目录" : S.directoryCollapsed ? "展开对象目录" : "收起对象目录";
+    const label = directoryPreview ? "固定展开信息目录" : S.directoryCollapsed ? "展开信息目录" : "收起信息目录";
     collapse.setAttribute("aria-expanded", String(directoryOpen()));
     collapse.setAttribute("aria-label", label);
     collapse.title = label;
@@ -1095,7 +1095,7 @@ function viewDraft(pid) {
     g.append(ol);
     objnav.append(g);
   }
-  if (!objnav.children.length) objnav.append(empty("🗂", "还没有对象内容", [`可切换查看全部 ${DATA.catalog.length} 类对象。`]));
+  if (!objnav.children.length) objnav.append(empty("🗂", "还没有项目信息", [`可切换查看全部 ${DATA.catalog.length} 类信息。`]));
   navb.append(objnav);
   nav.append(navb);
   const directorySlot = el("div", "draft-directory-slot");
@@ -1116,13 +1116,13 @@ function viewDraft(pid) {
       const header = el("header");
       header.append(codeChip(typeCode(o.type_key), (themeOf(o.type_key) || {}).hue));
       const title = el("h3"); title.textContent = typeName(o.type_key); header.append(title);
-      card.append(header, empty("○", "这个对象还没有内容", ["可以继续浏览其他对象，或让 Agent 收集相关材料。"]));
+      card.append(header, empty("○", "这类信息还没有内容", ["可以继续浏览其他信息，或把相关资料发给 Codex。"]));
       section.append(card);
     }
     main.append(section);
   }
-  if (!visibleObjects.length) main.append(empty("📄", "这个项目还没有已保存的对象内容",
-    [`可以把材料交给 Agent，或切换到全部 ${DATA.catalog.length} 类查看对象。`]));
+  if (!visibleObjects.length) main.append(empty("📄", "先放进一份项目资料。",
+    [`客户 Brief、会议记录或参考文件都可以。发给 Codex 后，Yu+ 会整理其中的需求与条件，并保留原始出处。也可以先查看全部 ${DATA.catalog.length} 类信息。`]));
   layout.append(main);
 
   body.append(layout);
@@ -1265,8 +1265,8 @@ function objectBody(o, pid) {
   const h = el("h3"); h.style.fontSize = "19px"; h.textContent = typeName(o.type_key);
   const help = el("button", "object-help");
   help.type = "button"; help.textContent = "?";
-  help.setAttribute("aria-label", "对象说明");
-  help.title = "查看对象说明";
+  help.setAttribute("aria-label", "信息分类说明");
+  help.title = "查看信息分类说明";
   help.onclick = () => openInspector({ kind: "object", id: o.id });
   titleGroup.append(h, help); head.append(titleGroup);
   const grow = el("span", "grow"); head.append(grow);
@@ -1288,7 +1288,7 @@ function objectBody(o, pid) {
   bd.classList.add("draft-object-content");
 
   if (!rev) {
-    bd.append(empty("○", "这个对象还没有内容",
+    bd.append(empty("○", "这类信息还没有内容",
       ["没有内容不代表故障，也不要求补齐才能继续。可以在 Codex 中让 Agent 从材料里整理，或暂时跳过。"]));
     const rel = relationsOf(o.id);
     if (rel.up.length || rel.down.length) {
@@ -1564,7 +1564,7 @@ function itemCard(o, rev, it, hue) {
       if (k === "budget_kind") {
         dv.replaceChildren();
         dv.append(dd.budget_kind === "adopted"
-          ? tag("本轮采用口径", "indigo", true)
+          ? tag("本轮采用预算", "indigo", true)
           : tag(dd.budget_kind === "desired" ? "期望预算" : "客户原始说法", "blue", true));
       }
       dl.append(dv);
@@ -1575,7 +1575,7 @@ function itemCard(o, rev, it, hue) {
   // 采用决定的依据
   if (it.epistemic_kind === "adopted_decision" && dd.decided_by) {
     const n = el("p", "tiny"); n.style.marginTop = "10px";
-    n.textContent = `决定者：${dd.decided_by}` + (dd.rationale ? ` · 理由：${dd.rationale}` : "");
+    n.textContent = `决定者：${dd.decided_by}` + (dd.decided_at ? ` · 决定于 ${fullTime(dd.decided_at)}` : ` · 此版本记录于 ${fullTime(rev.created_at)}`) + (dd.rationale ? ` · 理由：${dd.rationale}` : "");
     n.style.color = "var(--indigo)";
     d.append(n);
   }
@@ -1589,7 +1589,7 @@ function itemCard(o, rev, it, hue) {
   // 未知 / 分歧的显式表达
   if (it.epistemic_kind === "hypothesis") {
     const n = el("p", "tiny muted"); n.style.marginTop = "8px";
-    n.textContent = "此条是假设/未核实信息，不是事实依据。";
+    n.textContent = "这部分还需要确认。可以补充客户原文、会议记录，或说明团队的判断。";
     sources.append(n);
   }
   if (sources.textContent.trim()) { footer.append(sources); d.append(footer); }
@@ -1661,17 +1661,17 @@ function viewReview(pid) {
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
-  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "整理与Review";
+  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "策划文档";
   const headingRow = el("div", "review-heading-row");
-  const exportPrompt = btn("复制飞书导出 Prompt", () => copyText(reviewExportPrompt(DATA, pid), exportPrompt), "primary");
-  exportPrompt.title = "复制后发送给 Agent，将 Review 排版为便于阅读的飞书成果文档";
+  const exportPrompt = btn("复制生成飞书文档指令", () => copyText(reviewExportPrompt(DATA, pid), exportPrompt), "primary");
+  exportPrompt.title = "复制后发给 Codex，生成一份便于团队阅读的飞书文档；每次由你发起，不会自动持续同步";
   exportPrompt.setAttribute("aria-live", "polite");
   const actions = el("div", "review-export-actions");
   const history = el("button", "object-help export-history-toggle");
   history.type = "button";
   history.onclick = () => S.inspector?.kind === "exports" ? closeInspector() : openInspector({kind:"exports",project_id:pid});
-  history.title = "查看导出记录";
-  history.setAttribute("aria-label", "查看导出记录");
+  history.title = "查看飞书文档生成记录";
+  history.setAttribute("aria-label", "查看飞书文档生成记录");
   history.setAttribute("aria-expanded", String(S.inspector?.kind === "exports"));
   if (S.inspector?.kind === "exports") history.setAttribute("aria-controls", "export-history-panel");
   history.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 5v6h6M12 7v5l3 2"/></g></svg>';
@@ -1762,9 +1762,9 @@ function viewReview(pid) {
   }
 
   if (kindMeta && !kindMeta.persistable) {
-    sub.textContent = "客户 Q&A 与「信息收集」中的 D15 客户 Q&A 问题表共用同一份内容。";
+    sub.textContent = "客户 Q&A 与「项目信息」中的 D15 客户 Q&A 问题表共用同一份内容。";
     if (sel?.current_revision_id) {
-      const openDraft = chipBtn("在信息收集中打开", () => go(`#/p/${pid}/draft/${sel.id}`));
+      const openDraft = chipBtn("在项目信息中打开", () => go(`#/p/${pid}/draft/${sel.id}`));
       openDraft.style.marginLeft = "10px";
       sub.append(openDraft);
     }
@@ -1779,7 +1779,7 @@ function viewReview(pid) {
     card.append(bd);
     main.append(card);
   } else {
-    main.append(empty("✎", "尚未生成成果", ["可以让 Agent 基于已有对象整理。"]));
+    main.append(empty("✎", "可以先整理一版。", ["可以继续补充资料，也可以让 Codex 根据已有信息整理策划文档；暂未确定的内容会标出来。"]));
   }
 
   layout.append(main);
@@ -1816,7 +1816,7 @@ function reviewDocument(o, pid, kindMeta) {
   if (!isOld) {
     for (const b of shown.payload.blocks || []) {
       const st = blockBasisStatus(b.block_id, shown);
-      if (st.stale.length) staleBlocks.push({ block_id: b.block_id, stale: st.stale });
+      if (st.stale.length) staleBlocks.push({ block_id: b.block_id, title: intentLabel(kindMeta, b.block_id) || b.markdown.match(/^#{1,6}\s+(.+)$/m)?.[1] || "成果段落", stale: st.stale });
     }
   }
 
@@ -1864,10 +1864,10 @@ function reviewDocument(o, pid, kindMeta) {
 
   if (staleBlocks.length) {
     bd.append(banner("orange", "↻", [
-      (() => { const p = el("p"); p.style.margin = "0"; p.innerHTML = `<b>依据已变化 · 成果尚未同步</b>：${staleBlocks.length} 个段落的 draft 依据或其上游内容已有变化，当前成果尚未同步。`; return p; })(),
+      (() => { const p = el("p"); p.style.margin = "0"; p.textContent = `有新信息，相关内容待更新：${staleBlocks.map(b => b.title).join("、")}。请查看变化，或复制更新指令交给 Codex。`; return p; })(),
       (() => {
         const d = el("div", "review-prompt-actions");
-        const updatePrompt = btn("复制更新 Prompt", () => copyText(reviewUpdatePrompt(DATA, pid, o.id), updatePrompt));
+        const updatePrompt = btn("复制更新指令", () => copyText(reviewUpdatePrompt(DATA, pid, o.id), updatePrompt));
         updatePrompt.setAttribute("aria-live", "polite");
         d.append(updatePrompt);
         d.append(chipBtn("查看受影响段落", () => {
@@ -1945,7 +1945,7 @@ function reviewDocument(o, pid, kindMeta) {
 
   const note = el("p", "tiny muted");
   note.style.marginTop = "20px";
-  note.textContent = "修改请在 Codex 中提出：反馈会先落到相关 draft 对象，再由 Agent 更新成果。页面不提供直接编辑。";
+  note.textContent = "告诉 Codex 哪里变了。Yu+ 会更新相关项目信息，再调整受影响的策划文档。";
   bd.append(note);
 
   card.append(bd);
@@ -2013,7 +2013,7 @@ function qaReviewView(pid, qaObj, kindMeta) {
   const bd = el("div", "body");
   bd.style.padding = "22px 24px";
   if (!rev) {
-    bd.append(empty("?", "尚未建立问题表", ["D15 客户 Q&A 尚未录入。可以让 Agent 从已有对象中整理待确认问题。"]));
+    bd.append(empty("?", "尚未建立问题表", ["还没有客户澄清与答复记录。可以补充客户原文或沟通记录；团队仍在探索的议题另记为开放性问题。"]));
     card.append(bd);
     wrap.append(card);
     return wrap;
@@ -2078,10 +2078,10 @@ function viewSources(pid) {
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
-  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "原始材料";
+  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "原始资料";
   head.append(h);
   const sub = el("p", "subtitle");
-  sub.textContent = "飞书、本地文件与用户补充统一在这里。对象里的来源引用与这里是同一份来源身份，不是两个材料库。";
+  sub.textContent = "查看项目的飞书链接、本地文件与口头补充；从项目信息中的出处也能回到这里。";
   head.append(sub);
   c.append(head);
 
@@ -2162,10 +2162,10 @@ function viewHistory(pid) {
 
   const head = el("div");
   head.style.margin = "30px 0 6px";
-  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "变更与决定记录";
+  const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "修改与确认记录";
   head.append(h);
   const sub = el("p", "subtitle");
-  sub.textContent = "这里是已保存的变更记录与正式决定，不是聊天全文，也不是 Agent 的执行过程日志。";
+  sub.textContent = "回看修改了什么、为何调整，以及谁作出了决定。团队当前采用的方向，不等同于客户已确认的要求。";
   head.append(sub);
   c.append(head);
 
@@ -2227,7 +2227,7 @@ function viewHistory(pid) {
       card.append(bd);
       g.append(card);
     }
-    if (!decisions.length) g.append(empty("◆", "尚无正式决策", ["正式决定会在 Agent 通过 draft 修改记录时一并保存。"]));
+    if (!decisions.length) g.append(empty("◆", "尚无正式决策", ["告诉 Codex 已作出的决定，更新相关项目信息时会一并保留依据。"]));
     c.append(g);
     return c;
   }
@@ -2279,16 +2279,16 @@ function viewHistory(pid) {
 /* ── 对象属性目录 ──────────────────────────────────────────────────────── */
 function viewCatalog() {
   const c = el("div", "content wide");
-  const h = el("h1", "largetitle"); h.textContent = "对象说明"; c.append(h);
+  const h = el("h1", "largetitle"); h.textContent = "信息分类说明"; c.append(h);
   const sub = el("p", "subtitle");
-  sub.textContent = `${DATA.catalog.length} 类业务对象的名称与作用。页面中的「对象说明」从这里派生，与 Agent 使用的定义是同一套。`;
+  sub.textContent = `${DATA.catalog.length} 类项目信息的用途、常见来源和关联内容。按项目需要补充，不必逐项填满。`;
   c.append(sub);
 
   c.append((() => { const d = el("div"); d.style.height = "8px"; return d; })());
 
   const card = el("div", "card");
   const head = el("header");
-  const h3 = el("h3"); h3.textContent = "信息收集对象"; head.append(h3);
+  const h3 = el("h3"); h3.textContent = "项目信息分类"; head.append(h3);
   const g = el("span", "grow"); head.append(g);
   head.append(tag(`${DATA.catalog.length} 类`, "blue"));
   card.append(head);
@@ -2321,7 +2321,7 @@ function viewCatalog() {
 
   const rc = el("div", "card");
   const rh = el("header");
-  const rh3 = el("h3"); rh3.textContent = "review 成果"; rh.append(rh3);
+  const rh3 = el("h3"); rh3.textContent = "策划文档类型"; rh.append(rh3);
   const rg = el("span", "grow"); rh.append(rg);
   rh.append(tag("5 类", "indigo"));
   rc.append(rh);
@@ -2467,7 +2467,7 @@ function renderChrome() {
     pb.title = "当前浏览项目：" + proj.name + "（" + proj.id + "）";
     crumbs.append(pb);
     const sep2 = el("span", "sep"); sep2.textContent = "›"; crumbs.append(sep2);
-    const sec = r.view === "case-finding" ? "找案例" : r.view === "review" ? "整理与Review" : r.view === "sources" ? "原始材料" : r.view === "history" ? "变更与决定记录" : "信息收集";
+    const sec = r.view === "case-finding" ? "案例分析" : r.view === "review" ? "策划文档" : r.view === "sources" ? "原始资料" : r.view === "history" ? "修改与确认记录" : "项目信息";
     const b = el("b"); b.textContent = sec; crumbs.append(b);
   }
   const menu = btn("☰", () => {
@@ -2502,20 +2502,20 @@ function renderChrome() {
   };
   addNav(sm, "项目", "#/", { icon: "▦", current: S.route.view === "projects" });
   addNav(sm, "案例库", "#/libraries", { icon: "▤", current: S.route.view === "libraries" });
-  addNav(sm, "对象说明", "#/types", { icon: "◇", current: S.route.view === "types", n: String(DATA.catalog.length) });
+  addNav(sm, "信息分类说明", "#/types", { icon: "◇", current: S.route.view === "types", n: String(DATA.catalog.length) });
 
   const sp = $("sideProject"); sp.replaceChildren();
   const secondary = $("sideProjectSecondary"); secondary.replaceChildren();
   if (proj) {
-    addNav(sp, "信息收集", `#/p/${proj.id}/draft`, { icon: "✎", current: S.route.view === "draft" });
-    addNav(sp, "整理与Review", `#/p/${proj.id}/review`, { icon: "▤", current: S.route.view === "review" });
-    addNav(sp, "找案例", `#/p/${proj.id}/case-finding`, { icon: "⌕", current: S.route.view === "case-finding" });
-    addNav(secondary, "原始材料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
-    addNav(secondary, "变更与决定记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
+    addNav(sp, "项目信息", `#/p/${proj.id}/draft`, { icon: "✎", current: S.route.view === "draft" });
+    addNav(sp, "策划文档", `#/p/${proj.id}/review`, { icon: "▤", current: S.route.view === "review" });
+    addNav(sp, "案例分析", `#/p/${proj.id}/case-finding`, { icon: "⌕", current: S.route.view === "case-finding" });
+    addNav(secondary, "原始资料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
+    addNav(secondary, "修改与确认记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
   } else {
     const info = el("div");
     info.style.cssText = "padding:6px 10px;font-size:12px;color:var(--label-3);line-height:1.6;";
-    info.textContent = "进入一个项目后，这里显示它的信息收集、整理与Review、材料与历史。";
+    info.textContent = "进入一个项目后，这里显示它的项目信息、策划文档、材料与历史。";
     sp.append(info);
   }
 
@@ -2812,7 +2812,7 @@ function renderInspectorExtra() {
   body.append(sec);
 
   const s2 = el("section");
-  const t2 = el("h4"); t2.textContent = "② 使用的 draft 内容"; s2.append(t2);
+  const t2 = el("h4"); t2.textContent = "② 所依据的项目信息"; s2.append(t2);
   if (!lg || !(lg.basis || []).length) {
     const x = el("p", "small muted"); x.textContent = "尚未记录依据。"; s2.append(x);
   }

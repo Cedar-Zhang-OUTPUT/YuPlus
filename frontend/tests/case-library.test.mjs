@@ -33,7 +33,7 @@ test('required input gates copying, rechecks current value, and preserves editab
     assert.equal(cards.filter(n=>n.tag==='article').length,1);
     const link=cards.find(n=>n.tag==='a');assert.equal(link.href,url);assert.equal(link.target,'_blank');
     assert.equal(link.rel,'noopener noreferrer');
-    const remove=cards.find(n=>n.tag==='button' && n.textContent==='复制移除 Prompt');
+    const remove=cards.find(n=>n.tag==='button' && n.textContent==='复制移除指令');
     assert.deepEqual(removals,[]);remove.onclick();
     assert.equal(removals[0],libraryRemovalPrompt({id:'lib',name:'<标题>'}));
     assert.ok(removals[0].includes('不删除飞书文件夹'));
@@ -65,7 +65,7 @@ test('website registration has an independent required prompt and titled website
     const all=nodes(libraryView([{id:'web',kind:'website',name:'网站案例',url:site}],state,text=>copied.push(text),s=>s));
     const inputs=all.filter(n=>n.tag==='input');assert.equal(inputs.length,2);
     const website=inputs.find(n=>n.id==='library-website-url');
-    const button=all.find(n=>n.textContent==='复制新增网站 Prompt');
+    const button=all.find(n=>n.textContent==='复制新增网站指令');
     assert.ok(button.disabled);website.value=site;website.oninput();assert.equal(button.disabled,false);
     button.onclick();assert.equal(copied[0],libraryPrompt(site,'website'));
     assert.equal(state.url,url);assert.equal(state.websiteUrl,site);

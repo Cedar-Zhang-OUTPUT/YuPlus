@@ -1,10 +1,10 @@
 # Find cases
 
-Use for a project’s 找案例 research, new rounds and changes to an existing board. This workflow can start from user text, files or available project context; completing draft/review is not a prerequisite. Do not create sources or modify draft/review merely to conduct research.
+Use for a project’s 案例分析 research, new rounds and changes to an existing board. This workflow can start from user text, files or available project context; completing draft/review is not a prerequisite. Do not create sources or modify draft/review merely to conduct research.
 
 ## Choose the research identity
 
-- The submitted **开启一轮新的找案例研究** prompt starts a new round: v1 initially, then v2, v3… Each round has its own board locator; preserve previous rounds. Copying the prompt or viewing history alone does nothing. Do not derive the next version from the currently viewed historical version.
+- The submitted **开启一轮新的案例分析** prompt starts a new round: v1 initially, then v2, v3… Each round has its own board locator; preserve previous rounds. Copying the prompt or viewing history alone does nothing. Do not derive the next version from the currently viewed historical version.
 - Adding cases/images, revising explanations, regrouping or refining the current direction updates the same round and board. Direct user edits in Feishu are also same-version changes. Read the latest target board before editing and preserve the user’s edits; never overwrite from a stale local draft.
 - Continuing an interrupted run or retrying a write resumes that run and reuses its resource identities. Check uncertain outcomes before creating another document/board. An explicit new-round request creates a new round; a selected historical board does not change that intent. Ask briefly only when the target round or new-versus-update intent is genuinely unclear.
 - A specified board is usable when compatible with the requested round. Do not reuse a previous round’s board as the new version’s content; resolve that conflict before writing.

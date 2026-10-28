@@ -62,7 +62,7 @@ export function libraryView(libraries, state, copy, fullTime) {
     const body = el('div', 'body');
     if (!url) body.append(el('p', 'small muted', '链接不可用，请让 Agent 检查这条案例库记录。'));
     body.append(el('p', 'tiny muted', `保存于 ${fullTime(library.created_at)}`));
-    const remove = el('button', 'chipbtn library-remove', '复制移除 Prompt');
+    const remove = el('button', 'chipbtn library-remove', '复制移除指令');
     remove.type = 'button';
     remove.setAttribute('aria-label', `复制移除案例库 ${library.name} 的提示词`);
     remove.onclick = () => copy(libraryRemovalPrompt(library), remove);
@@ -89,7 +89,7 @@ export function libraryView(libraries, state, copy, fullTime) {
     input.id = id; input.type = 'url'; input.required = true; input.autocomplete = 'off';
     input.placeholder = placeholder; input.value = state[key] || '';
     input.setAttribute('aria-describedby', id + '-help');
-    const button = el('button', 'chipbtn', `复制新增${title} Prompt`); button.type = 'button';
+    const button = el('button', 'chipbtn', `复制新增${title}指令`); button.type = 'button';
     const hint = el('p', 'small muted'); hint.id = id + '-help'; hint.setAttribute('aria-live', 'polite');
     const update = () => {
       state[key] = input.value;

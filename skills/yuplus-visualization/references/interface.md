@@ -6,19 +6,19 @@ Use visible Chinese labels in user instructions. The desktop view has left navig
 
 The project list supports search and empty states. Open the intended project by identity, especially when names match. “新建项目” offers text to copy into the Agent conversation; it is not a browser database-creation form. The Agent creates a requested project through the business CLI. Two templates support supplying files or monitoring a designated Feishu group. Their inline fields prepare clipboard text only; blank fields copy as `______`. Users attach files in the Agent conversation. Copying alone does not create a project or schedule monitoring.
 
-Project navigation contains “信息收集”, “整理与Review”, “原始材料”, and “变更与决定记录”; the object definitions page explains supported types. The navigation toggle expands/collapses the sidebar. Its footer reports page refresh time and offers “刷新页面”. That timestamp is not a remote-source check time. The history page presents stored changes and decisions, not an audit approval or export created merely by clicking a button.
+Project navigation contains “项目信息”, “策划文档”, “原始资料”, and “修改与确认记录”; the object definitions page explains supported types. The navigation toggle expands/collapses the sidebar. Its footer reports page refresh time and offers “刷新页面”. That timestamp is not a remote-source check time. The history page presents stored changes and decisions, not an audit approval or export created merely by clicking a button.
 
 ## Information collection: draft
 
 The reading area groups the 24 business object types. They are available categories, not 24 mandatory completed records. “全部 24 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
 
-The “对象目录” is initially collapsed. Hover opens a floating preview without resizing the reading layout. Moving away or choosing an entry closes that preview. Clicking “展开对象目录” or “固定展开对象目录” pins it open and changes the layout; choosing entries then leaves it open. “收起对象目录” collapses it. In a narrow window expansion appears downward. The click controls are also the touch/keyboard route.
+The “信息目录” is initially collapsed. Hover opens a floating preview without resizing the reading layout. Moving away or choosing an entry closes that preview. Clicking “展开信息目录” or “固定展开信息目录” pins it open and changes the layout; choosing entries then leaves it open. “收起信息目录” collapses it. In a narrow window expansion appears downward. The click controls are also the touch/keyboard route.
 
 Cards show version and update time. Use “历史版本” to open the draft version menu, then select “历史版本 v…” or “当前版本 v…”. Arrow Up/Down and Home/End move among menu options; Enter/Space activates a focused button; Escape closes the menu. History selection changes what is read, not the saved current version. Historical cards show a notice and a way back to current.
 
 Long text is folded after three lines where the text block supports folding. Click/tap the text, or focus it and press Enter/Space, to expand or collapse. Short text and blocks containing interactive elements may not be foldable. Text selection does not toggle it. Folding is recalculated for the available width.
 
-Hover or keyboard-focus a colored item card to expose the vertical information-nature label, such as “原文陈述”, “用户补充”, “建议”, or “采用决定”. This explains the saved epistemic kind; it is not a status change or a separate edit control. The expanding color edge does not change the text width.
+Hover or keyboard-focus a colored item card to expose the vertical information-nature label, such as “原文信息”, “策划补充”, “建议方向”, or “当前采用”. This explains the saved epistemic kind; it is not a status change or a separate edit control. The expanding color edge does not change the text width.
 
 Structured money is displayed from integer smallest-unit amounts and currency; recognized amounts in prose are highlighted red. Highlighting is a display heuristic, not validation or a reason to edit source wording/insert HTML. Unknown amounts stay unknown.
 
@@ -30,25 +30,25 @@ D24 “开放性问题” appears under “判断与决定”, with question, co
 
 ## Monitored groups in draft and review
 
-Project rows show “监控 N 个群” and a count needing attention. The shared “监控群聊” card appears in both “信息收集” and “整理与Review”, scoped to that project; an older server without monitor data shows an empty state. A verified stored group AppLink opens in a new tab. The page does not configure the group by opening it.
+Project rows show “监控 N 个群” and a count needing attention. The shared “项目群更新” card appears in both “项目信息” and “策划文档”, scoped to that project; an older server without monitor data shows an empty state. A verified stored group AppLink opens in a new tab. The page does not configure the group by opening it.
 
 Each group shows its configured interval, enabled/paused/pending schedule state, collection of **all accessible history**, “已拉取至”, “最近检查”, “最近同步完成”, “最近保存结果”, pending messages and saved errors. When present, “已记录澄清消息” counts historical clarification dispositions, not currently unanswered D15 questions. Collection complete means the fetched history window is complete, not that every message was adopted or that inaccessible history was read. Check time can record a failed attempt; use the error and completion result together.
 
-“已保存调度绑定回执” reflects the saved host receipt. A stale receipt is “调度状态待核验”; an overdue result says “尚未收到本轮结果”. Neither proves an Agent is currently running. Do not invent live reading/progress statuses. “查看已保存运行记录” expands only records supplied by the service; “拉取未完成” / “处理未完成” / “已完成” describe saved stages. If no records are available, use the inspection Prompt rather than claiming there were no runs.
+“已保存调度绑定回执” reflects the saved host receipt. A stale receipt is “调度状态待核验”; an overdue result says “尚未收到本轮结果”. Neither proves an Agent is currently running. Do not invent live reading/progress statuses. “查看已保存运行记录” expands only records supplied by the service; “拉取未完成” / “处理未完成” / “已完成” describe saved stages. If no records are available, use the inspection指令 rather than claiming there were no runs.
 
-“复制立即同步 Prompt”, “复制暂停 Prompt” / “复制恢复 Prompt”, “复制调整间隔 Prompt”, “复制解除绑定 Prompt”, and “复制查看记录 Prompt” copy an intent bound to the real data directory, project, monitor and configuration version. They make no business or scheduler changes. Send the desired copied request to the Agent conversation to execute it; interval changes need the requested minute value. Recheck current configuration before a write. After completion refresh the page to see saved results.
+“复制立即同步指令”, “复制暂停指令” / “复制恢复指令”, “复制调整间隔指令”, “复制解除绑定指令”, and “复制查看记录指令” copy an intent bound to the real data directory, project, monitor and configuration version. They make no business or scheduler changes. Send the desired copied request to the Agent conversation to execute it; interval changes need the requested minute value. Recheck current configuration before a write. After completion refresh the page to see saved results.
 
 ## Review outputs
 
 | Code | Visible output | Identity rule |
 | --- | --- | --- |
 | R01 | 主策 Debrief | Saved review object |
-| R02 | 推进要素 | Saved review object |
-| R03 | 创意审查结果 | Saved review object |
-| R04 | 内外部创作者 Brief | Multiple creator/round instances may coexist |
+| R02 | 项目推进安排 | Saved review object |
+| R03 | 创意评审记录 | Saved review object |
+| R04 | 创作者 Brief | Multiple creator/round instances may coexist |
 | R05 | 客户 Q&A | View of the same D15 draft Q&A, not another persisted review copy |
 
-Select the type and, where applicable, the Brief instance. Review versions are available through the version area and its “查看” buttons; historical reading is labelled. Paragraph actions are “完整追溯路径” and “复制引用”; changed paragraphs additionally have yellow “查看差异”. The orange changed-basis banner offers “查看受影响段落” and “复制更新 Prompt”. The title's “复制飞书导出 Prompt” covers the entire project, regardless of the selected card. See [review-actions.md](review-actions.md) for scope and execution.
+Select the type and, where applicable, the Brief instance. Review versions are available through the version area and its “查看” buttons; historical reading is labelled. Paragraph actions are “完整追溯路径” and “复制引用”; changed paragraphs additionally have yellow “查看差异”. The orange changed-basis banner offers “查看受影响段落” and “复制更新指令”. The title's “复制生成飞书文档指令” covers the entire project, regardless of the selected card. See [review-actions.md](review-actions.md) for scope and execution.
 
 ## Original, snapshot, and actual file
 
@@ -69,6 +69,6 @@ Hover, focus or click the top-left avatar to reveal **更改头像**. It copies 
 
 ## Find cases
 
-Under the current project, 找案例 opens its independent research view. History lists v1/v2 and creation/update times to the second. The **复制找案例 Prompt** explicitly requests a **new research round**; copying does not create one. Additions, explanation edits and direct Feishu edits stay in the current round. Follow the business Skill’s case-research.md; this is not a draft/review write.
+Under the current project, 案例分析 opens its independent research view. History lists v1/v2 and creation/update times to the second. The **复制开始分析指令** explicitly requests a **new research round**; copying does not create one. Additions, explanation edits and direct Feishu edits stay in the current round. Follow the business Skill’s case-research.md; this is not a draft/review write.
 
 To the left of refresh, **打开飞书画板 ↗** opens the selected version’s verified board link in a new tab, retaining its anchor (document link fallback). A missing link disables the entry. Switching versions switches the target; do not invent a link from a sample image. Preview refresh is the local program’s responsibility. The CLI saves real research rounds; the local service exports the visible board every 60 seconds. Hidden pages stop polling; errors retain the last image, and authentication/permission failures pause polling. Demo versions remain explicitly illustrative. New or newly bound rounds require a page refresh to reload history.

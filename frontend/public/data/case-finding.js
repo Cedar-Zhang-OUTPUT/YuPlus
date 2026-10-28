@@ -9,7 +9,7 @@ export function caseVersions(data,projectId) {
   return (data.case_findings||[]).filter(r=>r.project_id===projectId && typeof r.id==='string' && Number.isInteger(r.version) && r.version>0).slice().sort((a,b)=>b.version-a.version);
 }
 export function caseFindingPrompt(project,data) {
-  return `请为 Yu+ 项目「${project.name}」（project_id：${project.id}）开启一轮新的找案例研究，按 Yu+ Skill 新建研究版本，不要覆盖或续改已有研究。`+
+  return `请为 Yu+ 项目「${project.name}」（project_id：${project.id}）开启一轮新的案例分析，按 Yu+ Skill 新建研究版本，不要覆盖或续改已有研究。`+
     (data.meta?.demo?'\n这是界面示例，请先指定真实项目。':`\n数据目录：${JSON.stringify(data.meta.data_dir)}`);
 }
 export function originalUrl(value) {
@@ -29,14 +29,14 @@ const button=(text,label,action)=>{const node=el('button','chipbtn',text);node.t
 export function caseFindingView(data,project,state,copy) {
   const versions=caseVersions(data,project.id);
   const page=el('div','content wide case-finding-page');
-  const heading=el('div','case-heading');heading.append(el('h1','largetitle','找案例'));
-  const trigger=button('暂无版本','找案例历史版本',()=>{
+  const heading=el('div','case-heading');heading.append(el('h1','largetitle','案例分析'));
+  const trigger=button('暂无版本','案例分析历史版本',()=>{
     if(menu.matches(':popover-open')){menu.hidePopover();return;}
     const rect=trigger.getBoundingClientRect();menu.style.left=Math.max(12,Math.min(rect.left,innerWidth-324))+'px';menu.style.top=(rect.bottom+8)+'px';
     menu.showPopover();options.find(n=>n.getAttribute('aria-checked')==='true')?.focus();
   });
   trigger.classList.add('version-trigger');trigger.disabled=!versions.length;trigger.setAttribute('aria-haspopup','menu');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls','caseVersions');
-  const menu=el('div','version-menu case-version-menu');menu.id='caseVersions';menu.setAttribute('popover','auto');menu.setAttribute('role','menu');menu.setAttribute('aria-label','找案例历史版本');
+  const menu=el('div','version-menu case-version-menu');menu.id='caseVersions';menu.setAttribute('popover','auto');menu.setAttribute('role','menu');menu.setAttribute('aria-label','案例分析历史版本');
   const options=[];
   menu.addEventListener('toggle',()=>trigger.setAttribute('aria-expanded',String(menu.matches(':popover-open'))));
   menu.onkeydown=e=>{
@@ -48,7 +48,7 @@ export function caseFindingView(data,project,state,copy) {
   heading.append(trigger,menu);if(data.meta?.demo) heading.append(el('span','tag case-demo-label','示例画板'));
   page.append(heading);
 
-  const board=el('section','card case-board');board.setAttribute('aria-label','案例画板预览');
+  const board=el('section','card case-board');board.setAttribute('aria-label','案例参考板预览');
   const tools=el('div','case-board-tools');
   const status=el('span','small muted case-board-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   const original=el('a','chipbtn','打开飞书画板 ↗');original.setAttribute('aria-label','在新标签页打开当前版本飞书画板');setBoardLink(original,null);
@@ -58,7 +58,7 @@ export function caseFindingView(data,project,state,copy) {
   const image=el('img','case-board-image');image.alt='案例画板图片预览';image.draggable=false;image.hidden=true;
   const empty=el('div','case-board-empty');
   const glyph=el('div','case-board-glyph','◇');glyph.setAttribute('aria-hidden','true');
-  const emptyTitle=el('h3','','还没有案例画板');const emptyNote=el('p','small muted','从下方复制提示词，开始找案例。');empty.append(glyph,emptyTitle,emptyNote);
+  const emptyTitle=el('h3','','这次想研究什么？');const emptyNote=el('p','small muted','可以提供项目、参考案例或探索方向，例如：分析高端香氛快闪如何通过空间和互动表达品牌。复制下方指令，发给 Codex 开始。');empty.append(glyph,emptyTitle,emptyNote);
   viewport.append(image,empty);
   let zoom=1,x=0,y=0,dimensions=null,drag=null,selected=null,lastImage=null,fullscreen=false;
   const zoomLabel=el('span','case-zoom-label','100%');
@@ -94,11 +94,11 @@ export function caseFindingView(data,project,state,copy) {
   const escape=e=>{if(e.key==='Escape' && fullscreen){expand.click();expand.focus();}};document.addEventListener('keydown',escape);
   board.append(tools,viewport,controls);page.append(board);
 
-  const dock=el('section','card case-finding-dock');dock.setAttribute('aria-label','找案例提示词');
-  const header=el('header');header.append(el('h3','grow','找案例'),el('span','tag library-tag-blue','在 Codex 中开始'));
+  const dock=el('section','card case-finding-dock');dock.setAttribute('aria-label','案例分析提示词');
+  const header=el('header');header.append(el('h3','grow','案例分析'),el('span','tag library-tag-blue','在 Codex 中开始'));
   const body=el('div','body'),box=el('div','copyable project-prompt-box');
   box.append(el('span','grow','开启一轮新的案例研究，保留已有版本。'));
-  const copyButton=button('复制找案例 Prompt','复制找案例提示词',()=>copy(caseFindingPrompt(project,data),copyButton));box.append(copyButton);body.append(box);dock.append(header,body);page.append(dock);
+  const copyButton=button('复制开始分析指令','复制开始分析指令',()=>copy(caseFindingPrompt(project,data),copyButton));box.append(copyButton);body.append(box);dock.append(header,body);page.append(dock);
 
   const fetchPreview=previewTransport(data,project.id);
   const controller=createPreviewController({fetchPreview,demo:data.meta?.demo===true,onState:result=>{
@@ -108,7 +108,7 @@ export function caseFindingView(data,project,state,copy) {
       if(lastImage!==snapshot.image_url){image.src=snapshot.image_url;lastImage=snapshot.image_url;}
       dimensions=snapshot;image.hidden=false;empty.hidden=true;transform();
     } else {image.hidden=true;empty.hidden=false;dimensions=null;lastImage=null;}
-    if(!selected){status.textContent='';emptyTitle.textContent='还没有案例画板';emptyNote.textContent='从下方复制提示词，开始找案例。';}
+    if(!selected){status.textContent='';emptyTitle.textContent='这次想研究什么？';emptyNote.textContent='可以提供项目、参考案例或探索方向，例如：分析高端香氛快闪如何通过空间和互动表达品牌。复制下方指令，发给 Codex 开始。';}
     else {
       emptyTitle.textContent=phase==='unbound'?'本轮画板尚未关联':phase==='loading'?'正在获取画板预览':phase==='blocked'?'需要处理飞书访问权限':'暂时没有可用预览';
       emptyNote.textContent=phase==='unbound'?'Agent 保存飞书画板后，刷新页面即可查看。':phase==='loading'?'首次获取可能需要一些时间。':phase==='blocked'?'恢复登录或权限后，点击刷新重试。':phase==='unavailable'?'画板预览服务尚未接入。':'可点击刷新重试，或打开飞书原画板。';
