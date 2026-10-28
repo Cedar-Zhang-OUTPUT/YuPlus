@@ -2,71 +2,269 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f3ed">
-  <title>Yu+ — 让信息流动起来，让策划继续向前</title>
-  <meta name="description" content="在 Codex 中协作，在本地留存。Yu+ 帮助策展团队收集材料、组织项目对象、生成可追溯的 review 成果。复制提示词，让 Agent 安装并开始使用。">
-  <meta property="og:title" content="Yu+ — 让信息流动起来，让策划继续向前">
-  <meta property="og:description" content="面向策展项目的本地 Agent Copilot。复制安装提示词，在 Codex 中开始协作。">
+  <meta name="theme-color" content="#f5f5f7">
+  <title>Yu+ — 在 Codex 里说一句，项目就被记清楚</title>
+  <meta name="description" content="Yu+ 是 Codex 中的策展项目 Copilot。Agent 读取飞书文档、本地文件和项目群聊，Yu+ 把内容写进有来源、可追溯的本地项目记录。复制提示词，让 Agent 安装并开始使用。">
+  <meta property="og:title" content="Yu+ — 在 Codex 里说一句，项目就被记清楚">
+  <meta property="og:description" content="面向策展主策的本地 Agent Copilot。在官网直接体验：给 Codex 发一句话，看 Yu+ 把项目写出来。">
   <meta property="og:type" content="website"><meta property="og:url" content="https://cedar-zhang-output.github.io/YuPlus/">
   <link rel="canonical" href="https://cedar-zhang-output.github.io/YuPlus/">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./site.css"><script src="./site.js" defer></script>
+  <link rel="stylesheet" href="./site.css">
+  <script src="./demo.js" defer></script>
+  <script src="./site.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">跳到正文</a>
   <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
-    <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7"/></symbol>
-    <symbol id="external" viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></symbol>
-    <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="3" width="12" height="15" rx="1"/><path d="M15 21H4V7"/></symbol>
-    <symbol id="document" viewBox="0 0 24 24"><path d="M13 2H5v20h14V8l-6-6Z M13 2v6h6 M8 12h8M8 16h6"/></symbol>
-    <symbol id="folder" viewBox="0 0 24 24"><path d="M3 5h7l2 3h9v12H3Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M14 4v16"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16Z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+    <symbol id="i-reload" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></symbol>
   </defs></svg>
-  <div class="page">
-    <header class="header">
-      <a class="brand" href="./" aria-label="Yu+ 首页">Yu<span>+</span></a>
-      <nav aria-label="主导航"><a href="#workflow">工作方式</a><a href="#start">开始使用</a><a href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon"><use href="#external"/></svg></a></nav>
-    </header>
-    <main id="main">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <h1 id="hero-title">让信息流动起来，<br>让策划继续向前。</h1>
-          <p class="intro">在 Codex 中协作，在本地留存。Yu+ 帮你把分散的材料，变成有来源、可持续更新的项目内容。</p>
-          <div class="hero-actions"><button class="button primary" data-copy><span class="button-label">复制安装提示词</span><svg class="icon"><use href="#arrow"/></svg></button><a class="text-link" href="#workflow">了解工作方式 <svg class="icon"><use href="#arrow"/></svg></a></div>
-          <p class="version">v0.3.21 · macOS · 本地运行</p>
+
+  <header class="header">
+    <div class="wrap header-inner">
+      <a class="brand" href="./" aria-label="Yu+ 首页"><span class="mark">Yu</span><b>Yu+</b></a>
+      <nav class="nav" aria-label="主导航">
+        <a href="#try">体验</a><a href="#what">它是什么</a><a href="#how">工作方式</a><a href="#install">安装</a>
+        <a href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon"><use href="#i-ext"/></svg></a>
+      </nav>
+      <button class="button small dark" data-copy type="button"><svg class="icon"><use href="#i-copy"/></svg><span class="button-label">复制安装提示词</span></button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ═════════════ Hero + live demo ═════════════ -->
+    <section class="hero" id="try" aria-labelledby="hero-title">
+      <div class="wrap hero-copy">
+        <p class="eyebrow"><span class="pulse"></span>Codex 里的策展项目 Copilot · v0.3.21</p>
+        <h1 id="hero-title">在 Codex 里说一句，<br><span class="grad">项目就被记清楚。</span></h1>
+        <p class="lede">Agent 读取飞书、本地文件和项目群聊，Yu+ 把内容写进有来源、可追溯的本地项目记录。下面就是它真实的样子——选一句话，发给 Codex。</p>
+        <div class="hero-actions">
+          <button class="button primary" type="button" data-autoplay><svg class="icon"><use href="#i-play"/></svg>自动演示全程</button>
+          <button class="button ghost" data-copy type="button"><svg class="icon"><use href="#i-copy"/></svg><span class="button-label">复制安装提示词</span></button>
         </div>
-        <figure class="flow-figure" aria-label="材料进入 draft，再由 Agent 组织为 review 的关系示意">
-          <div class="paper-stack">
-            <div class="paper source-paper"><h3>原始材料</h3><ul><li><svg class="icon"><use href="#document"/></svg>飞书文档<span>···</span></li><li><svg class="icon"><use href="#folder"/></svg>本地文件<span>···</span></li><li><svg class="icon"><use href="#document"/></svg>你的补充<span>···</span></li></ul></div>
-            <svg class="connector connector-one" viewBox="0 0 80 48" aria-hidden="true"><path d="M1 1h56q14 0 14 14v25m-5-5 5 6 5-6"/></svg>
-            <div class="paper draft-paper"><span class="paper-label">draft</span><h3>信息收集</h3><ul><li><svg class="icon"><use href="#document"/></svg>项目目标<span>···</span></li><li><svg class="icon"><use href="#document"/></svg>预算与边界<span>···</span></li><li><svg class="icon"><use href="#document"/></svg>来源与关联<span>···</span></li></ul></div>
-            <svg class="connector connector-two" viewBox="0 0 80 48" aria-hidden="true"><path d="M1 1h56q14 0 14 14v25m-5-5 5 6 5-6"/></svg>
-            <div class="paper review-paper"><span class="paper-label">review</span><h3>信息整理</h3><ul><li><svg class="icon"><use href="#document"/></svg>主策 Debrief</li><li><svg class="icon"><use href="#document"/></svg>可追溯的项目成果</li></ul></div>
+      </div>
+
+      <div class="stage-wrap">
+        <div class="codex" id="codex" data-pane="closed" data-mtab="chat">
+          <!-- Window chrome -->
+          <div class="cx-titlebar">
+            <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="cx-title">城市记忆展厅 · 首期策展</span>
+            <div class="cx-mtabs" role="tablist" aria-label="切换视图">
+              <button type="button" role="tab" data-mtab="chat" aria-selected="true">对话</button>
+              <button type="button" role="tab" data-mtab="pane" aria-selected="false">Yu+</button>
+            </div>
+            <button type="button" class="cx-icon" data-toggle-pane aria-label="显示或隐藏浏览器面板" title="浏览器面板"><svg class="icon"><use href="#i-panel"/></svg></button>
           </div>
-          <figcaption>材料 → draft → review，修改始终有据可循。</figcaption>
-        </figure>
-      </section>
-      <div class="principles" aria-label="产品特点"><p>项目资料，留在本地</p><p>每次改动，都有来处</p><p>两个场景，随时往返</p></div>
-      <section id="workflow" class="workflow" aria-labelledby="workflow-title">
-        <div><p class="section-label">工作方式</p><h2 id="workflow-title">从一份材料开始，<br>让每一步都有依据。</h2></div>
-        <ol class="steps"><li><span class="step-number">01</span><div><h3>收集信息，写入 draft</h3><p>飞书文档、本地文件、你的补充，以及你指定的项目群。Agent 读取材料，把信息放进对应对象，保留来源。</p></div></li><li><span class="step-number">02</span><div><h3>整理内容，交给你 review</h3><p>基于已有对象组织成果。你随时可以补充或修改，Agent 先更新 draft，再同步 review。</p></div></li></ol>
-        <p class="loop-note">不必等资料齐全。随时开始整理，也随时回到收集。</p>
-      </section>
-      <section id="start" class="start" aria-labelledby="start-title">
-        <div class="start-copy"><h2 id="start-title">下一步，<br>交给你的 Agent。</h2><p>复制这段提示词，发给 Codex。它会下载 Yu+，检查环境，并打开你的本地工作空间。</p><p class="release-note">当前版本 v0.3.21 / 支持 macOS · 找案例 · 飞书画板 · 自动预览 · 自定义头像</p><div class="downloads"><a class="text-link" href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.21/YuPlus-v0.3.21.tar.gz">下载 v0.3.21 <svg class="icon"><use href="#arrow"/></svg></a><a class="text-link" href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.21" target="_blank" rel="noopener noreferrer">查看安装说明 <svg class="icon"><use href="#arrow"/></svg></a></div></div>
-        <div class="prompt-column">
-          <div class="prompt-panel"><div class="prompt-header"><h3>安装并开始使用 Yu+</h3><button class="button accent" data-copy><svg class="icon"><use href="#copy"/></svg><span class="button-label">复制安装提示词</span></button></div>
-            <ol class="prompt-summary"><li>请帮我安装或升级到 Yu+ v0.3.21 并启动。</li><li>从官方 GitHub Release 下载并验证安装包。</li><li>检查本地环境，运行统一安装入口。</li><li>安装 Yu+ 与两份 Codex Skill。</li><li>升级前备份并沿用原数据目录。</li><li>检查飞书 CLI；缺少认证时明确提示。</li><li>启动服务，在 Codex 中打开实际地址。</li><li>先询问我的项目名称，不导入演示材料。</li></ol>
-            <p class="guide-link">详细步骤由 Agent 读取：<a href="./agent-install.md" target="_blank" rel="noopener noreferrer">Agent 安装指南（Markdown）</a></p>
-            <details id="full-prompt"><summary>查看复制内容<span aria-hidden="true">+</span></summary><label for="install-prompt" class="visually-hidden">Agent 安装短提示词</label><textarea id="install-prompt" readonly spellcheck="false">请阅读 https://cedar-zhang-output.github.io/YuPlus/agent-install.md ，按指南帮我安装或升级到 Yu+ v0.3.21 并启动，保留已有项目数据。
+
+          <div class="cx-body">
+            <!-- Codex sidebar -->
+            <aside class="cx-side" aria-label="Codex 会话列表">
+              <button type="button" class="cx-new" data-reset><svg class="icon"><use href="#i-edit"/></svg>新对话</button>
+              <p class="cx-group">OUTPUT · 项目</p>
+              <ul class="cx-threads">
+                <li class="on"><span class="dot"></span>城市记忆展厅 · 首期策展</li>
+                <li>沿江夜游提案</li>
+                <li>湖畔书展复盘</li>
+              </ul>
+              <p class="cx-group">技能</p>
+              <ul class="cx-skills">
+                <li><code>$yuplus</code><span>项目协作</span></li>
+                <li><code>$yuplus-visualization</code><span>页面查看</span></li>
+              </ul>
+              <div class="cx-side-foot"><span class="cx-local"><i></i>本地 · ~/projects</span></div>
+            </aside>
+
+            <!-- Conversation -->
+            <section class="cx-chat" aria-label="Codex 对话">
+              <div class="cx-scroll" id="cxScroll">
+                <div class="cx-empty" id="cxEmpty">
+                  <div class="cx-empty-mark"><span class="mark lg">Yu</span></div>
+                  <h2>Yu+ 已就绪</h2>
+                  <p>项目「城市记忆展厅」· 本地数据目录 · 飞书已认证</p>
+                </div>
+                <ol class="cx-log" id="cxLog" aria-live="polite"></ol>
+              </div>
+              <div class="cx-composer-wrap">
+                <div class="cx-suggest" id="cxSuggest" role="list" aria-label="试试发送"></div>
+                <form class="cx-composer" id="cxForm" autocomplete="off">
+                  <label for="cxInput" class="visually-hidden">给 Codex 发消息</label>
+                  <textarea id="cxInput" rows="2" placeholder="给 Codex 发消息，或选择上面的一句…"></textarea>
+                  <div class="cx-row">
+                    <span class="cx-chip"><svg class="icon"><use href="#i-plus"/></svg></span>
+                    <span class="cx-chip skill">$yuplus</span>
+                    <span class="cx-chip">本地</span>
+                    <span class="cx-spacer"></span>
+                    <button type="button" class="cx-skip" id="cxSkip" hidden>跳过动画</button>
+                    <button type="submit" class="cx-send" id="cxSend" aria-label="发送"><svg class="icon"><use href="#i-up"/></svg></button>
+                  </div>
+                </form>
+              </div>
+            </section>
+
+            <div class="cx-split" id="cxSplit" role="separator" aria-orientation="vertical" aria-label="拖动调整面板宽度" tabindex="0"></div>
+
+            <!-- Codex built-in browser with Yu+ -->
+            <section class="cx-pane" aria-label="Codex 内置浏览器：Yu+">
+              <div class="br-bar">
+                <span class="br-tab"><span class="mark xs">Yu</span>Yu+ · 项目内容浏览<button type="button" class="br-x" data-toggle-pane aria-label="关闭面板">×</button></span>
+                <div class="br-url"><svg class="icon"><use href="#i-reload"/></svg><span id="brUrl">127.0.0.1:52817/#/p/prj_city/draft</span><span class="br-live">只读</span></div>
+              </div>
+              <div class="yu" id="yu">
+                <aside class="yu-rail" aria-label="Yu+ 导航">
+                  <div class="yu-brand"><span class="mark">Yu</span><b>Yu+</b></div>
+                  <p class="yu-sg">浏览</p>
+                  <nav>
+                    <button type="button" data-view="projects"><span class="gl">▦</span>项目</button>
+                    <button type="button" data-view="library"><span class="gl">☰</span>案例库</button>
+                    <button type="button" data-view="types"><span class="gl">◇</span>对象说明<em>24</em></button>
+                  </nav>
+                  <p class="yu-sg">当前项目</p>
+                  <nav>
+                    <button type="button" data-view="draft"><span class="gl">✎</span>信息收集<em data-count="draft"></em></button>
+                    <button type="button" data-view="review"><span class="gl">≣</span>整理与Review<em data-count="review"></em></button>
+                    <button type="button" data-view="cases"><span class="gl">⌕</span>找案例<em data-count="cases"></em></button>
+                  </nav>
+                  <nav class="yu-bottom">
+                    <button type="button" data-view="sources"><span class="gl">❖</span>原始材料<em data-count="sources"></em></button>
+                    <button type="button" data-view="history"><span class="gl">◷</span>变更与决定记录<em data-count="history"></em></button>
+                  </nav>
+                </aside>
+                <div class="yu-main">
+                  <div class="yu-toolbar"><span class="crumb"><i></i>城市记忆展厅</span><span class="sep">›</span><b id="yuCrumb">信息收集</b><span class="yu-saving" id="yuSaving" hidden>CLI 写入中…</span></div>
+                  <div class="yu-stage" id="yuStage"></div>
+                </div>
+                <aside class="yu-insp" id="yuInsp" aria-label="完整追溯路径" hidden></aside>
+              </div>
+            </section>
+          </div>
+        </div>
+        <p class="stage-note">演示为预设动画，使用 Yu+ 自带的示例项目，不连接飞书或真实数据。面板可拖动调整宽度，左侧导航和「完整追溯路径」都可以点。</p>
+      </div>
+    </section>
+
+    <!-- ═════════════ What ═════════════ -->
+    <section class="section wrap" id="what" aria-labelledby="what-title">
+      <div class="sec-head">
+        <p class="kicker">它是什么</p>
+        <h2 id="what-title">Codex 负责思考，<br>Yu+ 负责记住。</h2>
+        <p class="sec-lede">Yu+ 不是聊天机器人，也从不自己调用模型。你和熟悉的 Codex Agent 对话；Yu+ 给这个 Agent 一套规则、一份记录和一扇窗。</p>
+      </div>
+      <ol class="layers">
+        <li><span class="ln">01</span><h3>你</h3><p>在 Codex 里说话：发飞书链接、丢文件、说明哪里变了。</p></li>
+        <li><span class="ln">02</span><h3>Codex Agent</h3><p>读取飞书、本地文件与群聊；理解、整理、写作。</p></li>
+        <li class="yu-layer"><span class="ln">03</span><h3>Yu+</h3>
+          <dl>
+            <div><dt>$yuplus</dt><dd>两份 Skill：内容放哪里、什么算事实、先改什么。</dd></div>
+            <div><dt>yu CLI</dt><dd>保存前校验版本、证据与因果，拒绝跳过 draft 的改写。</dd></div>
+            <div><dt>SQLite</dt><dd>一份本地数据库 + 按 SHA‑256 寻址的文件池，只追加。</dd></div>
+          </dl>
+        </li>
+        <li><span class="ln">04</span><h3>只读页面</h3><p>在 Codex 内置浏览器里浏览、追溯任意段落，复制引用交回对话。</p></li>
+      </ol>
+    </section>
+
+    <!-- ═════════════ How ═════════════ -->
+    <section class="section band" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="kicker">工作方式</p>
+          <h2 id="how-title">两个场景，随时往返。<br>没有门槛。</h2>
+          <p class="sec-lede">不必等资料齐全。收集进 draft、整理成 review，任何时候都可以补材料、提修改。没有完成度进度条，也没有审批关卡。</p>
+        </div>
+        <div class="loop">
+          <article class="lp"><p class="lp-tag">source</p><h3>原始材料</h3><p>飞书文档、本地文件、你的口述、指定的项目群。保存身份与版本，不把上传当成已分析。</p></article>
+          <span class="lp-arrow" aria-hidden="true">→</span>
+          <article class="lp"><p class="lp-tag">draft · 24 类</p><h3>信息收集</h3><p>Agent 把读到的信息放进对应对象——预算、受众、场地、风险——每一条都标注来源与性质。</p></article>
+          <span class="lp-arrow" aria-hidden="true">→</span>
+          <article class="lp hot"><p class="lp-tag">review · 5 类</p><h3>信息整理</h3><p>基于已有 draft 写成固定栏目的成果：主策 Debrief、推进要素、创意审查、创作者 Brief、客户 Q&amp;A。</p></article>
+          <div class="lp-back"><span>你的反馈 → <b>先改 draft</b> → 再同步每个受影响的 review。直接改写 review 会被拒绝。</span></div>
+        </div>
+
+        <div class="tags-grid">
+          <div class="tg-head"><h3>每条信息都标明性质</h3><p>推测永远不会伪装成客户原话。颜色本身就能读懂。</p></div>
+          <ul>
+            <li style="--h:var(--blue)"><span class="tag"><i></i>原文陈述</span><p>可以回到原文定位。</p></li>
+            <li style="--h:var(--green)"><span class="tag"><i></i>用户补充</span><p>主策补充，不是客户原文。</p></li>
+            <li style="--h:var(--teal)"><span class="tag"><i></i>转述</span><p>经他人转述，可能有偏差。</p></li>
+            <li style="--h:var(--orange)"><span class="tag"><i></i>假设</span><p>尚未确认，不作事实依据。</p></li>
+            <li style="--h:var(--purple)"><span class="tag"><i></i>建议</span><p>是提议，不是正式决定。</p></li>
+            <li style="--h:var(--indigo)"><span class="tag"><i></i>采用决定</span><p>已采用的口径，附依据。</p></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ More ═════════════ -->
+    <section class="section wrap" aria-labelledby="more-title">
+      <div class="sec-head">
+        <p class="kicker">循环之外</p>
+        <h2 id="more-title">为真实的比稿节奏而做。</h2>
+      </div>
+      <div class="cards">
+        <article class="fc" style="--h:var(--teal)"><span class="fc-ic">◷</span><h3>群聊监控</h3><p>绑定你指定的飞书项目群，默认每 60 分钟通过 Codex 原生自动化检查。首次读取全部可访问历史并按时间处理；旧消息与较新的决定对照，不覆盖当前结论。</p></article>
+        <article class="fc" style="--h:var(--purple)"><span class="fc-ic">⌕</span><h3>找案例</h3><p>在你登记的每个案例库（飞书文件夹与网站）和公开网络中检索，读真正的案例页面，把入选案例和适配理由排在飞书画板上。新一轮是 v2，同轮补充沿用当前版本。</p></article>
+        <article class="fc" style="--h:var(--blue)"><span class="fc-ic">↗</span><h3>导出飞书</h3><p>用当前成果创建可读的飞书文档，回读核验后才报告导出成功。</p></article>
+        <article class="fc" style="--h:var(--orange)"><span class="fc-ic">⧉</span><h3>备份与恢复</h3><p>一条命令保存一致的数据库快照与全部登记文件；恢复到新目录，从不覆盖原项目。</p></article>
+      </div>
+      <ul class="principles">
+        <li><b>留在本地</b>一份 SQLite 和一个文件池，都在你的 Mac 上。</li>
+        <li><b>只追加</b>来源快照、版本和决策只增不改，同一请求重放不制造新版本。</li>
+        <li><b>如实状态</b>已拉取不等于已处理，已调度不等于已验证。</li>
+        <li><b>只读查看</b>页面没有编辑按钮，所有修改都经过 Agent。</li>
+      </ul>
+    </section>
+
+    <!-- ═════════════ Install ═════════════ -->
+    <section class="install" id="install" aria-labelledby="install-title">
+      <div class="wrap install-inner">
+        <div class="install-copy">
+          <p class="kicker">安装</p>
+          <h2 id="install-title">不用自己装，<br>交给你的 Agent。</h2>
+          <p>把一行提示词发给 Codex。Agent 会下载官方发行版、核对校验值、安装 Yu+ 与两份 Skill、检查飞书，打开你的本地工作空间——然后询问第一个项目的名称。</p>
+          <div class="downloads">
+            <a class="text-link" href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.21/YuPlus-v0.3.21.tar.gz"><svg class="icon"><use href="#i-down"/></svg>下载 v0.3.21</a>
+            <a class="text-link" href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.21" target="_blank" rel="noopener noreferrer">发布说明 <svg class="icon"><use href="#i-ext"/></svg></a>
+          </div>
+          <p class="fine">当前支持 macOS。资料存储在本机；读取飞书和使用 Codex 仍需要相应服务。</p>
+        </div>
+        <div class="prompt-card">
+          <div class="pc-top"><span class="pc-to"><span class="mark xs">Yu</span>发给 Codex</span><button class="button small primary" data-copy type="button"><svg class="icon"><use href="#i-copy"/></svg><span class="button-label">复制提示词</span></button></div>
+          <p class="pc-line">请阅读 <code>agent-install.md</code>，按指南帮我安装或升级到 Yu+ v0.3.21 并启动，保留已有项目数据。</p>
+          <p class="pc-sub">Agent 会做什么</p>
+          <ol class="pc-steps">
+            <li>从官方 GitHub Release 下载并校验 SHA‑256。</li>
+            <li>升级前先备份已有数据，沿用原数据目录。</li>
+            <li>运行统一安装入口，安装两份 Codex Skill。</li>
+            <li>检查飞书 CLI 认证，缺失时明确告知。</li>
+            <li>启动服务，在 Codex 中打开实际本地地址。</li>
+            <li>询问你的项目名称，不导入演示材料。</li>
+          </ol>
+          <p class="guide-link">详细步骤由 Agent 读取：<a href="./agent-install.md" target="_blank" rel="noopener noreferrer">Agent 安装指南（Markdown）</a></p>
+          <details id="full-prompt"><summary>查看复制内容<span aria-hidden="true">+</span></summary><label for="install-prompt" class="visually-hidden">Agent 安装短提示词</label><textarea id="install-prompt" readonly spellcheck="false" rows="3">请阅读 https://cedar-zhang-output.github.io/YuPlus/agent-install.md ，按指南帮我安装或升级到 Yu+ v0.3.21 并启动，保留已有项目数据。
 </textarea><a class="prompt-download" href="./install-prompt.txt" download>下载提示词文本</a></details>
-          </div>
-          <p class="local-note">资料存储在本机；读取飞书和使用 Codex 仍需要相应服务。</p>
         </div>
-      </section>
-    </main>
-    <footer><p><strong>Yu+</strong><span>/</span>让信息流动起来</p><div><a href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus" target="_blank" rel="noopener noreferrer">GitHub <svg class="icon"><use href="#external"/></svg></a><span>v0.3.21</span></div></footer>
-  </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p><span class="mark xs">Yu</span><b>Yu+</b><span>让信息流动起来，让策划继续向前。</span></p>
+      <p><a href="https://github.com/Cedar-Zhang-OUTPUT/YuPlus" target="_blank" rel="noopener noreferrer">GitHub ↗</a><span>v0.3.21 · macOS</span></p>
+    </div>
+  </footer>
   <div id="copy-status" class="toast" role="status" aria-live="polite"></div>
-  <noscript><p class="noscript">浏览器未启用 JavaScript。可展开短提示词手动复制，或<a href="./install-prompt.txt">打开提示词文本</a>。</p></noscript>
+  <noscript><p class="noscript">浏览器未启用 JavaScript，演示无法播放。可展开「查看复制内容」手动复制，或<a href="./install-prompt.txt">打开提示词文本</a>。</p></noscript>
 </body>
 </html>
