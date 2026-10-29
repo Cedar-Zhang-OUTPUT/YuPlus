@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import re
 import struct
+import sqlite3
 import sys
 import tempfile
 import time
@@ -87,6 +88,14 @@ class PreviewCache:
         if not row.get('board_token'): raise YuError('BOARD_NOT_READY','本轮尚未关联飞书画板。')
         started=time.time()
         with self.lock():
+            # A gateway may have read the row just before the project was purged.
+            # Check again under the same cache lock used by permanent cleanup.
+            db=sqlite3.connect((self.data_dir/'yuplus.sqlite').as_uri()+'?mode=ro',uri=True)
+            try:
+                live=db.execute('SELECT 1 FROM case_research WHERE id=? AND project_id=? AND board_token=?',
+                                (row['id'],row['project_id'],row['board_token'])).fetchone()
+            finally:db.close()
+            if not live:raise YuError('TARGET_NOT_FOUND','研究记录已移除，不能刷新预览。')
             manifest=self.root/(self.prefix(row)+'.json');cached=self.cached(row)
             if cached and manifest.stat().st_mtime>=started-2:return cached
             with tempfile.TemporaryDirectory(prefix='export-',dir=self.root) as tmp:

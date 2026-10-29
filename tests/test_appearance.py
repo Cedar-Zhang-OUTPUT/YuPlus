@@ -77,7 +77,7 @@ class LogoTests(unittest.TestCase):
     def test_schema5_migration_makes_backup(self):
         self.app.db.execute('DROP TABLE workspace_logo');self.app.db.execute('DROP TABLE logo_requests');self.app.db.execute('PRAGMA user_version=5')
         upgraded=App(self.data)
-        try:self.assertEqual(upgraded.execute('doctor')['data']['schema_version'],9)
+        try:self.assertEqual(upgraded.execute('doctor')['data']['schema_version'],10)
         finally:upgraded.close()
         backups=list((self.root/'data-migration-backups').iterdir());self.assertEqual(len(backups),1)
         with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],5)

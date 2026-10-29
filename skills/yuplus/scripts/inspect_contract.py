@@ -10,6 +10,9 @@ COMMANDS = {"source.import": "sourceImport", "draft.apply": "draftApply",
 COMMANDS.update({f"{layer}.{action}": layer+action.title() for layer in ("draft","review","source") for action in ("delete","restore")})
 
 
+PURGE_COMMANDS = {kind+".purge":kind+"Purge" for kind in ("project","draft","review","source","library")}
+COMMANDS.update(PURGE_COMMANDS)
+
 def referenced_defs(value):
     if isinstance(value, dict):
         ref = value.get("$ref", "")
@@ -59,7 +62,7 @@ def main():
     try:
         resources = files("yuplus").joinpath("contracts")
         catalog = json.loads(resources.joinpath("object-types.json").read_text(encoding="utf-8"))
-        contract = json.loads(resources.joinpath("cli-input.schema.json").read_text(encoding="utf-8"))
+        contract = json.loads(resources.joinpath("purge-input.schema.json" if args.mode == "command" and args.command in PURGE_COMMANDS else "cli-input.schema.json").read_text(encoding="utf-8"))
         types = {entry["type_key"]: entry for entry in catalog["objects"] + catalog["internal_types"]}
         if args.type_key and args.type_key not in types:
             parser.error("Unknown installed type: " + args.type_key)

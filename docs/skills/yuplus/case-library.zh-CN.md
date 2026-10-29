@@ -51,3 +51,5 @@ yu library delete --request-id UNIQUE_ID --input request.json --json
 ```
 
 替换为真实 ID 和版本。软删除后页面及普通列表隐藏该库，登记元数据与操作回执保留。用 `library list` 核验。恢复时先 `library list --include-deleted` 找到记录并读取当前版本，再执行 `library restore`，使用匹配的 command 和相同的 `library_id`、`base_version` 字段。恢复只恢复链接登记，不操作飞书或下载内容。
+
+明确要求硬删除时使用 `library purge`，按[删除参考](deletion.zh-CN.md)预览、执行及重试；仍不删除远端内容。

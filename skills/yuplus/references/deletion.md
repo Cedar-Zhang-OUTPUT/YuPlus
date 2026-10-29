@@ -1,6 +1,6 @@
 # Delete items, objects and sources
 
-Read for an explicit deletion or re-enabling request. Use the current project and real versions; deletion is not part of routine collection, organization or upgrading. All deletions retain history and files. Never edit SQLite or remove the shared file pool.
+Read for an explicit deletion or re-enabling request. Use the current project and real versions; deletion is not part of routine collection, organization or upgrading. Ordinary delete commands retain history and files; explicit hard deletion uses the purge workflow below. Never edit SQLite or remove the shared file pool.
 
 ## Choose the right scope
 
@@ -35,4 +35,18 @@ Example source deletion input:
 
 Check the receipt, current visibility, retained historical version and returned `affected_draft_items` / `affected_reviews` or `referenced_by`. Follow actual impacts within the user's request: a draft deletion can authorize removal of dependent Review blocks; source hiding alone does not invalidate or rewrite their factual content. Do not cascade-delete other objects. Publish empty Review deletions even if an old round identity no longer exists; valid causes and exact target identity are still required.
 
-On re-enabling an empty Review, explicitly select the actual draft items again in `review prepare`, and record any new expression instruction before republishing; the old deletion cause cannot be reused. Reusing unchanged IDs does not reset consumed causes. Refresh the browser after successful writes; deleted records disappear from active lists, while historical citations remain accessible. No permanent purge is available.
+On re-enabling an empty Review, explicitly select the actual draft items again in `review prepare`, and record any new expression instruction before republishing; the old deletion cause cannot be reused. Reusing unchanged IDs does not reset consumed causes. Refresh the browser after successful writes; deleted records disappear from active lists, while historical citations remain accessible. Hard-deleted records cannot be restored by these commands.
+
+## Permanent local deletion
+
+Use only when the user explicitly requests hard/permanent deletion of identified content. Ordinary “delete” keeps the existing soft-delete behavior. If scope or intent is unclear, clarify it; an already explicit hard-delete instruction does not require another ritual confirmation. Do not run hard deletion merely to fix an import, resolve a conflict or hide data.
+
+Supported commands: `project purge`, `draft purge`, `review purge`, `source purge`, `library purge`. Each takes JSON through `--input`; use `--project PID` except for workspace libraries. Project input is `{}`, objects use `{"object_id":"ID"}`, sources use `{"source_id":"ID"}`, libraries use `{"library_id":"ID"}`. Default `dry_run:true` returns a read-only plan, record/file counts, `blockers`, `scheduler_actions` and `plan_hash`. Query exact fields using inspect_contract.py command RESOURCE.purge.
+
+1. Match the actual data directory and target, including soft-deleted records via `list --include-deleted`. Preview the deletion. Whole-project purge includes its sources, versions, decisions, monitors, research metadata and collaboration records. Review purge also includes its owned expression guides, shown in the counts.
+2. Explain the actual scope and any blocking references. Current **and historical** references protect provenance; soft-deleting a consumer does not unblock it. Do not cascade purge unrelated records or bypass checks. Preserve relationships with soft deletion, or request an explicitly authorized larger scope.
+3. Stop the listed real host tasks with the host tool before deleting a project. Only set `schedulers_handled:true` after verifying this. Local deletion does not stop the host scheduler. An active monitor lease blocks purge until it finishes or is paused.
+4. Reuse the preview input, add `dry_run:false`, `confirm_id` equal to the target ID, the exact `plan_hash`, and a meaningful `reason`; execute with a stable `--request-id`. A changed plan requires a fresh preview. No new source/draft entry is needed just to erase a complete record; this is an explicit irreversible exception, not a route for rewriting Review.
+5. Check `complete`, `files_pending` and `cleanup_errors`. Database deletion can succeed while file cleanup is incomplete. Retry the **same input and request ID** to finish cleanup, never claim success while files remain. Verify the target is absent even from include-deleted lists, then refresh the page.
+
+Purge removes the selected local record and its versions, plus unshared managed file copies. Project purge also clears its board preview caches. Shared files, original external files, Feishu documents/folders/messages and existing backups remain. Library purge only removes local registration and old success payloads; built-in defaults do not reappear on restart. Minimal deletion/idempotency metadata remains; this is not forensic disk erasure. Existing backups can restore an older state into a separate directory, but `restore` cannot reverse a purge. Do not erase backups or original files unless separately requested.

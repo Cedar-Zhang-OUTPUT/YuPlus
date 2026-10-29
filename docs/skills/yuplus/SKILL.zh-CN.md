@@ -48,7 +48,7 @@ R02 为「项目推进安排」，R03 为「创意方案」，R04 为「创意�
 | 读取本地文件 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Local files, images and video”（本地文件、图片与视频） | PDF、办公文档或媒体按格式及读取任务选择可用 Skill。纯文本可以直接读取，不加载所有文档 Skill。 |
 | 接收口述或修改指令 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Spoken input and review instructions”（口述及 review 修改指令） | 已有对话文字无需转写 Skill。确有录音需要转写时，才使用适合的可用工具/Skill，并保留真实取得的内容。 |
 | 保存或追加来源材料 | [cli.md](../../../skills/yuplus/references/cli.md) 的 `source.import`；采集规则查上面相应材料小节 | 复用已经读到的材料；仅将其保存到 Yu+ 不需要重新运行外部 Skill。 |
-| 删除子目、对象或来源；重新启用已删除记录 | [删除与重新启用](deletion.zh-CN.md)，再查当前命令契约 | 只有需要新材料或指令来源才用相应 Skill，不删除原件。 |
+| 删除子目、对象、来源或案例库；硬删除；重新启用软删除记录 | [删除与重新启用](deletion.zh-CN.md)，再查当前命令契约 | 只有需要新材料或指令来源才用相应 Skill，不删除原件。 |
 | 创建或修改 draft 对象 | [objects.md](../../../skills/yuplus/references/objects.md) 中相关对象条目，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `draft.apply` | 只有需要额外读取材料时才用外部 Skill。业务属性也可用 `yu types show --type TYPE --json` 查询；按 cli.md 的辅助工具说明，只查询需要的输入契约。 |
 | 进入整理或组织 review 对象 | [Review 固定结构](review-structure.zh-CN.md) 中生成范围和固定栏目，以及 [cli.md](../../../skills/yuplus/references/cli.md) 的 `review.prepare / review.publish` | 按 collaboration.zh-CN.md 建立或复用飞书协作文档；使用 lark-doc 编写与回读指引和宿主自动化工具。 |
 | 处理 review 反馈 | 下文“先改因，再改果”的顺序及[Review 固定结构](review-structure.zh-CN.md)；[objects.md](../../../skills/yuplus/references/objects.md) 的相关业务条目或 `expression_guide`，再看 [cli.md](../../../skills/yuplus/references/cli.md) 对应 draft/review 小节 | 反馈带来新材料时，再按其材料类型读取。纯措辞修改不需要重开所有原始材料。 |
@@ -68,7 +68,7 @@ R02 为「项目推进安排」，R03 为「创意方案」，R04 为「创意�
 **有日期的安排必须结构化保存。** 收集或修改项目时间时，按需查阅 [D13 规则与示例](../../../skills/yuplus/references/objects.md#d13-时间节点或区间milestones)。每个具体日历节点或完整区间必须使用 D13 的 `time_kind` 和 `start/end`，进入甘特图，不能只写成文字条目。多个不连续日期/区间分别保存，保留 TBC、建议性质和来源；只有确实无法确定日期的时间说明保留为文字。已读规则复用，保存后核对本次相关条目。
 
 - 明确可执行文件、数据目录和项目 ID；已经知道就复用。多个项目都可能符合且目标不清楚时，写入前只问一个项目选择问题。用户要求创建项目时创建，不限制一次安装只能管理一个项目。
-- 用户明确要求删除项目时，只按需读[项目删除](operations.zh-CN.md#项目删除)。通过 CLI 删除指定项目，保留共享文件池和历史，并处理对应真实宿主任务，不影响其他项目。
+- 用户明确要求删除项目时，只按需读[项目删除](operations.zh-CN.md#项目删除)。普通删除保留历史；明确要求硬删除时读取[删除参考](deletion.zh-CN.md)。通过 CLI 处理指定项目及真实宿主任务，不影响其他项目。
 - 用户要求项目重命名时，按需读 [项目重命名](operations.zh-CN.md#项目重命名)（英文执行参考为 `references/cli.md` 的 “Rename a project”）。复用已有项目 ID 和元信息版本；这是项目元信息修改，无需改写 draft/review。
 - 初次设置或环境故障时，按后面的“初始化与材料读取”操作。届时检查 Yu+ 与飞书 CLI 是否可用，不要每轮检查。飞书故障不影响本地文件或口述材料的工作。
 - 新会话或恢复会话时，只读取当前请求需要的项目身份、相关对象、来源或决策。同一会话复用已读内容。上下文压缩、长时间中断、疑似外部修改或版本冲突后，只刷新受影响部分。不要在启动或每轮对话时加载所有对象、全部参考文件和完整历史。

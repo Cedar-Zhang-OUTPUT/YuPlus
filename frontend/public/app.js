@@ -1,4 +1,4 @@
-import { collaborationPanel, safeCollaborationUrl } from "./data/collaboration.js";
+import { collaborationPanel, collaborationStartPrompt, safeCollaborationUrl } from "./data/collaboration.js";
 /* ═══════════════════════════════════════════════════════════════════════════
    Yu+ 只读浏览界面
    本文件只读取服务提供的数据并渲染，模拟预览必须由服务明确声明。没有任何写入路径：没有编辑、批准、删除、上传，
@@ -1710,7 +1710,8 @@ function viewReview(pid) {
   const sub = el("p", "subtitle");
   c.append(head);
   c.append(projectMonitorPanel(pid));
-  c.append(collaborationPanel(collaboration, {el,tag,formatTime:fullTime}));
+  c.append(collaborationPanel(collaboration, {el,tag,formatTime:fullTime,
+    onStart:node=>copyText(collaborationStartPrompt(DATA,pid),node)}));
 
   const layout = el("div");
   layout.style.cssText = "display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr);gap:26px;align-items:start;margin-top:20px;";

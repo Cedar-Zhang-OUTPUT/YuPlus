@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.24](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.24)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.25](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.25)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -142,7 +142,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 ./yu --data-dir .local/work project list --include-deleted --json
 ```
 
-版本来自 `project show`。软删除后，正常列表与页面隐藏项目、禁止业务写入，本地群监控暂停；保留材料和历史，不清除共享文件池。回执的 `scheduler_actions` 需由 Agent 使用宿主工具同步处理，不能把本地暂停当成已停宿主任务。本版没有永久清除/恢复命令。
+版本来自 `project show`。软删除后，正常列表与页面隐藏项目、禁止业务写入，本地群监控暂停；保留材料和历史，不清除共享文件池。回执的 `scheduler_actions` 需由 Agent 使用宿主工具同步处理，不能把本地暂停当成已停宿主任务。明确要求彻底删除可使用下述 purge 命令；没有项目 restore 命令。
 
 ### 查询和按需恢复上下文
 
@@ -237,7 +237,7 @@ Agent 按 Skill 用飞书 CLI 创建和修改画板；本地服务仅导出预�
 
 左上角头像菜单可复制更改提示词；Agent 压缩图片后使用 `logo set`，支持 `logo show/reset`。头像随数据库备份。
 
-当前 schema 9。从 schema 1–8 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
+当前 schema 10。从 schema 1–9 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
 
 ## 策划文档协作（v0.3.24）
 
@@ -250,3 +250,13 @@ Agent 按 Skill 用飞书 CLI 创建和修改画板；本地服务仅导出预�
 同节两端修改需要明确选择；回写核对本地及远端版本，防止覆盖协作者的新修改。评论或素材可能因替换丢失时暂停写入并提示处理。真实飞书创建、回流、回写和冲突拦截已验证；多人修改使用同一测试账号模拟，真实多账号与宿主定时唤起仍需实际使用验证。
 
 升级到 schema 9 前自动完整备份，保留项目与历史。恢复备份会暂停文档观察并清空定时任务绑定，需核实实际宿主任务后重新接通。
+
+## 硬删除与开始整理（v0.3.25）
+
+`project/draft/review/source/library purge` 与原有软删除并存。默认只预览；项目输入为 `{}`，对象传 object_id、来源传 source_id、案例库传 library_id。命令通过 --input 传 JSON，项目内操作显式传 --project。
+
+执行输入在预览输入上加入 dry_run:false、confirm_id、plan_hash、reason，并传 --request-id。目标变化会拒绝旧计划，历史引用会阻止断链。项目有宿主任务时先停任务，再传 schedulers_handled:true；有效执行租约仍会阻塞。
+
+硬删清除目标与历史，整项目删除同时清理画板预览缓存；文件池只移除无人引用副本，不删除原始外部文件、飞书内容或备份。若 complete=false，按同一请求重试清理，检查 files_pending 和 cleanup_errors。完整字段可用 Skill 的 inspect_contract.py command project.purge 等按需查询；操作规则见[删除参考](skills/yuplus/references/deletion.md)。
+
+策划文档页面尚未建立飞书协作文档时，可点击“复制开始整理指令”。提示词携带当前项目与数据目录，引导 Agent 按 Skill 整理已有信息、生成适用成果并建立或复用飞书协作文档；复制本身不执行写入。

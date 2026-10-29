@@ -49,3 +49,5 @@ yu library delete --request-id UNIQUE_ID --input request.json --json
 ```
 
 Use the actual ID/version, not the example values. Removal is soft: it hides the library from the page and ordinary lists, while preserving metadata and receipts. Verify with `library list`. To recover, locate it using `library list --include-deleted`, read its current version, then use `library restore` with the matching command and the same `library_id` / `base_version` fields. Restoring only restores the link registration; no remote operation or content download occurs.
+
+Explicit permanent deletion uses `library purge`; read [deletion.md](deletion.md) for preview, confirmation fields and retry handling. It still never removes remote content.

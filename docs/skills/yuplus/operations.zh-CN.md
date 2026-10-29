@@ -56,6 +56,6 @@ yu --data-dir DATA_DIR project rename --project PROJECT_ID --name '新项目名�
 yu --data-dir DATA_DIR project delete --project PROJECT_ID --base-version METADATA_VERSION --request-id REQUEST_ID --json
 ```
 
-采用软删除，内部 lifecycle 为 `archived`：正常 CLI 列表和页面隐藏项目，禁止业务写入，原子地暂停本地监控并使执行租约失效。保留原文件、对象版本和历史，不释放磁盘，也不删除飞书群/文档。不能递归删除共享数据目录或文件池。`project list --include-deleted --json` 可找回保留的项目身份，`project show` 可显式检查。本版没有永久清除/恢复命令，不编造命令或直接修改 SQLite。
+采用软删除，内部 lifecycle 为 `archived`：正常 CLI 列表和页面隐藏项目，禁止业务写入，原子地暂停本地监控并使执行租约失效。保留原文件、对象版本和历史，不释放磁盘，也不删除飞书群/文档。不能递归删除共享数据目录或文件池。`project list --include-deleted --json` 可找回保留的项目身份，`project show` 可显式检查。明确要求硬删除时使用 project purge，按[删除参考](deletion.zh-CN.md)预览并执行。项目没有 restore 命令，不直接修改 SQLite。
 
 返回 `deletion_mode:soft`、`retained_data:true`、新元信息版本及 `scheduler_actions`。后者是已保存的群监控/调度回执，不代表宿主任务已经停掉。沿用用户的删除授权，通过宿主原生自动化工具暂停/移除真实任务；共享任务只移除此项目范围，保留其他项目。宿主不可操作时说明尚待清理的定时任务，本地项目写入已经被禁止，不能宣称宿主任务已停止。不确定是否成功时，用相同请求 ID 和版本重试；版本冲突先重读再用新请求。

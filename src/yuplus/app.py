@@ -37,9 +37,9 @@ class App:
         # executescript commits any pending transaction, so put BEGIN in the script.
         # Concurrent starters serialize on BEGIN and re-check user_version afterwards.
         initial_version=self.db.execute('PRAGMA user_version').fetchone()[0]
-        if initial_version in (1,2,3,4,5,6,7,8):
+        if initial_version in (1,2,3,4,5,6,7,8,9):
             from .backup import create_backup
-            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_schema9'))
+            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_schema10'))
         # SQLite requires FK enforcement off before starting a table rebuild;
         # add_open_questions validates all references before commit.
         if initial_version in (0,1,2,3,4,5,6,7,8):self.db.execute('PRAGMA foreign_keys=OFF')
@@ -58,7 +58,7 @@ class App:
                         self.db.execute(pending);pending=''
                 if pending.strip() and not all(x.strip().startswith('--') or not x.strip() for x in pending.splitlines()):
                     raise YuError('INTEGRITY_FAILURE','Schema 文件不完整。')
-            elif version not in (1,2,3,4,5,6,7,8,9): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
+            elif version not in (1,2,3,4,5,6,7,8,9,10): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
             if version in (0,1):
                 pending=''
                 for line in (CONTRACTS/'monitor-schema.sql').read_text().splitlines(keepends=True):
@@ -89,6 +89,8 @@ class App:
             if version in (0,1,2,3,4,5,6,7,8):
                 from .migrations import collaborative_objects
                 collaborative_objects(self.db)
+            from .purge import migrate as migrate_purge
+            migrate_purge(self.db)
             from .case_library import initialize_defaults
             initialize_defaults(self.db)
             self.db.execute('COMMIT')
@@ -146,6 +148,9 @@ class App:
         if command=='draft.apply' and (len(payload['objects'])>100 or sum(len(o.get('set_items',[]))+len(o.get('remove_items',[])) for o in payload['objects'])>1000):
             raise YuError('INPUT_TOO_LARGE','单次最多 100 个对象操作及 1000 个条目变动。')
     def _replay(self,command,pid,request_id,request_hash):
+        namespace='project.create' if command=='project.create' else pid
+        if self.db.execute("SELECT 1 FROM sqlite_master WHERE name='purged_requests'").fetchone() and self.db.execute('SELECT 1 FROM purged_requests WHERE namespace=? AND request_id=?',(namespace,request_id)).fetchone():
+            raise YuError('RESOURCE_PURGED','该请求对应的数据已硬删除，不能重放创建。')
         if command=='project.create':
             row=self.db.execute("SELECT * FROM changes WHERE command='project.create' AND request_id=?",(request_id,)).fetchone()
         else: row=self.db.execute('SELECT * FROM changes WHERE project_id=? AND request_id=?',(pid,request_id)).fetchone()
@@ -153,12 +158,20 @@ class App:
             if row['request_hash']!=request_hash:raise YuError('IDEMPOTENCY_CONFLICT','同一 request-id 已用于不同请求。')
             return self._envelope(command,row['project_id'],request_id,json.loads(row['result_json']),row['id'],row['seq'],True)
         return None
-    def execute(self,command,payload=None,*,project_id=None,request_id=None,_guard=None,_record=None,_project_lock=True):
+    def execute(self,command,payload=None,*,project_id=None,request_id=None,_guard=None,_record=None,_project_lock=True,_storage_lock=True):
         payload={} if payload is None else payload
         if _project_lock and project_id and command in WRITE_COMMANDS:
             from .collaboration import lock
             with lock(self,project_id):
-                return self.execute(command,payload,project_id=project_id,request_id=request_id,_guard=_guard,_record=_record,_project_lock=False)
+                return self.execute(command,payload,project_id=project_id,request_id=request_id,_guard=_guard,_record=_record,_project_lock=False,_storage_lock=_storage_lock)
+        if command.endswith('.purge'):
+            from .purge import execute, COMMANDS
+            if command not in COMMANDS:raise YuError('INVALID_INPUT','无效硬删除命令。')
+            return execute(self,command,payload,project_id,request_id)
+        if _storage_lock and command=='source.import':
+            from .purge import storage_lock
+            with storage_lock(self):
+                return self.execute(command,payload,project_id=project_id,request_id=request_id,_guard=_guard,_record=_record,_project_lock=False,_storage_lock=False)
         if command.startswith('collab.'):
             from .collaboration import execute
             return execute(self,command,payload,project_id,request_id)
