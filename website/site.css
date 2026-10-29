@@ -510,3 +510,6 @@ summary span { transition:transform .2s; font-size:17px; line-height:1; }
   html, .cx-scroll { scroll-behavior:auto; }
   *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
 }
+
+.lt .classification-help { display:inline-flex; align-items:center; justify-content:center; vertical-align:middle; width:20px; height:20px; padding:0; margin-left:6px; border:1px solid var(--sep); border-radius:50%; background:transparent; color:var(--label-2); font-size:12px; font-weight:400; cursor:pointer; }
+.lt .classification-help:hover, .lt .classification-help:focus-visible { color:var(--blue); border-color:var(--blue); }

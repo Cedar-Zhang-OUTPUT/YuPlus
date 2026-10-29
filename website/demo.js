@@ -28,9 +28,9 @@
   };
   const CATALOG = [['D01', 'BD 同步信息'], ['D02', '客户原始 Brief'], ['D03', '招标文件'], ['D04', '场地资料'], ['D05', '甲方客户品牌资料'], ['D06', '受众'],
     ['D07', '总预算区间'], ['D08', '策划预算分配'], ['D09', '时间节点或区间'], ['D10', '客户关键决策节点'], ['D11', '合作类型'], ['D12', '竞争对手分析'],
-    ['D13', '客户历史合作方与过往项目'], ['D14', '与甲方的会议纪要'], ['D15', '客户 Q&A 问题表'], ['D16', '立项评估结果'], ['D17', '主策策略'], ['D18', '交付细节'],
+    ['D13', '客户历史合作方与过往项目'], ['D14', '与甲方的会议纪要'], ['D15', '客户 Q&A 问题表'], ['D17', '主策策略'], ['D18', '交付细节'],
     ['D19', '内外部资源'], ['D20', '职责边界'], ['D21', '项目评级'], ['D22', '风险点'], ['D23', '评审会结论'], ['D24', '开放性问题']];
-  const OUTPUTS = [['R01', '主策 Debrief'], ['R02', '项目推进安排'], ['R03', '创意评审记录'], ['R04', '创作者 Brief'], ['R05', '客户 Q&A']];
+  const OUTPUTS = [['R01', '主策 Debrief'], ['R02', '项目推进安排'], ['R03', '创意评审记录'], ['R05', '客户 Q&A']];
   const SOURCES = {
     brief: {kind: '飞书', title: '城市记忆展厅｜项目需求与预算说明（V3）', meta: '飞书文档 · 快照 v1 · 6,140 字'},
     oral: {kind: '口述', title: '主策口述：本轮按 60 万推进', meta: '口述 · 你在 Codex 中 · 原话已保存'}
@@ -99,7 +99,7 @@
   }
 
   function vDraft() {
-    if (!S.objects.length) return `<h1 class="lt">项目信息</h1>${emptyBox('✎', '先放进一份项目资料。', '客户 Brief、会议记录或参考文件都可以。发给 Codex 后，整理需求与条件，并保留原始出处。')}`;
+    if (!S.objects.length) return `<h1 class="lt">项目信息 <button type="button" class="classification-help" data-view="types" aria-label="查看信息分类说明">?</button></h1>${emptyBox('✎', '先放进一份项目资料。', '客户 Brief、会议记录或参考文件都可以。发给 Codex 后，整理需求与条件，并保留原始出处。')}`;
     const obj = S.objects.find(o => o.code === S.selDraft) || S.objects[0];
     const dir = S.objects.map(o => `<button type="button" class="dir${o === obj ? ' on' : ''}" data-obj="${o.code}">${code(o.code)}<span>${o.title}</span><em>${o.items.length}</em></button>`).join('');
     const items = obj.items.map(it => {
@@ -111,7 +111,7 @@
         <div class="ih"><b>${it.topic}</b><span class="grow"></span>${tag(it.kind)}</div>${body}
         <div class="isrc"><span class="lbl">依据</span>${cite(it.src)}</div></article>`;
     }).join('');
-    return `<h1 class="lt">项目信息</h1>
+    return `<h1 class="lt">项目信息 <button type="button" class="classification-help" data-view="types" aria-label="查看信息分类说明">?</button></h1>
       <div class="monitor"><b>项目群更新</b><span class="pill">监控 0 个群</span></div>
       <div class="draft-grid"><nav class="dirlist" aria-label="信息目录">${dir}</nav>
       <section class="card objcard"><header class="oh">${code(obj.code)}<h2>${obj.title}</h2><span class="grow"></span><span class="ver">当前 v${obj.rev}</span><span class="chipbtn">复制引用</span></header>
