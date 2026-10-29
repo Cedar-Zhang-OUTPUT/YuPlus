@@ -5,20 +5,22 @@
 ## 当前发行版与可信来源
 
 - 支持平台：macOS。
-- GitHub Release：**v0.3.24**；Python 包 `yuplus-local` 的版本为 **0.3.24**，两者对应同一发行版。
+- GitHub Release：**v0.3.25**；Python 包 `yuplus-local` 的版本为 **0.3.25**，两者对应同一发行版。
 - 官方仓库：https://github.com/Cedar-Zhang-OUTPUT/YuPlus
-- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.24
-- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.24/YuPlus-v0.3.24.tar.gz
-- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.24/SHA256SUMS.txt
-- 安装包 SHA-256：`d9d79b83fa8baaef92b10869b127d67cca96175fec16f2268b06a0f5ed535759`
+- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.25
+- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.25/YuPlus-v0.3.25.tar.gz
+- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.25/SHA256SUMS.txt
+- 安装包 SHA-256：`0740432be7bbf2779214d1fd0b3a5b5c42693b992210fc94abe58e9ed0b73c31`
 
 固定下载上述版本。不要将 main 分支、旧开发目录或演示数据冒充正式安装。版本发布后如发现错误，报告具体问题，不改写原发布包或擅自修改应用绕过校验。
 
-v0.3.24 新增创意方案与创意评审/反馈信息，策划文档按固定结构组织为主策 Debrief、项目推进安排、创意方案、创意评审记录与共用客户 Q&A。显示编号按目录顺序连续排列 D01–D25、R01–R05；内部类型键、对象 ID 和历史关系不变，Agent 用真实 ID 操作。
+v0.3.25 新增整项目、单个 draft/Review 对象、原始资料和案例库登记的硬删除；默认仅预览，执行需匹配目标与计划，当前/历史引用会阻止断链。原有软删除与恢复保留。硬删除不会删除飞书内容、外部原件、共用文件或已有备份，整项目删除会清理对应画板缓存。策划文档空状态新增“复制开始整理指令”，按 Skill 整理已有信息并建立或复用飞书协作文档。
+
+创意方案与创意评审/反馈信息保持原有结构。策划文档包括主策 Debrief、项目推进安排、创意方案、创意评审记录与共用客户 Q&A。显示编号按目录顺序连续排列 D01–D25、R01–R05；内部类型键、对象 ID 和历史关系不变，Agent 用真实 ID 操作。
 
 用户进入第二场景时，Agent 保存本地成果并创建或复用项目飞书协作文档，页面常驻文档链接。服务运行时每 60 秒检查绑定文档；远端变化由 Agent 先写入 draft，再更新相关 Review。自动整理需实际宿主任务，建议五分钟且遵守用户设置与宿主限制；同章节两端竞争修改需用户选择，可能丢失评论或素材时暂停替换。安装升级本身不建立文档或新定时任务，也不吸收项目内容。
 
-数据库升级为 schema 9，迁移前自动完整备份，保留现有项目、来源、对象和历史。两份 Skill 同步更新；按需读取 references/collaboration.md 和 references/review-structure.md。原有案例分析画板、头像、案例库与群聊能力保留。内置 18 个已确认案例库源（1 个飞书共享文件夹、17 个网站），每个工作空间只初始化一次。案例库不保存正文、附件、目录清单或搜索索引，移除与恢复只影响本地登记。
+数据库升级为 schema 10，迁移前自动完整备份，保留现有项目、来源、对象和历史。两份 Skill 同步更新；按需读取 references/collaboration.md 和 references/review-structure.md。原有案例分析画板、头像、案例库与群聊能力保留。内置 18 个已确认案例库源（1 个飞书共享文件夹、17 个网站），每个工作空间只初始化一次。案例库不保存正文、附件、目录清单或搜索索引，移除与恢复只影响本地登记。
 
 ## 1. 识别已有环境
 
@@ -40,10 +42,10 @@ v0.3.24 新增创意方案与创意评审/反馈信息，策划文档按固定�
 
 ```sh
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.24/YuPlus-v0.3.24.tar.gz \
-  --output YuPlus-v0.3.24.tar.gz
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.25/YuPlus-v0.3.25.tar.gz \
+  --output YuPlus-v0.3.25.tar.gz
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.24/SHA256SUMS.txt \
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.25/SHA256SUMS.txt \
   --output SHA256SUMS.txt
 shasum -a 256 -c SHA256SUMS.txt
 ```
@@ -51,8 +53,8 @@ shasum -a 256 -c SHA256SUMS.txt
 同时核对计算出的摘要与本文件上面的固定摘要。下载或校验失败时停止执行，不忽略错误继续解压。校验成功后：
 
 ```sh
-tar -xzf YuPlus-v0.3.24.tar.gz
-cd YuPlus-v0.3.24
+tar -xzf YuPlus-v0.3.25.tar.gz
+cd YuPlus-v0.3.25
 ```
 
 读取包内 README.md 及安装入口说明。安装包包含 CLI 源码、前端静态资源、两份 Skill 和安装器，不需要另外搭建数据库服务或 Node 前端服务。
@@ -67,9 +69,9 @@ cd YuPlus-v0.3.24
 
 已有自定义安装时，显式传入其应用前缀，例如 `./install.sh --prefix '/实际应用目录'`；安装器会沿用该前缀安装记录中的数据和 Skill 目录。仅在用户有意选择新位置时传 `--data-dir` 或 `--skills-dir`，不指向 `.preview` 或验收目录。
 
-从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.24 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
+从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.25 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
 
-v0.3.24 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
+v0.3.25 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
 
 安装入口会复用满足 Python ≥3.12、SQLite ≥3.51.3 的运行环境；缺少时通过官方 uv 安装器准备私有 Python。之后安装 `yuplus-local`、`yuplus` 与 `yuplus-visualization` 两份 Skill，初始化数据目录并检查飞书认证。需要网络下载运行时与依赖；不修改 shell 配置。
 
@@ -77,9 +79,11 @@ v0.3.24 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不
 
 如果已有 Skill 是符号链接、非安装器管理或包含用户修改，安装器会拒绝覆盖。保留这些文件，说明具体路径和冲突，由用户选择处理方式。不要先删除旧 Skill 再重试。
 
-升级 schema 1–8 的旧数据库时，v0.3.24 首次访问会迁移到 schema 9，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的 schema 9 库。安装后查询包版本应为 `0.3.24`，并确认 `doctor` 返回 `schema_version: 9`。
+升级 schema 1–9 的旧数据库时，v0.3.25 首次访问会迁移到 schema 10，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的 schema 10 库。安装后查询包版本应为 `0.3.25`，并确认 `doctor` 返回 `schema_version: 10`。
 
 ## 4. 读取已安装 Skill，并检查环境
+
+确认 CLI 帮助包含 `project purge`、`draft purge`、`review purge`、`source purge`、`library purge`，以及安装后的 Skill `references/deletion.md`；按需用 Skill 的 `inspect_contract.py command project.purge` 等查询 CLI 所带契约。只检查命令与文件是否存在；安装升级不执行硬删除。只有用户明确要求永久删除具体内容时才读取删除流程：先预览、处理真实宿主任务和引用阻塞，再按同一计划执行；`complete=false` 时按原请求重试，不声称清理完成。
 
 读取两份已安装 Skill 的 `installation.json`，取得真实 CLI、Python 和数据目录；核对它们与应用安装记录一致。读取 `yuplus/SKILL.md` 与 `yuplus-visualization/SKILL.md`，按主文件指引读取当前步骤需要的参考文档，避免重复载入已读内容。升级后刷新当前会话中旧版 Skill 指引；确认 `yuplus/references/review-structure.md` 与 `references/deletion.md` 已随安装更新，分别在整理/纠正成果、删除/重新启用时按需读取。确认 `yuplus/references/export.md` 已随安装更新，编写飞书正文及素材时按需读取。确认 `references/collaboration.md` 已安装；CLI 帮助应包含 `collab create/pull/prepare/push/accept/resolve/schedule/scheduler-bind`。旧独立导出记录仍可用 `export record` 与 `export list` 操作。安装或升级本身不导出文档、不创建测试记录。确认 `yuplus/references/case-library.md` 已随安装更新；登记、查找、移除或恢复案例库时再按需读取。CLI 帮助应包含 `library add/list/show/update/delete/restore` 对应命令。安装或升级会一次性初始化内置案例库登记，Agent 用 `library list` 检查结果即可，不另行重复添加，也不读取案例内容。确认 `yuplus/references/case-research.md`、`references/appearance.md` 随安装更新，CLI 帮助包含 `research create/update/list/show/preview` 和 `logo show/set/reset`。安装或升级本身不创建研究或飞书画板、不改头像。找案例依赖已安装的 `lark-doc`、`lark-whiteboard` 及其实际所需能力，正常预览刷新由本地程序执行，无需 Agent 定时任务。新 Skill 尚未被当前会话自动发现时，可直接读取已安装文件继续。`docs/skills/` 中的中文副本仅供用户审阅，不安装，也不作为 Agent 执行参考读取。
 
@@ -105,7 +109,7 @@ CLI --data-dir DATA_DIR status --json
 
 ## 6. 群聊监控的安装边界
 
-v0.3.24 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
+v0.3.25 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
 
 默认间隔60分钟，可按用户要求调整；首次收集全部可访问历史，再按时间顺序维护 draft 和已有受影响 review。没有宿主定时工具时只能手动同步，不宣称自动检查已接通。真实群聊与定时唤起需在用户指定目标后验收；已保存调度回执不等于真实运行成功。
 
