@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.25](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.25)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.26](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.26)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -260,3 +260,7 @@ Agent 按 Skill 用飞书 CLI 创建和修改画板；本地服务仅导出预�
 硬删清除目标与历史，整项目删除同时清理画板预览缓存；文件池只移除无人引用副本，不删除原始外部文件、飞书内容或备份。若 complete=false，按同一请求重试清理，检查 files_pending 和 cleanup_errors。完整字段可用 Skill 的 inspect_contract.py command project.purge 等按需查询；操作规则见[删除参考](skills/yuplus/references/deletion.md)。
 
 策划文档页面尚未建立飞书协作文档时，可点击“复制开始整理指令”。提示词携带当前项目与数据目录，引导 Agent 按 Skill 整理已有信息、生成适用成果并建立或复用飞书协作文档；复制本身不执行写入。
+
+## 默认币种（v0.3.26）
+
+金额未注明币种时，Agent 一律按人民币（CNY）处理；明确注明其他币种时保留，不自动换算。规则适用于收集、整理和飞书文档，英文 Skill 与中文审阅版同步更新；安装升级不自动重写历史项目金额。

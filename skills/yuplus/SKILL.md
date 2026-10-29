@@ -70,6 +70,8 @@ For another Skill, locate its actual installed entry in the environment's Skill 
 
 There are **no mandatory business fields or stage-entry requirements**. Unknown budgets, dates and audiences stay unknown. Explain what might be useful and how to provide it—meeting notes, a document, a local file or a short spoken explanation—while making clear that organization can begin now. Do not impose a completion checklist, approval workflow or creative-direction selection on collection.
 
+**Amounts without an explicitly stated currency default to Chinese yuan (CNY).** Apply this across collection, draft, Review and Feishu documents; write `currency:"CNY"` where required. Do not ask for currency clarification or mark it unknown solely because it was omitted. Preserve explicitly stated currencies without automatic conversion; unknown amounts remain unknown, and original source text stays unchanged.
+
 Use the step-specific guidance above for object meaning and exact CLI fields. The object guide describes meaning, possible sources and downstream use; it is not a checklist.
 
 Preserve original material and distinguish source statements, user supplements, reports, hypotheses, suggestions and adopted decisions. Never turn your inference into a client's decision. Keep conflicting accounts with their evidence; ask only when choosing the current interpretation would otherwise require guessing. Do not create a consensus pool or duplicate R05 Q&A data.

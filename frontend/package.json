@@ -1,6 +1,6 @@
 {
   "name": "yuplus-frontend",
-  "version": "0.3.25",
+  "version": "0.3.26",
   "private": true,
   "type": "module",
   "description": "Yu+ 本地只读前端及独立模拟数据预览",
