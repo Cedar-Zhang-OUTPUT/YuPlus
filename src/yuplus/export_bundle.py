@@ -22,8 +22,9 @@ from .core import YuError, digest, get_object, is_fresh, load_revision, selected
 
 _REVIEW = {
     'debrief': ('R01', '主策 Debrief'),
-    'advancement': ('R02', '推进要素'),
-    'creative_review': ('R03', '创意审查结果'),
+    'advancement': ('R02', '项目推进安排'),
+    'creative_plan': ('R03', '创意方案'),
+    'creative_review': ('R04', '创意评审记录'),
 }
 
 
@@ -251,7 +252,7 @@ def render_markdown(manifest):
         parts.append('尚无已保存的 Review 成果。')
     for obj in manifest['review_instances'] + manifest['shared_qa']:
         is_qa = obj['type_key'] == 'qa'
-        code, name = ('R05 / D15', '客户 Q&A（同一 draft 对象）') if is_qa else _REVIEW.get(obj['type_key'], ('未知', obj['type_key']))
+        code, name = ('R05 / D18', '客户 Q&A（同一 draft 对象）') if is_qa else _REVIEW.get(obj['type_key'], ('未知', obj['type_key']))
         parts.extend(['## ' + _label(f"{code} {name} — {obj.get('title', '')} [{obj['scope_key']}]"),
                       _literal(_json({k: obj[k] for k in ('object_id', 'revision_id', 'version', 'content_hash')}), 'json')])
         revision = manifest['revisions'].get(obj['revision_id'])
@@ -301,7 +302,7 @@ def prepare_bundle(data_dir, project_id, output_dir):
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
         try:
-            if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7,8):
+            if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7,8,9):
                 raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
             manifest = collect_snapshot(db, data_dir, project_id)
             db.execute('COMMIT')

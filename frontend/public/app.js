@@ -1,3 +1,4 @@
+import { collaborationPanel, safeCollaborationUrl } from "./data/collaboration.js";
 /* ═══════════════════════════════════════════════════════════════════════════
    Yu+ 只读浏览界面
    本文件只读取服务提供的数据并渲染，模拟预览必须由服务明确声明。没有任何写入路径：没有编辑、批准、删除、上传，
@@ -1483,7 +1484,7 @@ function deliveryTimeline(o, rev) {
     for (const it of rev.payload.items.filter((it) => it.data.deliverable && (it.data.round_key || "待安排") === round)) {
       const d = it.data; const entry = el("div", "delivery-entry");
       const name = el("b"); name.textContent = `${d.deliverable} · ${d.granularity || "交付内容待明确"}`;
-      // Date references are suggestions from D09, never asserted as committed delivery deadlines.
+      // Date references are suggestions from D13, never asserted as committed delivery deadlines.
       const match = dates.find((m) => d.granularity && m.data.event?.includes(d.granularity) && Number.isFinite(milestoneDates(m).from));
       const time = el("p", "small");
       if (d.date) time.textContent = parseScheduleTime(d.date)?.label || d.date;
@@ -1533,7 +1534,7 @@ function itemCard(o, rev, it, hue) {
   // 按类型呈现：结构化字段 / 正文 / 清单
   const dd = it.data;
   const moneyKeys = new Set(["min_minor", "max_minor", "amount_minor"]);
-  const skip = new Set(["topic", "question", "text", "note", "basis", "applies_to", "status", "captures", "time_kind"]);
+  const skip = new Set(["title", "topic", "question", "text", "note", "basis", "applies_to", "status", "captures", "time_kind"]);
   const fields = Object.keys(dd).filter((k) => !skip.has(k) && dd[k] !== null && dd[k] !== undefined && dd[k] !== "");
   const plainValue = ["venue", "brand_assets", "cooperation_type"].includes(o.type_key);
   const isQa = o.type_key === "qa";
@@ -1575,6 +1576,17 @@ function itemCard(o, rev, it, hue) {
         v=resource?.data.name || v;
       }
       if (k === "related_object_ids" && Array.isArray(v)) v = v.map((id) => { const related = oOf(id); return related ? typeName(related.type_key) : "未找到关联对象"; });
+      if (k === "adoption") v = ({proposed:"提议中",exploring:"探索中",adopted:"已采用",deferred:"暂缓",rejected:"未采用"})[v] || v;
+      if (k === "nature") v = ({suggestion:"建议",reported_decision:"转述决定",confirmed_decision:"已确认决定"})[v] || v;
+      if (k === "development" && v && typeof v === "object") v = Object.entries(v).map(([field,value]) => (FIELD_LABEL[field] || field) + "：" + value).join("\n");
+      if (["task_item_ids","open_question_item_ids"].includes(k) && Array.isArray(v)) {
+        const related=DATA.objects.find(x=>x.project_id===o.project_id && x.type_key===(k==='task_item_ids'?'deliverables':'open_questions'));
+        v=v.map(id=>{const item=headRev(related)?.payload.items?.find(x=>x.item_id===id);return item?itemLabel(item,related.type_key):'关联条目暂不可用';});
+      }
+      if (k === "target" && v && typeof v === "object") {
+        const targetObject=oOf(v.object_id);const targetRev=DATA.indexes.revById[v.revision_id];
+        v=(targetObject?typeName(targetObject.type_key):'历史内容')+' · '+(targetRev?'v'+targetRev.version:'历史版本');
+      }
       if (Array.isArray(v)) v = v.join("、");
       if (typeof v === "object") v = JSON.stringify(v);
       const dt = el("dt"); dt.textContent = FIELD_LABEL[k] || k; dl.append(dt);
@@ -1622,6 +1634,7 @@ function itemLabel(it, type_key) {
   const d = it.data || {};
   if (d.question) return "问题：" + d.question;
   if (d.topic) return d.topic;
+  if (d.title) return d.title;
   if (type_key === "audience") return d.audience || d.kind || "受众说明";
   if (d.deliverable) return d.deliverable + (d.round_key ? " · 轮次 " + d.round_key : "");
   if (d.meeting_name) return d.meeting_name;
@@ -1669,6 +1682,8 @@ const FIELD_LABEL = {
   project_name: "历史项目", partner: "合作方", period: "时间", expression: "表达特点", feedback: "反馈",
   assessment: "评估判断", condition: "前置条件", capacity: "资源配置", gap: "待补缺口", rating: "评级",
   effective_at: "采用时间", participants: "参与人", action: "行动项", owner: "负责人", due_at: "截止时间", progress: "进展",
+  title:"标题", target:"评审对象", script:"脚本", storyboard:"分镜", key_visual:"关键视觉", sound:"声音", zones:"展区", journey:"动线", exhibits:"展项", interaction:"互动", touchpoints:"传播触点", insight:"洞察", exploration:"探索方向", judgment_criteria:"判断标准", task:"任务", purpose:"目的", evaluation_criteria:"评价标准",
+  contributors: "贡献者", concept: "核心概念", rationale: "理由", experience: "叙事与体验", references: "参考与用途", development: "深化内容", adoption: "采用情况", adoption_basis: "采用依据", reviewer: "反馈人", feedback_at: "反馈时间", nature: "反馈性质", decision_basis: "决定依据", task_item_ids: "关联任务", open_question_item_ids: "关联议题",
   name: "姓名 / 名称", kind: "种类", capability: "能力", works: "作品", availability: "档期", participation: "参与情况", venue: "场地",
   address: "地址", pages: "页数", caption: "图注", statement: "决定内容", supersedes_note: "历史关系",
 };
@@ -1683,24 +1698,19 @@ function viewReview(pid) {
   head.style.margin = "30px 0 6px";
   const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "策划文档";
   const headingRow = el("div", "review-heading-row");
-  const exportPrompt = btn("复制生成飞书文档指令", () => copyText(reviewExportPrompt(DATA, pid), exportPrompt), "primary");
-  exportPrompt.title = "复制后发给 Codex，生成一份便于团队阅读的飞书文档；每次由你发起，不会自动持续同步";
-  exportPrompt.setAttribute("aria-live", "polite");
   const actions = el("div", "review-export-actions");
-  const history = el("button", "object-help export-history-toggle");
-  history.type = "button";
-  history.onclick = () => S.inspector?.kind === "exports" ? closeInspector() : openInspector({kind:"exports",project_id:pid});
-  history.title = "查看飞书文档生成记录";
-  history.setAttribute("aria-label", "查看飞书文档生成记录");
-  history.setAttribute("aria-expanded", String(S.inspector?.kind === "exports"));
-  if (S.inspector?.kind === "exports") history.setAttribute("aria-controls", "export-history-panel");
-  history.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 7M3 5v6h6M12 7v5l3 2"/></g></svg>';
-  actions.append(exportPrompt, history);
+  const collaboration = DATA.collaboration?.project_id === pid ? DATA.collaboration : null;
+  const url = safeCollaborationUrl(collaboration?.url);
+  if (url) {
+    const link=el("a","btn primary collaboration-link");link.href=url;link.target="_blank";link.rel="noopener noreferrer";
+    link.textContent="打开飞书协作文档 ↗";actions.append(link);
+  }
   headingRow.append(h, actions);
   head.append(headingRow);
   const sub = el("p", "subtitle");
   c.append(head);
   c.append(projectMonitorPanel(pid));
+  c.append(collaborationPanel(collaboration, {el,tag,formatTime:fullTime}));
 
   const layout = el("div");
   layout.style.cssText = "display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr);gap:26px;align-items:start;margin-top:20px;";
@@ -1782,7 +1792,7 @@ function viewReview(pid) {
   }
 
   if (kindMeta && !kindMeta.persistable) {
-    sub.textContent = "客户 Q&A 与「项目信息」中的 D15 客户 Q&A 问题表共用同一份内容。";
+    sub.textContent = "客户 Q&A 与「项目信息」中的 D18 客户 Q&A 问题表共用同一份内容。";
     if (sel?.current_revision_id) {
       const openDraft = chipBtn("在项目信息中打开", () => go(`#/p/${pid}/draft/${sel.id}`));
       openDraft.style.marginLeft = "10px";
@@ -1809,6 +1819,12 @@ function viewReview(pid) {
 
 function instanceLabel(o) {
   const scope = o.scope_key || "";
+  if (scope.startsWith("proposal:")) {
+    const itemId = scope.slice("proposal:".length);
+    const proposal = DATA.objects.filter((obj) => obj.project_id === o.project_id && obj.type_key === "creative_proposals")
+      .flatMap((obj) => headRev(obj)?.payload.items || []).find((item) => item.item_id === itemId);
+    return proposal?.data.title || "创意方向";
+  }
   return scope || "整体";
 }
 
@@ -2001,7 +2017,7 @@ const INTENT_LABELS = {
 };
 const intentLabel = (kindMeta, bid) => INTENT_LABELS[bid] || null;
 
-/* R05：展示 D15 的同一份问题表 */
+/* R05：展示 D18 的同一份问题表 */
 function qaReviewView(pid, qaObj, kindMeta) {
   const wrap = el("div");
   const rev = qaObj ? headRev(qaObj) : null;
@@ -2016,7 +2032,7 @@ function qaReviewView(pid, qaObj, kindMeta) {
     head.append(updated);
   }
   const grow = el("span", "grow"); head.append(grow);
-  if (rev) head.append(tag("同 D15 · v" + rev.version, "teal"));
+  if (rev) head.append(tag("同 D18 · v" + rev.version, "teal"));
   card.append(head);
 
   const bd = el("div", "body");
@@ -2344,7 +2360,7 @@ function viewCatalog() {
     top.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;";
     top.append(codeChip(k.code, k.persistable ? "indigo" : "teal"));
     const nm = el("b"); nm.textContent = k.name; top.append(nm);
-    if (!k.persistable) top.append(tag("读取 D15，不单独持久化", "teal"));
+    if (!k.persistable) top.append(tag("读取 D18，不单独持久化", "teal"));
     g2.append(top);
     const m = el("div", "small"); m.style.marginTop = "6px"; m.textContent = k.meaning; g2.append(m);
     const b2 = el("div", "tiny muted"); b2.style.marginTop = "4px"; b2.textContent = "主要依据：" + k.basis; g2.append(b2);
@@ -2517,9 +2533,9 @@ function renderChrome() {
   const sp = $("sideProject"); sp.replaceChildren();
   const secondary = $("sideProjectSecondary"); secondary.replaceChildren();
   if (proj) {
-    addNav(sp, "项目信息", `#/p/${proj.id}/draft`, { icon: "✎", current: S.route.view === "draft" });
-    addNav(sp, "策划文档", `#/p/${proj.id}/review`, { icon: "▤", current: S.route.view === "review" });
-    addNav(sp, "案例分析", `#/p/${proj.id}/case-finding`, { icon: "⌕", current: S.route.view === "case-finding" });
+    addNav(sp, "项目信息", `#/p/${proj.id}/draft`, { icon: "1", current: S.route.view === "draft" });
+    addNav(sp, "策划文档", `#/p/${proj.id}/review`, { icon: "2", current: S.route.view === "review" });
+    addNav(sp, "案例分析", `#/p/${proj.id}/case-finding`, { icon: "3", current: S.route.view === "case-finding" });
     addNav(secondary, "原始资料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
     addNav(secondary, "修改与确认记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
   } else {

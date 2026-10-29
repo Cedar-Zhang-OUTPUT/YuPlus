@@ -62,10 +62,10 @@ const DATA = (() => {
   // 项目活动摘要（用于项目列表的“最近已保存变更”），全部来自真实 change 记录
   const project_activity = {
     prj_city: { change_id: "chg_031", summary: "更新交付细节：本轮交付由「成片」改为「概念脚本」", at: dt("13T09:12:40Z") },
-    prj_yudev: { change_id: "chg_104", summary: "更新 D18 交付细节，并新增 D22 风险点", at: dt("12T14:31:00Z") },
+    prj_yudev: { change_id: "chg_104", summary: "更新 D14 交付细节，并新增 D23 风险点", at: dt("12T14:31:00Z") },
     prj_river: null,
     prj_lake: { change_id: "chg_060", summary: "发布 R01 主策 Debrief 第 3 版", at: "2026-09-04T08:00:00Z" },
-    prj_city_2: { change_id: "chg_007", summary: "新增 D11 合作类型：竞标", at: dt("11T05:20:00Z") },
+    prj_city_2: { change_id: "chg_007", summary: "新增 D04 合作类型：竞标", at: dt("11T05:20:00Z") },
   };
 
   /* ══════════════════════ sources · source_versions · files ════════════ */
@@ -300,7 +300,7 @@ const DATA = (() => {
     { id: "obj_yd_deliv", project_id: "prj_yudev", layer: "draft", type_key: "deliverables", scope_key: "project", current_revision_id: "rev_yd_deliv_1", created_at: dt("12T14:31:00Z") },
     { id: "obj_yd_risk", project_id: "prj_yudev", layer: "draft", type_key: "risks", scope_key: "project", current_revision_id: "rev_yd_risk_1", created_at: dt("12T14:31:00Z") },
 
-    // review 成果（R05 不在其中，直接读 D15）
+    // review 成果（R05 不在其中，直接读 D18）
     { id: "obj_r01", project_id: "prj_city", layer: "review", type_key: "debrief", scope_key: "project", current_revision_id: "rev_r01_2", created_at: dt("09T14:00:00Z") },
     { id: "obj_r02", project_id: "prj_city", layer: "review", type_key: "advancement", scope_key: "project", current_revision_id: "rev_r02_1", created_at: dt("09T14:10:00Z") },
     { id: "obj_r03", project_id: "prj_city", layer: "review", type_key: "creative_review", scope_key: "project", current_revision_id: "rev_r03_1", created_at: dt("11T03:00:00Z") },
@@ -379,7 +379,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D04 场地资料 ───────────────────────────────────────────────── */
+    /* ── D07 场地资料 ───────────────────────────────────────────────── */
     {
       id: "rev_venue_1", object_id: "obj_venue", version: 1, created_at: dt("06T02:00:00Z"), change_id: "chg_004",
       payload: {
@@ -395,7 +395,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D05 品牌资料 ───────────────────────────────────────────────── */
+    /* ── D08 品牌资料 ───────────────────────────────────────────────── */
     {
       id: "rev_brand_1", object_id: "obj_brand", version: 1, created_at: dt("04T07:00:00Z"), change_id: "chg_002",
       payload: {
@@ -410,7 +410,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D06 受众 ───────────────────────────────────────────────────── */
+    /* ── D09 受众 ───────────────────────────────────────────────────── */
     {
       id: "rev_audience_1", object_id: "obj_audience", version: 1, created_at: dt("09T11:00:00Z"), change_id: "chg_009",
       payload: {
@@ -424,7 +424,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D07 总预算区间（100万 → 60万 的核心例子） ─────────────────── */
+    /* ── D11 总预算区间（100万 → 60万 的核心例子） ─────────────────── */
     {
       id: "rev_budget_1", object_id: "obj_budget", version: 1, created_at: dt("02T04:10:00Z"), change_id: "chg_001",
       payload: {
@@ -445,7 +445,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D08 策划预算分配 ───────────────────────────────────────────── */
+    /* ── D12 策划预算分配 ───────────────────────────────────────────── */
     {
       id: "rev_alloc_1", object_id: "obj_alloc", version: 1, created_at: dt("08T03:00:00Z"), change_id: "chg_007",
       payload: {
@@ -470,7 +470,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D09 时间节点 ───────────────────────────────────────────────── */
+    /* ── D13 时间节点 ───────────────────────────────────────────────── */
     {
       id: "rev_timeline_1", object_id: "obj_timeline", version: 1, created_at: dt("09T11:20:00Z"), change_id: "chg_009",
       payload: {
@@ -486,7 +486,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D10 客户关键决策节点 ───────────────────────────────────────── */
+    /* ── D17 客户关键决策节点 ───────────────────────────────────────── */
     {
       id: "rev_clientdec_1", object_id: "obj_clientdec", version: 1, created_at: dt("09T11:40:00Z"), change_id: "chg_009",
       payload: {
@@ -500,7 +500,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D11 合作类型 ───────────────────────────────────────────────── */
+    /* ── D04 合作类型 ───────────────────────────────────────────────── */
     {
       id: "rev_coop_1", object_id: "obj_coop", version: 1, created_at: dt("02T04:20:00Z"), change_id: "chg_001",
       payload: {
@@ -510,7 +510,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D14 会议纪要 ───────────────────────────────────────────────── */
+    /* ── D06 会议纪要 ───────────────────────────────────────────────── */
     {
       id: "rev_meetings_1", object_id: "obj_meetings", version: 1, created_at: dt("09T12:00:00Z"), change_id: "chg_009",
       payload: {
@@ -520,7 +520,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D15 客户 Q&A 问题表（R05 直接读它） ────────────────────────── */
+    /* ── D18 客户 Q&A 问题表（R05 直接读它） ────────────────────────── */
     {
       id: "rev_qa_1", object_id: "obj_qa", version: 1, created_at: dt("10T02:00:00Z"), change_id: "chg_012",
       payload: {
@@ -552,7 +552,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D17 主策策略 ───────────────────────────────────────────────── */
+    /* ── D19 主策策略 ───────────────────────────────────────────────── */
     {
       id: "rev_strategy_1", object_id: "obj_strategy", version: 1, created_at: dt("10T06:00:00Z"), change_id: "chg_014",
       payload: {
@@ -567,7 +567,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D18 交付细节（成片 → 概念脚本） ───────────────────────────── */
+    /* ── D14 交付细节（成片 → 概念脚本） ───────────────────────────── */
     {
       id: "rev_deliv_1", object_id: "obj_deliv", version: 1, created_at: dt("02T04:30:00Z"), change_id: "chg_001",
       payload: {
@@ -597,7 +597,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D19 内外部资源 ─────────────────────────────────────────────── */
+    /* ── D15 内外部资源 ─────────────────────────────────────────────── */
     {
       id: "rev_resources_1", object_id: "obj_resources", version: 1, created_at: dt("10T07:00:00Z"), change_id: "chg_015",
       payload: {
@@ -611,7 +611,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D20 职责边界 ───────────────────────────────────────────────── */
+    /* ── D16 职责边界 ───────────────────────────────────────────────── */
     {
       id: "rev_resp_1", object_id: "obj_resp", version: 1, created_at: dt("09T12:30:00Z"), change_id: "chg_009",
       payload: {
@@ -626,7 +626,7 @@ const DATA = (() => {
       },
     },
 
-    /* ── D22 风险点 ─────────────────────────────────────────────────── */
+    /* ── D23 风险点 ─────────────────────────────────────────────────── */
     {
       id: "rev_risks_1", object_id: "obj_risks", version: 1, created_at: dt("10T07:30:00Z"), change_id: "chg_016",
       payload: {
@@ -697,7 +697,7 @@ const DATA = (() => {
         goal: { last_written_revision_id: "rev_r01_1", applied_cause_change_ids: ["chg_010"], basis: [{ object_id: "obj_bd", revision_id: "rev_bd_2", item_id: "bd_goal" }] },
         audience: { last_written_revision_id: "rev_r01_1", applied_cause_change_ids: ["chg_010"], basis: [{ object_id: "obj_audience", revision_id: "rev_audience_1", item_id: "aud_on_site" }] },
         who_decides: { last_written_revision_id: "rev_r01_1", applied_cause_change_ids: ["chg_010"], basis: [{ object_id: "obj_clientdec", revision_id: "rev_clientdec_1", item_id: "cd_signoff" }] },
-        // 这一段尚未随 D18 的新版同步：演示「依据已变化／成果尚未同步」
+        // 这一段尚未随 D14 的新版同步：演示「依据已变化／成果尚未同步」
         scope: { last_written_revision_id: "rev_r01_1", applied_cause_change_ids: ["chg_010"], basis: [{ object_id: "obj_deliv", revision_id: "rev_deliv_1", item_id: "deliv_r1_film" }] },
         budget: {
           last_written_revision_id: "rev_r01_2", applied_cause_change_ids: ["chg_021", "chg_025"],
@@ -778,24 +778,24 @@ const DATA = (() => {
     change("chg_004", 4, "source.import", "changed", "收录现场勘察照片并提取场地条件", dt("06T01:30:00Z"), [], [{ layer: "draft", object_id: "obj_venue" }]),
     change("chg_005", 5, "source.import", "changed", "收录开工会纪要节选", dt("09T10:20:00Z"), []),
     change("chg_006", 6, "source.import", "changed", "登记 2024 年概念提案（外部路径）", dt("03T06:00:00Z"), []),
-    change("chg_007", 7, "draft.apply", "changed", "建立 D08 策划预算分配（100 万口径）", dt("08T03:00:00Z"), [], [{ layer: "draft", object_id: "obj_alloc" }]),
+    change("chg_007", 7, "draft.apply", "changed", "建立 D12 策划预算分配（100 万口径）", dt("08T03:00:00Z"), [], [{ layer: "draft", object_id: "obj_alloc" }]),
     change("chg_008", 8, "draft.apply", "changed", "补齐 D01 BD 同步信息的分主题条目", dt("09T12:40:00Z"), [], [{ layer: "draft", object_id: "obj_bd" }]),
     change("chg_009", 9, "draft.apply", "changed", "根据开工会纪要建立受众、时间、决策角色、职责与会议纪要", dt("09T13:00:00Z"), ["chg_005"], [{ layer: "draft", object_id: "obj_audience" }, { layer: "draft", object_id: "obj_timeline" }, { layer: "draft", object_id: "obj_clientdec" }, { layer: "draft", object_id: "obj_resp" }, { layer: "draft", object_id: "obj_meetings" }]),
     change("chg_010", 10, "review.publish", "changed", "首次生成 R01 Debrief 与 R02 项目推进安排", dt("09T14:10:00Z"), ["chg_001", "chg_008", "chg_009"], [{ layer: "review", object_id: "obj_r01" }, { layer: "review", object_id: "obj_r02" }]),
-    change("chg_012", 12, "draft.apply", "changed", "建立 D15 客户 Q&A 问题表", dt("10T02:00:00Z"), [], [{ layer: "draft", object_id: "obj_qa" }]),
-    change("chg_014", 14, "draft.apply", "changed", "建立 D17 主策策略与方向候选", dt("10T06:00:00Z"), ["chg_009"], [{ layer: "draft", object_id: "obj_strategy" }]),
-    change("chg_015", 15, "draft.apply", "changed", "建立 D19 内外部资源（候选与已确认）", dt("10T07:00:00Z"), [], [{ layer: "draft", object_id: "obj_resources" }]),
-    change("chg_016", 16, "draft.apply", "changed", "建立 D22 风险点", dt("10T07:30:00Z"), [], [{ layer: "draft", object_id: "obj_risks" }]),
+    change("chg_012", 12, "draft.apply", "changed", "建立 D18 客户 Q&A 问题表", dt("10T02:00:00Z"), [], [{ layer: "draft", object_id: "obj_qa" }]),
+    change("chg_014", 14, "draft.apply", "changed", "建立 D19 主策策略与方向候选", dt("10T06:00:00Z"), ["chg_009"], [{ layer: "draft", object_id: "obj_strategy" }]),
+    change("chg_015", 15, "draft.apply", "changed", "建立 D15 内外部资源（候选与已确认）", dt("10T07:00:00Z"), [], [{ layer: "draft", object_id: "obj_resources" }]),
+    change("chg_016", 16, "draft.apply", "changed", "建立 D23 风险点", dt("10T07:30:00Z"), [], [{ layer: "draft", object_id: "obj_risks" }]),
     change("chg_020", 20, "source.import", "changed", "收录主策口述：预算按 60 万推进", dt("11T07:15:00Z"), []),
-    change("chg_021", 21, "draft.apply", "changed", "D07 新增采用决定条目：本轮按 60 万；保留客户原始 100 万说法", dt("11T07:30:00Z"), ["chg_020"], [{ layer: "draft", object_id: "obj_budget" }]),
-    change("chg_022", 22, "draft.apply", "changed", "D08 按 60 万口径重排分配并记录审查意见", dt("11T07:45:00Z"), ["chg_021"], [{ layer: "draft", object_id: "obj_alloc" }]),
-    change("chg_023", 23, "review.publish", "changed", "生成 R03 创意评审记录", dt("11T03:00:00Z"), ["chg_014", "chg_022"], [{ layer: "review", object_id: "obj_r03" }]),
+    change("chg_021", 21, "draft.apply", "changed", "D11 新增采用决定条目：本轮按 60 万；保留客户原始 100 万说法", dt("11T07:30:00Z"), ["chg_020"], [{ layer: "draft", object_id: "obj_budget" }]),
+    change("chg_022", 22, "draft.apply", "changed", "D12 按 60 万口径重排分配并记录审查意见", dt("11T07:45:00Z"), ["chg_021"], [{ layer: "draft", object_id: "obj_alloc" }]),
+    change("chg_023", 23, "review.publish", "changed", "生成 R04 创意评审记录", dt("11T03:00:00Z"), ["chg_014", "chg_022"], [{ layer: "review", object_id: "obj_r03" }]),
     change("chg_024", 24, "source.import", "changed", "收录主策口述：Debrief 预算段要求简明", dt("12T03:05:00Z"), []),
     change("chg_025", 25, "draft.apply", "changed", "新增成果编写要求（expression_guide → R01.budget）", dt("12T03:10:00Z"), ["chg_024"], [{ layer: "draft", object_id: "obj_guide_r01" }]),
     change("chg_026", 26, "review.publish", "changed", "R01 第 2 版：预算段按编写要求精简", dt("12T03:30:00Z"), ["chg_021", "chg_025"], [{ layer: "review", object_id: "obj_r01" }]),
     change("chg_029", 29, "source.import", "changed", "飞书需求文档远端 revision 更新，收录第 2 版快照（新增口述史素材包要求）", dt("13T08:02:00Z"), [], [{ layer: "draft", object_id: "obj_brief" }]),
     change("chg_030", 30, "source.import", "changed", "收录主策口述：本轮只交概念脚本", dt("13T09:05:00Z"), []),
-    change("chg_031", 31, "draft.apply", "changed", "D18 本轮交付由「成片」改为「概念脚本」，成片顺延至下一轮", dt("13T09:12:40Z"), ["chg_030"], [{ layer: "draft", object_id: "obj_deliv" }]),
+    change("chg_031", 31, "draft.apply", "changed", "D14 本轮交付由「成片」改为「概念脚本」，成片顺延至下一轮", dt("13T09:12:40Z"), ["chg_030"], [{ layer: "draft", object_id: "obj_deliv" }]),
     // 一次真正没有变化的提交：noop 回执，不产生新版本
     change("chg_032", 32, "source.import", "noop", "品牌资产清单远端 revision 未变化，快照复用", dt("13T08:02:30Z"), []),
   ];
@@ -923,45 +923,48 @@ const DATA = (() => {
     { key: "background", name: "背景与需求", hue: "blue", types: ["bd_context", "client_brief", "tender_documents", "cooperation_type", "client_history", "client_meetings"] },
     { key: "research", name: "研究与资料", hue: "teal", types: ["venue", "brand_assets", "audience", "competitor_analysis"] },
     { key: "plan", name: "计划与协作", hue: "orange", types: ["milestones", "resources", "responsibilities", "deliverables", "budget_range", "budget_allocation"] },
-    { key: "judgment", name: "判断与决定", hue: "purple", types: ["lead_strategy", "risks", "client_decisions", "project_rating", "assessment_decision", "qa", "open_questions"] },
+    { key: "judgment", name: "判断与决定", hue: "purple", types: ["lead_strategy", "risks", "client_decisions", "project_rating", "assessment_decision", "qa", "open_questions", "creative_proposals", "creative_feedback"] },
   ];
 
   const catalog = [
-    { code: "D01", type_key: "bd_context", name: "BD 同步信息", meaning: "项目背景、客户为何现在做、目标与核心问题、决策标准和偏好", boundary: "客户说法、BD 判断与当前采用口径必须分开标示", sources: "BD 口述/文档，D02、D03、D14；缺口关联 D15", usage: "供 R01 主策 Debrief、D17 主策策略引用", missing: "允许未知与不适用；可建议补充，不阻止场景推进。" },
+    { code: "D01", type_key: "bd_context", name: "BD 同步信息", meaning: "项目背景、客户为何现在做、目标与核心问题、决策标准和偏好", boundary: "客户说法、BD 判断与当前采用口径必须分开标示", sources: "BD 口述/文档，D02、D03、D06；缺口关联 D18", usage: "供 R01 主策 Debrief、D19 主策策略引用", missing: "允许未知与不适用；可建议补充，不阻止场景推进。" },
     { code: "D02", type_key: "client_brief", name: "客户原始 Brief", meaning: "原始资料引用、版本，以及从中提取的需求条目", boundary: "用户纠正单独保存，不伪装成客户原文", sources: "客户文件或飞书文档", usage: "R01 与其他 draft 对象的证据", missing: "允许未知与不适用；可建议补充。" },
-    { code: "D03", type_key: "tender_documents", name: "招标文件", meaning: "原件引用、版本、范围/交付/评审等要求及差异说明", boundary: "原始招标要求与项目采用的解释分开", sources: "招标原始资料；与 D02、D01 对照", usage: "R01；D09、D10、D18 等", missing: "允许未知与不适用。" },
-    { code: "D04", type_key: "venue", name: "场地资料", meaning: "图纸、照片、地址等材料集合，以及有依据的场地条件", boundary: "实测或核实信息与未核实描述必须区分", sources: "本地/飞书材料、可核实公开资料", usage: "D17、D22；R01 按需引用", missing: "允许未知与不适用；未核实尺寸不填成事实。" },
-    { code: "D05", type_key: "brand_assets", name: "甲方客户品牌资料", meaning: "品牌材料集合、定位、文化资产、核心信息与视觉规范", boundary: "品牌材料原件与提取结论分开；使用条件关联交付细节", sources: "品牌文件、客户公开资料", usage: "D17；R01 按需引用", missing: "允许未知与不适用。" },
-    { code: "D06", type_key: "audience", name: "受众", meaning: "现场观众与传播受众分别记录；画像、需求、触达点及依据", boundary: "现场观众与传播受众分开；AI 假设单独注明", sources: "D01、D02、D14", usage: "R01、D17", missing: "允许未知与不适用。" },
-    { code: "D07", type_key: "budget_range", name: "总预算区间", meaning: "客户预算、期望区间、币种及口径；保留不同说法和本轮采用值", boundary: "客户原始预算与本轮采用预算必须并存，不覆盖历史说法", sources: "D01、D02、D03、D14，用户明确决定", usage: "D08、D22；R01/R03 按需引用", missing: "金额未知时不显示为零；币种与口径随金额一并记录。" },
-    { code: "D08", type_key: "budget_allocation", name: "策划预算分配", meaning: "投入重点、克制项、分配建议与已采用分配；相关实际审查意见", boundary: "预估、报价、分配建议与已采用分配分开", sources: "D07、D19、D23，用户评审意见", usage: "R03 创意评审记录、D17", missing: "允许未知与不适用。" },
-    { code: "D09", type_key: "milestones", name: "时间节点或区间", meaning: "事件、日期/区间、对应交付及 Review 看什么；倒排结果注明依据", boundary: "明确日期与估计区间区分；不重复维护交付规格", sources: "D02、D03、D14、用户安排", usage: "R02 项目推进安排", missing: "只有事件名也可保存；提供时间需注明类型与时区。" },
-    { code: "D10", type_key: "client_decisions", name: "客户关键决策节点", meaning: "客户侧谁决定什么、哪些事项待客户确认、双方决策边界", boundary: "客户决策角色与 D20 内部职责不得混用", sources: "D01、D03、D14", usage: "R01", missing: "允许未知与不适用。" },
-    { code: "D11", type_key: "cooperation_type", name: "合作类型", meaning: "竞标、委托、咨询、执行追加等实际类型及说明、依据", boundary: "已确定合作方式与待确认说法区分", sources: "D01、D02、D03", usage: "D17、D18；R01 按需引用", missing: "允许未知与不适用。" },
-    { code: "D12", type_key: "competitor_analysis", name: "竞争对手分析", meaning: "已知竞争对象、公开作品、引用材料、分析和判断", boundary: "核实信息与传闻、推测分开标明", sources: "D01、D03、公开资料", usage: "D17；R01/R03 按需引用", missing: "允许未知与不适用。" },
-    { code: "D13", type_key: "client_history", name: "客户历史合作方与过往项目", meaning: "历史项目、合作方、作品/媒体、表达特点及来源", boundary: "历史事实与对本次偏好的推断分开", sources: "客户资料、公开记录", usage: "D01、D17", missing: "允许未知与不适用。" },
-    { code: "D14", type_key: "client_meetings", name: "与甲方的会议纪要", meaning: "原始纪要/转写、会议时间、客户原话、议题、意见与实际决定", boundary: "原话、摘要、意见与已作决定分开；定位按实际获取能力保存", sources: "飞书或其他真实会议材料", usage: "向多个 draft 对象提供证据", missing: "会议时间未知可缺省；节选需注明采集范围。" },
-    { code: "D15", type_key: "qa", name: "客户 Q&A 问题表", meaning: "问题、涉及对象、跟进人、答复、证据、已记录状态", boundary: "无答复与已有答复区分；答复关联到哪些业务对象", sources: "客户沟通中的具体澄清与往来答复；开放议题使用 D24", usage: "R05 展示同一问题表；其他成果引用", missing: "可以只有问题；问题状态是业务事实，不是启动门槛。" },
-    { code: "D17", type_key: "lead_strategy", name: "主策策略", meaning: "本轮目标、策略、调研判断、已有方向候选、取舍理由、实际审查意见", boundary: "已有策略与待讨论建议分开；不要求完成创意方向筛选", sources: "D01、D04—D08、D12、D13、D23", usage: "R03；R01 按需引用", missing: "允许未知与不适用；不要求收集阶段完成创意策划。" },
-    { code: "D18", type_key: "deliverables", name: "交付细节", meaning: "轮次、交付物、颗粒度、格式/规格、数量、使用限制、外部依赖、不做范围", boundary: "本轮/某位创作者要求与全项目要求区分；日期统一引用 D09", sources: "D01—D03、D14、用户约定；关联 D05/D19", usage: "R01、R02", missing: "允许未知与不适用；不做范围可单独记录。" },
-    { code: "D19", type_key: "resources", name: "内外部资源", meaning: "人员/机构、能力、作品依据、档期条件、参与情况", boundary: "候选、已核实可用、已确认参与必须区分", sources: "团队与合作资料、D01", usage: "D17；D08 按需引用", missing: "允许未知与不适用。" },
-    { code: "D20", type_key: "responsibilities", name: "职责边界", meaning: "主策、专业负责人、BD 接口、内部拍板人、任务职责与协作接口", boundary: "建议分工与实际承接分开；不与客户决策角色混用", sources: "用户明确安排、D19、相关会议记录", usage: "R01、R02", missing: "允许未知与不适用。" },
-    { code: "D21", type_key: "project_rating", name: "项目评级", meaning: "评级、理由、来源和确认依据", boundary: "建议评级与正式评级分开", sources: "D23、用户明确判断", usage: "资源投入和策略判断；R03 按需引用", missing: "允许未知与不适用。" },
-    { code: "D22", type_key: "risks", name: "风险点", meaning: "风险描述、触发条件、影响、应对建议、待核实事项、接受/处理决定", boundary: "风险线索、判断与实际处理决定分开", sources: "各对象与材料，用户判断", usage: "D17、D23；R01—R03 按需引用", missing: "允许未知与不适用。" },
-    { code: "D23", type_key: "assessment_decision", name: "评审会结论", meaning: "实际立项评审结论、Go/No-Go、补材料/调整交付/重新评估等决定及行动项", boundary: "立项评审与创意审查分开；是业务记录，不是软件准入门槛", sources: "真实评审记录、用户明确结论", usage: "D17；其他成果按需引用", missing: "允许未知与不适用。" },
+    { code: "D03", type_key: "tender_documents", name: "招标文件", meaning: "原件引用、版本、范围/交付/评审等要求及差异说明", boundary: "原始招标要求与项目采用的解释分开", sources: "招标原始资料；与 D02、D01 对照", usage: "R01；D13、D17、D14 等", missing: "允许未知与不适用。" },
+    { code: "D07", type_key: "venue", name: "场地资料", meaning: "图纸、照片、地址等材料集合，以及有依据的场地条件", boundary: "实测或核实信息与未核实描述必须区分", sources: "本地/飞书材料、可核实公开资料", usage: "D19、D23；R01 按需引用", missing: "允许未知与不适用；未核实尺寸不填成事实。" },
+    { code: "D08", type_key: "brand_assets", name: "甲方客户品牌资料", meaning: "品牌材料集合、定位、文化资产、核心信息与视觉规范", boundary: "品牌材料原件与提取结论分开；使用条件关联交付细节", sources: "品牌文件、客户公开资料", usage: "D19；R01 按需引用", missing: "允许未知与不适用。" },
+    { code: "D09", type_key: "audience", name: "受众", meaning: "现场观众与传播受众分别记录；画像、需求、触达点及依据", boundary: "现场观众与传播受众分开；AI 假设单独注明", sources: "D01、D02、D06", usage: "R01、D19", missing: "允许未知与不适用。" },
+    { code: "D11", type_key: "budget_range", name: "总预算区间", meaning: "客户预算、期望区间、币种及口径；保留不同说法和本轮采用值", boundary: "客户原始预算与本轮采用预算必须并存，不覆盖历史说法", sources: "D01、D02、D03、D06，用户明确决定", usage: "D12、D23；R01/R03 按需引用", missing: "金额未知时不显示为零；币种与口径随金额一并记录。" },
+    { code: "D12", type_key: "budget_allocation", name: "策划预算分配", meaning: "投入重点、克制项、分配建议与已采用分配；相关实际审查意见", boundary: "预估、报价、分配建议与已采用分配分开", sources: "D11、D15、D24，用户评审意见", usage: "R04 创意评审记录、D19", missing: "允许未知与不适用。" },
+    { code: "D13", type_key: "milestones", name: "时间节点或区间", meaning: "事件、日期/区间、对应交付及 Review 看什么；倒排结果注明依据", boundary: "明确日期与估计区间区分；不重复维护交付规格", sources: "D02、D03、D06、用户安排", usage: "R02 项目推进安排", missing: "只有事件名也可保存；提供时间需注明类型与时区。" },
+    { code: "D17", type_key: "client_decisions", name: "客户关键决策节点", meaning: "客户侧谁决定什么、哪些事项待客户确认、双方决策边界", boundary: "客户决策角色与 D16 内部职责不得混用", sources: "D01、D03、D06", usage: "R01", missing: "允许未知与不适用。" },
+    { code: "D04", type_key: "cooperation_type", name: "合作类型", meaning: "竞标、委托、咨询、执行追加等实际类型及说明、依据", boundary: "已确定合作方式与待确认说法区分", sources: "D01、D02、D03", usage: "D19、D14；R01 按需引用", missing: "允许未知与不适用。" },
+    { code: "D10", type_key: "competitor_analysis", name: "竞争对手分析", meaning: "已知竞争对象、公开作品、引用材料、分析和判断", boundary: "核实信息与传闻、推测分开标明", sources: "D01、D03、公开资料", usage: "D19；R01/R03 按需引用", missing: "允许未知与不适用。" },
+    { code: "D05", type_key: "client_history", name: "客户历史合作方与过往项目", meaning: "历史项目、合作方、作品/媒体、表达特点及来源", boundary: "历史事实与对本次偏好的推断分开", sources: "客户资料、公开记录", usage: "D01、D19", missing: "允许未知与不适用。" },
+    { code: "D06", type_key: "client_meetings", name: "与甲方的会议纪要", meaning: "原始纪要/转写、会议时间、客户原话、议题、意见与实际决定", boundary: "原话、摘要、意见与已作决定分开；定位按实际获取能力保存", sources: "飞书或其他真实会议材料", usage: "向多个 draft 对象提供证据", missing: "会议时间未知可缺省；节选需注明采集范围。" },
+    { code: "D18", type_key: "qa", name: "客户 Q&A 问题表", meaning: "问题、涉及对象、跟进人、答复、证据、已记录状态", boundary: "无答复与已有答复区分；答复关联到哪些业务对象", sources: "客户沟通中的具体澄清与往来答复；开放议题使用 D25", usage: "R05 展示同一问题表；其他成果引用", missing: "可以只有问题；问题状态是业务事实，不是启动门槛。" },
+    { code: "D19", type_key: "lead_strategy", name: "主策策略", meaning: "本轮目标、策略、调研判断、已有方向候选、取舍理由、实际审查意见", boundary: "已有策略与待讨论建议分开；不要求完成创意方向筛选", sources: "D01、D07—D12、D10、D05、D24", usage: "R03；R01 按需引用", missing: "允许未知与不适用；不要求收集阶段完成创意策划。" },
+    { code: "D14", type_key: "deliverables", name: "交付细节", meaning: "轮次、交付物、颗粒度、格式/规格、数量、使用限制、外部依赖、不做范围", boundary: "本轮/某位创作者要求与全项目要求区分；日期统一引用 D13", sources: "D01—D03、D06、用户约定；关联 D08/D15", usage: "R01、R02", missing: "允许未知与不适用；不做范围可单独记录。" },
+    { code: "D15", type_key: "resources", name: "内外部资源", meaning: "人员/机构、能力、作品依据、档期条件、参与情况", boundary: "候选、已核实可用、已确认参与必须区分", sources: "团队与合作资料、D01", usage: "D19；D12 按需引用", missing: "允许未知与不适用。" },
+    { code: "D16", type_key: "responsibilities", name: "职责边界", meaning: "主策、专业负责人、BD 接口、内部拍板人、任务职责与协作接口", boundary: "建议分工与实际承接分开；不与客户决策角色混用", sources: "用户明确安排、D15、相关会议记录", usage: "R01、R02", missing: "允许未知与不适用。" },
+    { code: "D22", type_key: "project_rating", name: "项目评级", meaning: "评级、理由、来源和确认依据", boundary: "建议评级与正式评级分开", sources: "D24、用户明确判断", usage: "资源投入和策略判断；R03 按需引用", missing: "允许未知与不适用。" },
+    { code: "D23", type_key: "risks", name: "风险点", meaning: "风险描述、触发条件、影响、应对建议、待核实事项、接受/处理决定", boundary: "风险线索、判断与实际处理决定分开", sources: "各对象与材料，用户判断", usage: "D19、D24；R01—R03 按需引用", missing: "允许未知与不适用。" },
+    { code: "D24", type_key: "assessment_decision", name: "评审会结论", meaning: "实际立项评审结论、Go/No-Go、补材料/调整交付/重新评估等决定及行动项", boundary: "立项评审与创意审查分开；是业务记录，不是软件准入门槛", sources: "真实评审记录、用户明确结论", usage: "D19；其他成果按需引用", missing: "允许未知与不适用。" },
   ];
 
-  catalog.push({"code": "D24", "type_key": "open_questions", "name": "开放性问题", "meaning": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。", "boundary": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。", "sources": "主策思考、会议与群聊、客户或团队提出的开放议题、材料与现有对象中的探索问题。", "usage": "D17 策略、D18 交付等相关 draft；形成实际决定时保留决策历史；R01—R03 按需依赖，不加入 R05 客户 Q&A。", "missing": "允许未决、暂缓和未知；不要求先有答案，不阻止项目信息或整理。"});
+  catalog.push({"code": "D25", "type_key": "open_questions", "name": "开放性问题", "meaning": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。", "boundary": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。", "sources": "主策思考、会议与群聊、客户或团队提出的开放议题、材料与现有对象中的探索问题。", "usage": "D19 策略、D14 交付等相关 draft；形成实际决定时保留决策历史；R01—R03 按需依赖，不加入 R05 客户 Q&A。", "missing": "允许未决、暂缓和未知；不要求先有答案，不阻止项目信息或整理。"});
 
+  catalog.push(...[{"code": "D20", "type_key": "creative_proposals", "name": "创意方案", "content_and_boundary": "具体创意方向及深化内容；贡献者、概念、任务回应、叙事体验、素材与用途、深化模块、任务和问题关联；补图改写沿用原条目，新方向新建条目。", "possible_sources": "团队协作文档、会议、群聊、用户补充；保留来源与实际贡献者", "display": "结构化内容与素材引用", "downstream": "策划文档及实际受影响的项目信息", "data_schema_ref": "cli-input.schema.json#/$defs/data_creative_proposals", "missing_policy": "未知可留空，不阻止推进；没有方案或评审不得虚构。", "meaning": "具体创意方向及深化内容；贡献者、概念、任务回应、叙事体验、素材与用途、深化模块、任务和问题关联；补图改写沿用原条目，新方向新建条目。", "boundary": "具体创意方向及深化内容；贡献者、概念、任务回应、叙事体验、素材与用途、深化模块、任务和问题关联；补图改写沿用原条目，新方向新建条目。", "sources": "团队协作文档、会议、群聊、用户补充；保留来源与实际贡献者", "usage": "策划文档及实际受影响的项目信息", "missing": "未知可留空，不阻止推进；没有方案或评审不得虚构。"}, {"code": "D21", "type_key": "creative_feedback", "name": "创意评审与反馈", "content_and_boundary": "针对确切对象、条目和版本的意见及结论；区分建议、转述决定、已确认决定，不把文档编辑者视为决定人。", "possible_sources": "团队协作文档、会议、群聊、用户补充；保留来源与实际贡献者", "display": "结构化内容与素材引用", "downstream": "策划文档及实际受影响的项目信息", "data_schema_ref": "cli-input.schema.json#/$defs/data_creative_feedback", "missing_policy": "未知可留空，不阻止推进；没有方案或评审不得虚构。", "meaning": "针对确切对象、条目和版本的意见及结论；区分建议、转述决定、已确认决定，不把文档编辑者视为决定人。", "boundary": "针对确切对象、条目和版本的意见及结论；区分建议、转述决定、已确认决定，不把文档编辑者视为决定人。", "sources": "团队协作文档、会议、群聊、用户补充；保留来源与实际贡献者", "usage": "策划文档及实际受影响的项目信息", "missing": "未知可留空，不阻止推进；没有方案或评审不得虚构。"}]);
+  catalog.sort((a,b)=>a.code.localeCompare(b.code));
   const internal_types = [
     { type_key: "expression_guide", name: "成果编写要求", meaning: "用户的表达或结构要求：作用于哪份成果、哪些段落、指令来源与版本", boundary: "不是第 23 类业务对象；与事实字段分开，不因改写流程捏造事实变化", sources: "用户口述中的纯表达意见", usage: "绑定某一 review 的段落 ID 或全部段落" },
   ];
 
-  const REVIEW_KINDS = [
-    { code: "R01", type_key: "debrief", name: "主策 Debrief", persistable: true, meaning: "客户为何做、要解决什么、面向谁、谁决定什么、本轮交付与边界的完整说明", basis: "D01 背景目标；D02/D03 需求依据；D06 受众；D10 客户决策角色；D20 内部职责；D18 交付边界" },
-    { code: "R02", type_key: "advancement", name: "项目推进安排", persistable: true, meaning: "本轮交付、颗粒度、回收/合稿/Review 节点、相关职责和已有待讨论项", basis: "D09 时间，D18 交付；负责人引用 D20；客户澄清引用 D15，开放议题引用 D24" },
-    { code: "R03", type_key: "creative_review", name: "创意评审记录", persistable: true, meaning: "目标、方向、投入重点的实际审查意见、取舍及依据；无正式结论时呈现已有策略与待讨论内容", basis: "D17 主策策略及实际审查意见，D08 预算分配及实际审查意见" },
-    { code: "R05", type_key: "qa_view", name: "客户 Q&A", persistable: false, meaning: "在 review 场景中展示同一份 D15 问题、答复、状态、来源和关联对象", basis: "直接使用 D15，不复制一份独立维护的 review Q&A" },
+const REVIEW_KINDS = [
+    { code: "R01", type_key: "debrief", name: "主策 Debrief", persistable: true, meaning: "客户为何做、要解决什么、面向谁、谁决定什么、本轮交付与边界的完整说明", basis: "D01 背景目标；D02/D03 需求依据；D09 受众；D17 客户决策角色；D16 内部职责；D14 交付边界" },
+    { code: "R02", type_key: "advancement", name: "项目推进安排", persistable: true, meaning: "本轮交付、颗粒度、回收/合稿/Review 节点、相关职责和已有待讨论项", basis: "D13 时间，D14 交付；负责人引用 D16；客户澄清引用 D18，开放议题引用 D25" },
+    { code: "R03", type_key: "creative_plan", name: "创意方案", persistable: true, meaning: "具体方向、体验叙事、参考与深化内容", basis: "D20 方案；关联任务、策略、受众和资料；D25 待讨论议题" },
+    { code: "R04", type_key: "creative_review", name: "创意评审记录", persistable: true, meaning: "针对具体方案及版本的反馈、取舍与下一轮修改", basis: "D21 创意评审与反馈；D20 方案；修改任务关联 D14/D16/D13" },
+    { code: "R05", type_key: "qa_view", name: "客户 Q&A", persistable: false, meaning: "在 review 场景中展示同一份 D18 问题、答复、状态、来源和关联对象", basis: "直接使用 D18，不复制一份独立维护的 review Q&A" },
   ];
 
   const EPISTEMIC = {
@@ -1003,6 +1006,18 @@ const DATA = (() => {
       source.canonical_url = './source.html?id=' + encodeURIComponent(source.id);
     }
   }
+
+  for (const [id,type,name,data] of [
+    ['obj_creative_plan','creative_proposals','创意方案',{title:'一条江线，三段生活',concept:'以江线串起城市记忆',rationale:'把历史从年代说明转化为人的生活经验',experience:'仓库入口的口述片段引入，沿江线进入三个生活场景。',contributors:['主策','空间设计'],adoption:'exploring'}],
+    ['obj_creative_feedback','creative_feedback','创意反馈',{title:'首轮方案讨论',reviewer:'团队讨论（模拟）',feedback:'保留江线结构；入口加入居民声音，降低历史术语密度。',nature:'suggestion',conclusion:'待主策讨论'}]
+  ]) {
+    const rid='rev_'+id+'_1';
+    objects.push({id,project_id:'prj_city',layer:'draft',type_key:type,scope_key:'project',current_revision_id:rid,archived_at:null});
+    object_revisions.push({id:rid,object_id:id,version:1,created_at:NOW,change_id:'chg_001',payload:{title:name,items:[{item_id:'direction_one',data,epistemic_kind:'suggestion',source_refs:[],dependencies:[]}],item_order:['direction_one']}});
+  }
+  const creativeBlocks=[['concept','核心概念','一条江线，三段生活。'],['task','如何回应项目任务','通过可感知的日常生活理解城市历史。'],['story','叙事与体验','仓库入口的声音引导观众沿江线进入三个生活场景。'],['visual','视觉与案例参考','参考材料待补充；不把模拟内容当作已核实案例。'],['development','深化内容','先深化入口与三个场景的空间关系。'],['questions','待讨论事项','入口口述内容与叙事长度仍待讨论。']].map(([block_id,title,body])=>({block_id,markdown:'## '+title+'\n\n'+body}));
+  objects.push({id:'obj_rplan',project_id:'prj_city',layer:'review',type_key:'creative_plan',scope_key:'proposal:direction_one',current_revision_id:'rev_rplan_1',archived_at:null});
+  object_revisions.push({id:'rev_rplan_1',object_id:'obj_rplan',version:1,created_at:NOW,change_id:'chg_001',payload:{title:'一条江线，三段生活',outline_version:2,blocks:creativeBlocks,block_order:creativeBlocks.map(b=>b.block_id)},block_lineage:Object.fromEntries(creativeBlocks.map(b=>[b.block_id,{basis:[{object_id:'obj_creative_plan',revision_id:'rev_obj_creative_plan_1',item_id:'direction_one'}]}]))});
 
   /* ── 派生：让索引在运行时算好 ───────────────────────────────────────── */
 

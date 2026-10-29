@@ -12,7 +12,7 @@ The “信息分类说明” page opens from the question-mark button beside “
 
 ## Information collection: draft
 
-The reading area groups the 23 business object types. They are available categories, not 23 mandatory completed records. “全部 23 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
+The reading area groups the 25 business object types. They are available categories, not 25 mandatory completed records. “全部 25 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
 
 The “信息目录” is initially collapsed. Hover opens a floating preview without resizing the reading layout. Moving away or choosing an entry closes that preview. Clicking “展开信息目录” or “固定展开信息目录” pins it open and changes the layout; choosing entries then leaves it open. “收起信息目录” collapses it. In a narrow window expansion appears downward. The click controls are also the touch/keyboard route.
 
@@ -24,17 +24,17 @@ Hover or keyboard-focus a colored item card to expose the vertical information-n
 
 Structured money is displayed from integer smallest-unit amounts and currency; recognized amounts in prose are highlighted red. Highlighting is a display heuristic, not validation or a reason to edit source wording/insert HTML. Unknown amounts stay unknown.
 
-The D09 Gantt chart reads saved structured start/end values, not dates embedded in prose. Every concrete calendar point or complete interval belongs in this chart; separate noncontiguous occurrences into separate D09 items. TBC/proposed dates remain chartable with their qualification and evidence. Only undated explanations stay as prose cards. If a dated item is missing, inspect and correct its D09 fields through the business Skill/CLI, then refresh; do not patch UI data or invent dates. Timelines accept both day and minute precision, point events and ranges. Do not invent midnight or a timezone for a day-only value. Expand a milestone for its detail card. Delivery timelines organize rounds and reference time nodes; a reference date is not automatically a confirmed deadline.
+The D13 Gantt chart reads saved structured start/end values, not dates embedded in prose. Every concrete calendar point or complete interval belongs in this chart; separate noncontiguous occurrences into separate D13 items. TBC/proposed dates remain chartable with their qualification and evidence. Only undated explanations stay as prose cards. If a dated item is missing, inspect and correct its D13 fields through the business Skill/CLI, then refresh; do not patch UI data or invent dates. Timelines accept both day and minute precision, point events and ranges. Do not invent midnight or a timezone for a day-only value. Expand a milestone for its detail card. Delivery timelines organize rounds and reference time nodes; a reference date is not automatically a confirmed deadline.
 
 Q&A cards show both question and answer. Missing answers remain pending; an inapplicable answer retains its explanation. Source evidence appears in the shared “依据” row.
 
-D24 “开放性问题” appears under “判断与决定”, with question, context, impact, options, discussion status, conclusion, evidence and related objects when recorded. Its states are 待讨论 / 探索中 / 已有结论 / 暂缓 / 已关闭. It is separate from client clarification Q&A; R01–R03 may cite it, while R05 still shows only D15.
+D25 “开放性问题” appears under “判断与决定”, with question, context, impact, options, discussion status, conclusion, evidence and related objects when recorded. Its states are 待讨论 / 探索中 / 已有结论 / 暂缓 / 已关闭. It is separate from client clarification Q&A; R01–R04 may cite it, while R05 still shows only D18.
 
 ## Monitored groups in draft and review
 
 Project rows show “监控 N 个群” and a count needing attention. The shared “项目群更新” card appears in both “项目信息” and “策划文档”, scoped to that project; an older server without monitor data shows an empty state. A verified stored group AppLink opens in a new tab. The page does not configure the group by opening it.
 
-Each group shows its configured interval, enabled/paused/pending schedule state, collection of **all accessible history**, “已拉取至”, “最近检查”, “最近同步完成”, “最近保存结果”, pending messages and saved errors. When present, “已记录澄清消息” counts historical clarification dispositions, not currently unanswered D15 questions. Collection complete means the fetched history window is complete, not that every message was adopted or that inaccessible history was read. Check time can record a failed attempt; use the error and completion result together.
+Each group shows its configured interval, enabled/paused/pending schedule state, collection of **all accessible history**, “已拉取至”, “最近检查”, “最近同步完成”, “最近保存结果”, pending messages and saved errors. When present, “已记录澄清消息” counts historical clarification dispositions, not currently unanswered D18 questions. Collection complete means the fetched history window is complete, not that every message was adopted or that inaccessible history was read. Check time can record a failed attempt; use the error and completion result together.
 
 “已保存调度绑定回执” reflects the saved host receipt. A stale receipt is “调度状态待核验”; an overdue result says “尚未收到本轮结果”. Neither proves an Agent is currently running. Do not invent live reading/progress statuses. “查看已保存运行记录” expands only records supplied by the service; “拉取未完成” / “处理未完成” / “已完成” describe saved stages. If no records are available, use the inspection指令 rather than claiming there were no runs.
 
@@ -46,10 +46,11 @@ Each group shows its configured interval, enabled/paused/pending schedule state,
 | --- | --- | --- |
 | R01 | 主策 Debrief | Saved review object |
 | R02 | 项目推进安排 | Saved review object |
-| R03 | 创意评审记录 | Saved review object |
-| R05 | 客户 Q&A | View of the same D15 draft Q&A, not another persisted review copy |
+| R03 | 创意方案 | Saved review object |
+| R04 | 创意评审记录 | Saved review object |
+| R05 | 客户 Q&A | View of the same D18 draft Q&A, not another persisted review copy |
 
-Select the type and, where applicable, the round. Review versions are available through the version area and its “查看” buttons; historical reading is labelled. Paragraph actions are “完整追溯路径” and “复制引用”; changed paragraphs additionally have yellow “查看差异”. The orange changed-basis banner offers “查看受影响段落” and “复制更新指令”. The title's “复制生成飞书文档指令” covers the entire project, regardless of the selected card. See [review-actions.md](review-actions.md) for scope and execution.
+Select the type and, where applicable, the round. Review versions are available through the version area and its “查看” buttons; historical reading is labelled. Paragraph actions are “完整追溯路径” and “复制引用”; changed paragraphs additionally have yellow “查看差异”. The orange changed-basis banner offers “查看受影响段落” and “复制更新指令”. The title's permanent Feishu link opens the bound collaboration document. See [review-actions.md](review-actions.md) for scope and execution.
 
 ## Original, snapshot, and actual file
 
@@ -73,3 +74,6 @@ Hover, focus or click the top-left avatar to reveal **更改头像**. It copies 
 Under the current project, 案例分析 opens its independent research view. History lists v1/v2 and creation/update times to the second. The **复制开始分析指令** explicitly requests a **new research round**; copying does not create one. Additions, explanation edits and direct Feishu edits stay in the current round. Follow the business Skill’s case-research.md; this is not a draft/review write.
 
 To the left of refresh, **打开飞书画板 ↗** opens the selected version’s verified board link in a new tab, retaining its anchor (document link fallback). A missing link disables the entry. Switching versions switches the target; do not invent a link from a sample image. Preview refresh is the local program’s responsibility. The CLI saves real research rounds; the local service exports the visible board every 60 seconds. Hidden pages stop polling; errors retain the last image, and authentication/permission failures pause polling. Demo versions remain explicitly illustrative. New or newly bound rounds require a page refresh to reload history.
+
+
+策划文档页常驻「打开飞书协作文档」链接，新标签页打开。协作卡显示已保存的检查/同步状态及记录；无绑定时提示在 Codex 开始整理。没有单独复制导出入口。程序检查与 Agent 整理分别运行，不能从页面刷新时间推断同步完成。

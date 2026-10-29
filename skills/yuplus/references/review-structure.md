@@ -1,33 +1,34 @@
-# Review structure and generation
+# Planning documents
 
-Read when entering organization, composing Review, or correcting its structure. Reuse once read. This is the fixed content outline, not a completeness gate.
+Read when entering the second scene or organizing/correcting planning documents. Reuse already-read context. Draft is the persistent business layer throughout both scenes.
 
-## Inspect, then generate
+## Inspect, organize, collaborate
 
-1. For “enter review / organize the project”, inspect the draft types below and existing Review instances. Reuse current context; query only missing or stale data. Check actual items, not merely object existence. When discovering identities, use `draft/review list --include-deleted` to distinguish absent from deliberately deleted objects; do not use deleted content as current basis. For an explicitly named output, limit work to that output and its affected dependencies.
-2. Generate or synchronize every in-scope output whose corresponding draft content is available. Do not stop after R01. In particular, D09 + D18 with content requires R02. Reuse an unchanged, already conforming output instead of publishing another version.
-3. If some basis is missing, name the missing object and a useful way to supply it; offer supplementation or organization now with known content. An existing request to organize authorizes partial organization: proceed and mark unknown sections, without asking again. A wholly unsupported output may be omitted with a brief reason; do not fabricate facts, resource identities or review conclusions. An explicit request to sketch an unsupported output can receive the fixed outline as an unsaved preview.
-4. Use the exact section names and order below. Write connected content **inside** them; do not add, rename, merge or replace sections with an invented outline. Additional evidence may support the specified content; it does not create extra sections. Missing sections remain “暂无已收集信息” (or a precise known uncertainty).
-5. Select real draft items → `review prepare` → `review publish`. Preserve source lineage and actual item/version dependencies. Check the saved outline, all eligible outputs, unknowns and remaining stale dependencies before presenting for user review.
+1. Inspect actual relevant draft items and existing outputs, including deliberately deleted identities. Generate every supported output in the requested scope. Dates plus deliverables require advancement; a named request limits scope. Missing information permits a useful partial document, never a gate or invented fact.
+2. Use the exact ordered second-level headings below. Write connected content inside them. Unknown sections get a precise short note. Without actual proposals or feedback, leave the corresponding output absent; do not manufacture a scheme or review conclusion.
+3. Select real draft items → `review prepare` → `review publish`. Every changed paragraph requires its actual draft cause. Use one stable block per heading or one block containing the whole outline. Set `outline_version:2` on each published document. Preserve unrelated blocks and use the current base revision.
+4. Entering the second scene also starts the collaboration workflow: read [collaboration.md](collaboration.md). Save local outputs, create/reuse the project's Feishu collaboration document, and configure an actual host schedule. No separate export prompt or second confirmation is needed within this requested project workflow. A failed remote step must not erase local work.
 
-## Fixed outline
+## Fixed structures
 
-Each R object is the parent. The ordered names below are its only second-level sections; use `##` headings in its Markdown. Their explanations describe what to write, not extra headings.
-
-| Parent / type_key | Required sections, in order | Draft basis and meaning |
+| Output / type | Exact headings, in order | Draft basis |
 | --- | --- | --- |
-| R01 主策 Debrief / `debrief` | 1. **BD同步信息**; 2. **职责边界**; 3. **受众**; 4. **交付细节** | D01: why the client is acting now and which business/communication problem to solve. D20, with D10 for client decision roles: who decides and their boundaries; keep the two draft identities distinct. D06: on-site and communication audiences. D18: strategy/theme/experience flow/space/content/script/storyboard/technical deliverables, plus exclusions beyond contract, budget, time or required detail. D02/D03 may substantiate these sections, never add chapters. |
-| R02 推进要素 / `advancement` | 1. **时间节点或区间**; 2. **交付细节** | D09: dates/ranges, collection, integration and review points, including what each review checks. D18: this round's deliverables and required detail. Reference D20 only where responsibilities explain these elements; do not maintain independent dates/specifications. |
-| R03 创意审查结果 / `creative_review` | 1. **主策策略**; 2. **策划预算分配** | D17 and D08 with actual review comments/conclusions. Without actual review, organize known strategy/allocation and label “尚无实际审查结论”; never claim approval or turn AI questions into decisions. |
-| R05 客户 Q&A / shared `qa` | **客户 Q&A 问题表** | Display D15 itself, not a new Review document. D24 open questions stay separate. |
+| R01 主策 Debrief / `debrief` | 项目任务; 受众与场景; 主策判断; 本轮创意任务; 边界与判断标准 | D01–D03 task; D09 audience + D07 venue; D19 strategy with D08 brand/D10 competitors/D05 history; D14 deliverables with D13 dates/D16 responsibilities; D08/D11/D12/D13/D14/D19 limits, D17 client decision roles/D16 internal authority. |
+| R02 项目推进安排 / `advancement` | 本轮交付与分工; 时间节点与区间; 讨论与评审安排 | D14 deliverables, D16 responsibilities/D15 resources; D13 structured dates (Gantt); D19 criteria, D17/D16 decision roles and existing D21 feedback. Dates belong only in D13, not a second schedule. |
+| R03 创意方案 / `creative_plan` | 核心概念; 如何回应项目任务; 叙事与体验; 视觉与案例参考; 深化内容; 待讨论事项 | D20 creative_proposals; supporting task/strategy/audience/materials; D25 open questions or D18 concrete client clarification. Scope `proposal:<draft item_id>`; each direction has a separate stable item and output. |
+| R04 创意评审记录 / `creative_review` | 本轮评审对象; 反馈与判断; 取舍与结论; 下一轮修改 | D21 creative_feedback targets the exact original scheme/item/revision; actual decisions update D20/D19 and decision history; resulting work links D14/D16/D13. D24 is project approval assessment, not creative feedback. |
+| R05 客户 Q&A / shared `qa` | 客户 Q&A 问题表 | Display the same D18 draft; do not create a duplicate Review. |
 
-R01 must not have additional sections such as “项目任务”, “主题与表达要求”, “预算”, “风险” or “待确认事项”. Relevant information belongs within the four specified sections or its own draft object. A fixed outline does not require filling unknown facts.
+R01/R02/R04 use `project` or a real `round:<round_key>` already present in D14. R03 uses `proposal:<item_id>`. Codes are display order; use stable type_key/object_id in commands.
 
-## Saving and corrections
+## Creative content
 
-For an explicit request to delete a whole output, use [deletion.md](deletion.md); fixed sections do not prevent deleting the output itself. Routine organization does not re-enable a deliberately deleted outcome without user direction.
+D19 holds insight, strategy and judgment criteria. D20 holds the specific creative direction, its rationale, experience, references and development. Supplementing images or rewriting a scheme revises its existing item; a genuinely different direction creates a new item. Do not synthesize creative proposals merely because the user entered organization.
 
-- Full outputs may use one stable block per section. For a partial output, a single block may contain the complete fixed outline with the union of its real draft dependencies, marking unsupported sections as unknown. Do not cite unrelated items to manufacture a dependency for an empty section. With no actual basis, provide a preview rather than fabricate a publishable object.
-- R01–R03 use `project` or an actual `round:<round_key>`. Reuse existing object/block identities where their meaning still matches. A missing identity limits saving that output, not organization of others.
-- Factual feedback changes the corresponding draft first. Expression-only or legacy-outline corrections first record the user's instruction in draft `expression_guide`, then prepare/publish with that real cause. Preserve useful content within the fixed sections; remove out-of-outline blocks only in the authorized correction, retaining history. Do not leave old extra chapters appended to the new outline.
-- `expression_guide` may govern wording and organization within sections; it cannot authorize an arbitrary replacement of this product outline. Unchanged compliant blocks stay intact. Resolve newly stale dependencies within the target before publishing.
+Within 深化内容 choose only relevant defined modules: film (`script`, `storyboard`, `key_visual`, `sound`), exhibition (`zones`, `journey`, `exhibits`), interaction (`interaction`), integrated communication (`touchpoints`). Reference images explain what is borrowed. Case research stays independent; bring selected conclusions into project evidence explicitly, never synchronize the whole case library.
+
+## Corrections
+
+New facts/feedback first update the appropriate draft; expression-only feedback first updates `expression_guide` with instruction evidence. This guide may control wording within the fixed structure. Then publish affected Review using the actual cause IDs. Historical versions keep their original outline; update current legacy outputs only as part of the requested organization/correction, recording that instruction first.
+
+A collaborator's proposal, critique, and formal decision are different. Record attribution only when available; last document editor is not proof of paragraph author or decision authority. Review feedback retains its original target version even after the scheme changes. No decision without real authority/evidence; no date-driven automatic completion.

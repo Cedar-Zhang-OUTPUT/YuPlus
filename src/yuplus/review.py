@@ -12,7 +12,7 @@ import re
 from .core import (YuError, canonical, fingerprint, get_object, insert, is_fresh,
                    load_revision, new_id, now, resolve_dependency, write_revision)
 
-_REVIEW_TYPES = {'debrief', 'advancement', 'creative_review'}
+_REVIEW_TYPES = {'debrief', 'advancement', 'creative_review', 'creative_plan'}
 _STRUCTURE = '__document__'
 
 
@@ -31,6 +31,13 @@ def _scope(ctx, target):
     typ, scope = target['type_key'], target['scope_key']
     if typ not in _REVIEW_TYPES:
         _error('INVALID_SCOPE', '该类型不是可发布的 review；Q&A 请读取 draft。')
+    if typ == 'creative_plan':
+        if not scope.startswith('proposal:'):
+            _error('INVALID_SCOPE', '创意方案需要 proposal:<创意方案条目ID> 范围。')
+        obj = ctx.db.execute("SELECT current_revision_id FROM objects WHERE project_id=? AND type_key='creative_proposals' AND archived_at IS NULL", (ctx.project_id,)).fetchone()
+        if not obj or scope[9:] not in _items(load_revision(ctx.db, ctx.project_id, obj[0])):
+            _error('INVALID_SCOPE', '创意方案需先保存对应 draft 条目。')
+        return
     if scope == 'project':
         return
     round_only = re.fullmatch(r'round:([A-Za-z][A-Za-z0-9_-]*)', scope)
@@ -306,6 +313,12 @@ def _plan_document(ctx, doc):
     _unique(order, 'block_order')
     if set(order) != set(blocks):
         _error('INVALID_INPUT', 'block_order 必须完整列出所有最终段落。')
+    outline_version=doc.get('outline_version',old['payload'].get('outline_version') if old else None)
+    if blocks and (outline_version==2 or doc['target']['type_key']=='creative_plan'):
+        from .collaboration import OUTLINES
+        headings=re.findall(r'^##\s+(.+?)\s*$', '\n'.join(blocks[b]['markdown'] for b in order),re.M)
+        if headings!=OUTLINES[doc['target']['type_key']]:
+            _error('INVALID_REVIEW_STRUCTURE','策划文档栏目与约定结构不一致。',expected=OUTLINES[doc['target']['type_key']],actual=headings)
     old_title = old['payload']['title'] if old else doc['target']['type_key']
     title = doc.get('title', old_title)
     if not title.strip():
@@ -319,6 +332,7 @@ def _plan_document(ctx, doc):
         lineage[_STRUCTURE] = {'last_authored_revision_id': None, 'applied_cause_ids': sorted(consumed)}
         cause_ids.update(doc['structure_cause_change_ids'])
     payload = {'title': title, 'blocks': [blocks[bid] for bid in order], 'block_order': order}
+    if outline_version==2: payload['outline_version']=2
     return {'object': obj, 'object_id': oid, 'target': doc['target'], 'old': old,
             'payload': payload, 'dependencies': dependencies, 'lineage': lineage,
             'changed_blocks': changed, 'removed_blocks': removed, 'causes': cause_ids,

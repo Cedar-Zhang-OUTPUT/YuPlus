@@ -45,7 +45,7 @@ class OpenQuestionTests(unittest.TestCase):
         block['cause_change_ids']=[changed['meta']['change_id']]
         self.app.execute('review.publish',request,project_id=self.pid,request_id='review2')
         with read_snapshot(self.root/'data') as db:view=browser_view(db,self.root/'data',self.pid)
-        self.assertEqual(next(t for t in view['catalog']['objects'] if t['type_key']=='open_questions')['code'],'D24')
+        self.assertEqual(next(t for t in view['catalog']['objects'] if t['type_key']=='open_questions')['code'],'D25')
         self.assertEqual(len([o for o in view['objects'] if o['type_key']=='qa']),1)
         self.assertEqual(len([r for r in view['object_revisions'] if r['object_id']==obj['object_id']]),2)
         manifest=prepare_bundle(self.root/'data',self.pid,self.root/'export')
@@ -79,7 +79,7 @@ class OpenQuestionTests(unittest.TestCase):
         before={t:[tuple(r) for r in old.db.execute('SELECT * FROM '+t)] for t in tables};old.close()
         upgraded=App(path)
         try:
-            self.assertEqual(upgraded.db.execute('PRAGMA user_version').fetchone()[0],8)
+            self.assertEqual(upgraded.db.execute('PRAGMA user_version').fetchone()[0],9)
             self.assertEqual(upgraded.db.execute('PRAGMA foreign_keys').fetchone()[0],1)
             self.assertEqual(upgraded.db.execute('PRAGMA foreign_key_check').fetchall(),[])
             for t,rows in before.items():self.assertEqual([tuple(r) for r in upgraded.db.execute('SELECT * FROM '+t)],rows)

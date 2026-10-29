@@ -263,6 +263,9 @@ def serve(data_dir, port=7801):
         from .service import register
         from .source_check import startup_scan
         register(server)
+        from .collaboration import poll
+        stop_collaboration = threading.Event()
+        threading.Thread(target=poll,args=(server.data_dir,stop_collaboration),daemon=True).start()
         threading.Thread(target=startup_scan,args=(server.data_dir,),daemon=True).start()
         print(json.dumps({'api_version': '1', 'command': 'serve', 'ok': True,
                           'data': {'url': server.url, 'data_dir': str(server.data_dir), 'port': server.server_port, 'mode': 'live'}}, ensure_ascii=False), flush=True)
@@ -270,4 +273,6 @@ def serve(data_dir, port=7801):
             server.serve_forever(poll_interval=0.2)
         except KeyboardInterrupt:
             pass
+        finally:
+            stop_collaboration.set()
     return 0

@@ -56,9 +56,24 @@ def _data_rules(ctx,typ,scope,item,planned):
             elif 'end' in data:raise ValueError()
         except (ValueError,KeyError,TypeError):raise YuError('INVALID_TIME','时间必须为真实日期或带时区的时刻，区间必须有合法起止。')
     if typ in {'deliverables','responsibilities'} and data.get('resource_item_id'):
-        if data['resource_item_id'] not in _items_for_type(ctx,'resources',planned):raise YuError('INVALID_ITEM_REFERENCE','资源条目不在同项目 D19 中。')
+        if data['resource_item_id'] not in _items_for_type(ctx,'resources',planned):raise YuError('INVALID_ITEM_REFERENCE','资源条目不在同项目资源对象 中。')
     if typ in {'qa','open_questions'}:
         for oid in data.get('related_object_ids',[]):get_object(ctx.db,ctx.project_id,oid)
+    if typ in {'creative_proposals','creative_feedback'}:
+        for ident in data.get('task_item_ids', []):
+            if ident not in _items_for_type(ctx,'deliverables',planned):
+                raise YuError('INVALID_ITEM_REFERENCE','关联任务不在本项目交付条目中。')
+        for ident in data.get('open_question_item_ids', []):
+            if ident not in _items_for_type(ctx,'open_questions',planned):
+                raise YuError('INVALID_ITEM_REFERENCE','关联议题不在本项目开放性问题中。')
+        if data.get('target'):
+            target = data['target']
+            rev = load_revision(ctx.db,ctx.project_id,target['revision_id'])
+            if rev['object_id'] != target['object_id'] or target['item_id'] not in {i.get('item_id',i.get('block_id')) for i in rev['payload'].get('items',rev['payload'].get('blocks',[]))}:
+                raise YuError('INVALID_ITEM_REFERENCE','反馈必须指向真实对象条目的确切历史版本。')
+        if data.get('adoption')=='adopted' or data.get('nature')=='confirmed_decision':
+            if item['epistemic_kind']!='adopted_decision':
+                raise YuError('DECISION_REQUIRED','正式采用或确认结论必须使用 adopted_decision 及真实决定依据。')
     if typ=='expression_guide':
         o=get_object(ctx.db,ctx.project_id,data['review_object_id'])
         if o['layer']!='review' or o['archived_at'] or scope!='review:'+o['id']:raise YuError('INVALID_SCOPE','编写要求必须绑定对应 review。')
@@ -96,6 +111,14 @@ def _check_final_resource_references(ctx):
             if resource and resource not in resources:
                 raise YuError('INVALID_ITEM_REFERENCE','资源仍被交付或职责引用；请在同一批次更新这些引用。',
                               details=[{'object_id':obj['id'],'item_id':item['item_id'],'resource_item_id':resource}])
+
+    tasks=_items_for_type(ctx,'deliverables',{})
+    questions=_items_for_type(ctx,'open_questions',{})
+    for obj in ctx.db.execute("SELECT id,current_revision_id FROM objects WHERE project_id=? AND type_key IN ('creative_proposals','creative_feedback') AND archived_at IS NULL",(ctx.project_id,)).fetchall():
+        if not obj['current_revision_id']:continue
+        for item in load_revision(ctx.db,ctx.project_id,obj['current_revision_id'])['payload']['items']:
+            for field,valid in [('task_item_ids',tasks),('open_question_item_ids',questions)]:
+                if not set(item['data'].get(field,[]))<=set(valid):raise YuError('INVALID_ITEM_REFERENCE','创意方案或反馈仍引用该任务/议题，请一起更新关联。')
 
 def apply_draft(ctx,request):
     ops=request['objects'];unique([o['op_id'] for o in ops],'op_id')

@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.23](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.23)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.24](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.24)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -185,7 +185,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 .venv/bin/python -m yuplus.export_bundle --data-dir .local/work --project PROJECT_ID --output .local/export
 ```
 
-输出 `review.md` 和 `manifest.json`，包括全部当前成果实例、共用 Q&A、引用/当前 draft 版本及来源全文。输出目录必须在业务数据目录之外。该步骤只准备本地文件，不上传媒体，也不创建飞书文档。按 Skill 调飞书 CLI 创建新文档并回读验证后，才能报告远端导出成功。
+输出 `review.md` 和 `manifest.json`，包括全部当前成果实例、共用 Q&A、引用/当前 draft 版本及来源全文。输出目录必须在业务数据目录之外。该步骤只准备本地文件，不上传媒体，也不创建飞书文档。策划文档使用下述协作文档链路；本地准备文件不代表已写入飞书。
 
 可重复的合成资料验收（全部业务写入经过真实 CLI）：
 
@@ -222,7 +222,7 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 
 子目改写/删除使用 `draft apply` 的 `set_items`/`remove_items`；Review 段落使用 `review publish` 的 `set_blocks`/`remove_blocks`，保留先 draft 后 review 的因果要求。整份对象及来源支持 `draft delete`、`review delete`、`source delete`（`--input` JSON），均为保留文件和历史的软删除。删除最后一个 Review 段落会隐藏空成果。`list --include-deleted` 查询保留记录；对应 `restore` 命令可重新启用原身份，draft/Review 的当前空内容需另按依据写回。详细契约与用法见 [Skill 删除指引](skills/yuplus/references/deletion.md)。
 
-飞书成果导出使用 Skill 的 `references/export.md` 完成准备、写入和回读；核验后由 `yu export record` 保存标题、链接、版本和时间，`yu export list --project ID` 查询。Review 页的历史图标只展示已保存记录。
+策划文档页常驻飞书协作文档链接，显示已保存的同步状态和记录。旧独立导出记录仍可通过 `export list` 查询。
 
 案例库支持 `kind=feishu_folder` 和 `kind=website` 两种源，均仅保存类型、名称和链接。前端提供两条独立的新增 Prompt；网站通过浏览器/网页工具按需查找，飞书文件夹通过飞书 CLI 查找。`library delete/restore` 均只影响本地登记。schema 5 为旧记录补充飞书文件夹类型，迁移前自动完整备份，保留原项目和案例库身份。
 
@@ -237,4 +237,16 @@ Agent 按 Skill 用飞书 CLI 创建和修改画板；本地服务仅导出预�
 
 左上角头像菜单可复制更改提示词；Agent 压缩图片后使用 `logo set`，支持 `logo show/reset`。头像随数据库备份。
 
-当前 schema 7。从 schema 1–6 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
+当前 schema 9。从 schema 1–8 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
+
+## 策划文档协作（v0.3.24）
+
+当前信息目录按展示顺序连续编号 D01–D25，内部类型键、对象 ID 和历史关联不变。新增创意方案与创意评审/反馈信息；策划文档分为 R01 主策 Debrief、R02 项目推进安排、R03 创意方案、R04 创意评审记录、R05 客户 Q&A。新整理成果按固定结构写入；历史成果仍可查看。
+
+用户进入第二场景后，Agent 先保存 draft 原因及 Review，再创建或复用项目飞书协作文档；不再需要单独复制导出指令。`collab show/create/bind/pull/prepare/push/accept/resolve/map` 管理绑定、不可变来源、三方比较及按章节回写。使用方式见 [协作 Skill](skills/yuplus/references/collaboration.md) 与[中文说明](docs/skills/yuplus/collaboration.zh-CN.md)。
+
+服务运行时每 60 秒观察已绑定文档的远端变化，Agent 通过宿主实际定时任务理解变化，先更新 draft 再更新相关 Review。建议五分钟，遵守用户设置和宿主支持；仅保存调度回执不会创建任务。安装升级本身不启动新的项目维护任务。
+
+同节两端修改需要明确选择；回写核对本地及远端版本，防止覆盖协作者的新修改。评论或素材可能因替换丢失时暂停写入并提示处理。真实飞书创建、回流、回写和冲突拦截已验证；多人修改使用同一测试账号模拟，真实多账号与宿主定时唤起仍需实际使用验证。
+
+升级到 schema 9 前自动完整备份，保留项目与历史。恢复备份会暂停文档观察并清空定时任务绑定，需核实实际宿主任务后重新接通。

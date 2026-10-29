@@ -41,8 +41,8 @@ class ObjectCatalogUpdateTests(unittest.TestCase):
 
     def test_current_catalog_and_skills_only_describe_available_types(self):
         app=self.app();catalog=app.execute('types.show')['data']
-        self.assertEqual(len(catalog['objects']),23)
-        for word in ['project_assessment','creator_brief','D16','R04','立项评估结果','创作者 Brief']:
+        self.assertEqual(len(catalog['objects']),25)
+        for word in ['project_assessment','creator_brief','立项评估结果','创作者 Brief']:
             self.assertNotIn(word,canonical(catalog))
             for path in (ROOT/'skills').rglob('*.md'):
                 self.assertNotIn(word,path.read_text(),str(path))
@@ -55,7 +55,7 @@ class ObjectCatalogUpdateTests(unittest.TestCase):
         legacy=self.root/'legacy-contracts';shutil.copytree(CONTRACTS,legacy)
         schema=(legacy/'schema.sql').read_text().replace("'client_meetings','qa',","'client_meetings','qa','project_assessment',").replace("'advancement','creative_review'","'advancement','creative_review','creator_brief'")
         (legacy/'schema.sql').write_text(schema)
-        with patch('yuplus.app.CONTRACTS',legacy),patch('yuplus.migrations.retire_object_types'):
+        with patch('yuplus.app.CONTRACTS',legacy),patch('yuplus.migrations.retire_object_types'),patch('yuplus.migrations.collaborative_objects'):
             old=App(self.data)
         pid=old.execute('project.create',{'name':'旧项目'},request_id='project')['data']['project_id']
         def legacy_object(oid,typ,layer,scope='project'):
@@ -77,7 +77,7 @@ class ObjectCatalogUpdateTests(unittest.TestCase):
         original=old.db.execute('SELECT payload_json FROM object_revisions WHERE id=?',(assessment['revision_id'],)).fetchone()[0]
         old.close()
         current=self.app()
-        self.assertEqual(current.execute('doctor')['data']['schema_version'],8)
+        self.assertEqual(current.execute('doctor')['data']['schema_version'],9)
         self.assertEqual(current.db.execute('PRAGMA integrity_check').fetchone()[0],'ok')
         self.assertFalse(current.db.execute('PRAGMA foreign_key_check').fetchall())
         self.assertEqual(current.execute('draft.list',project_id=pid)['data']['objects'],[])

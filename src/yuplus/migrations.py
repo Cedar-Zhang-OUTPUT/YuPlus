@@ -11,7 +11,7 @@ def add_open_questions(db):
         raise YuError('INTEGRITY_FAILURE', '对象表结构不匹配，拒绝迁移。')
     dependents = [row[0] for row in db.execute(
         "SELECT sql FROM sqlite_master WHERE tbl_name='objects' AND type IN ('index','trigger') AND sql IS NOT NULL")]
-    sql = sql.replace('CREATE TABLE objects', 'CREATE TABLE objects_next', 1)
+    sql = sql.replace('CREATE TABLE objects', 'CREATE TABLE objects_next', 1).replace('CREATE TABLE "objects"', 'CREATE TABLE objects_next', 1)
     sql = sql.replace(marker, marker + ",'open_questions'", 1)
     db.execute(sql)
     db.execute('INSERT INTO objects_next SELECT * FROM objects')
@@ -48,3 +48,25 @@ def retire_object_types(db):
               AND NEW.scope_key='review:' || r.id)))
             BEGIN SELECT RAISE(ABORT,'unsupported active object type'); END""")
     db.execute('PRAGMA user_version=8')
+
+
+def collaborative_objects(db):
+    sql = db.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='objects'").fetchone()[0]
+    dependents = [r[0] for r in db.execute("SELECT sql FROM sqlite_master WHERE tbl_name='objects' AND type IN ('index','trigger') AND sql IS NOT NULL")]
+    sql = sql.replace('CREATE TABLE objects', 'CREATE TABLE objects_next', 1).replace('CREATE TABLE "objects"', 'CREATE TABLE objects_next', 1)
+    sql = sql.replace("'expression_guide'", "'expression_guide'", 1)
+    if "creative_proposals" not in sql:
+        sql = sql.replace("'open_questions'", "'open_questions','creative_proposals','creative_feedback'", 1)
+    sql = sql.replace("'debrief','advancement','creative_review'", "'debrief','advancement','creative_review','creative_plan'", 1)
+    db.execute(sql)
+    db.execute('INSERT INTO objects_next SELECT * FROM objects')
+    db.execute('DROP TABLE objects')
+    db.execute('PRAGMA legacy_alter_table=ON')
+    try: db.execute('ALTER TABLE objects_next RENAME TO objects')
+    finally: db.execute('PRAGMA legacy_alter_table=OFF')
+    for statement in dependents: db.execute(statement)
+    if db.execute('PRAGMA foreign_key_check').fetchone():
+        raise YuError('INTEGRITY_FAILURE', '协作对象迁移后的引用校验失败。')
+    from .collaboration import migrate
+    migrate(db)
+    db.execute('PRAGMA user_version=9')

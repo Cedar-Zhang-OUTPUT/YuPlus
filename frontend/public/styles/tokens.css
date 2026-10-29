@@ -144,3 +144,13 @@
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Persistent, read-only collaboration summary. */
+.collaboration-card { margin: 20px 0 24px; }
+.collaboration-title { flex: 1; }
+.collaboration-card p { margin: 0 0 10px; }
+.collaboration-card p:last-child { margin-bottom: 0; }
+.collaboration-card summary { cursor: pointer; }
+.collaboration-record { font-size: 12px; line-height: 1.6; margin-top: 10px !important; }
+.collaboration-notice { color: var(--orange, #a34d00); }
+.collaboration-link { text-decoration: none; }

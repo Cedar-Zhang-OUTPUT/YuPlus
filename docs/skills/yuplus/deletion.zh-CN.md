@@ -22,7 +22,7 @@
 
 - 对象删除／重新启用：`object_id`、当前 `show` 返回的 `base_revision`。
 - 来源删除／重新启用：`source_id`、以 `source show.head_snapshot_id` 为值的 `base_snapshot_id`。
-- `draft delete`：可带 `decisions` 与 `instruction_source_version_id`。删除已采用决定必须同步记录新决定，`affected_items` 中操作 ID 使用内部 `op_id:"delete"`，保留真实用户指令与替代历史。D19 资源仍被交付/职责字段引用时，先纠正引用，或用 `draft apply` 同批删除相关子目，再隐藏空对象。失败不改对象。
+- `draft delete`：可带 `decisions` 与 `instruction_source_version_id`。删除已采用决定必须同步记录新决定，`affected_items` 中操作 ID 使用内部 `op_id:"delete"`，保留真实用户指令与替代历史。D15 资源仍被交付/职责字段引用时，先纠正引用，或用 `draft apply` 同批删除相关子目，再隐藏空对象。失败不改对象。
 - `review delete`：提供 `review prepare` 返回的 `read_basis`，以及覆盖所有被删段落的 `cause_change_ids`。整份成果删除指令先收录来源，再将其写入 draft `expression_guide`，指向 `*`、intent 为 `omit`，然后 prepare/delete；仅来源收录回执不构成原因。
 
 来源删除示例（ID 替换成真实值）：

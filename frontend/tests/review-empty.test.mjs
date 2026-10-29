@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {collaborationPanel,safeCollaborationUrl} from '../public/data/collaboration.js';
 import {REVIEW_KINDS} from '../public/data/vocabulary.js';
 
 const app=await readFile(new URL('../public/app.js',import.meta.url),'utf8');
@@ -14,7 +15,7 @@ function text(node){return (node.textContent||'')+node.children.map(text).join('
 function buttons(node){return [...(node.tag==='button'?[node]:[]),...node.children.flatMap(buttons)];}
 function setup(objects=[]) {
   const S={route:{objId:null}};
-  const context=vm.createContext({S,DATA:{REVIEW_KINDS,objects,exports:[]},el:element,
+  const context=vm.createContext({collaborationPanel,safeCollaborationUrl,fullTime:x=>x,tag:(s)=>Object.assign(element(),{textContent:s}),S,DATA:{REVIEW_KINDS,objects,exports:[]},el:element,
     projOf:()=>({name:'测试项目'}),hueOf:x=>x,
     btn:(label,onclick)=>Object.assign(element('button'),{textContent:label,onclick}),
     projectMonitorPanel:()=>Object.assign(element(),{textContent:'监控群聊'}),

@@ -86,13 +86,13 @@ For monitored group material, follow [chat-materials.md](chat-materials.md): gro
 
 ### draft.apply
 
-D24 uses `type_key=open_questions`, ordinary draft scope `project`, and the same `draft apply` / `draft show` commands. Read its writable fields with `PYTHON SKILL_DIR/scripts/inspect_contract.py command draft.apply --type open_questions` before writing; do not invent a separate questions command. `options` is a string array; status is `open`, `exploring`, `resolved`, `deferred` or `closed`. These are discussion states, not the D15 answer states. D15 also accepts optional `asked_by` and `answered_by`.
+D25 uses `type_key=open_questions`, ordinary draft scope `project`, and the same `draft apply` / `draft show` commands. Read its writable fields with `PYTHON SKILL_DIR/scripts/inspect_contract.py command draft.apply --type open_questions` before writing; do not invent a separate questions command. `options` is a string array; status is `open`, `exploring`, `resolved`, `deferred` or `closed`. These are discussion states, not the D18 answer states. D18 also accepts optional `asked_by` and `answered_by`.
 
 - Top level: reason, objects[], decisions[], and optional instruction_source_version_id.
 - Each operation: op_id, type_key, scope_key, base_revision, optionally object_id; set_items/remove_items/title/item_order specify edits. New ordinary draft: scope_key=project and base_revision=null. Existing identity: actual base_revision; do not “create again” to bypass it.
 - `set_items` replaces the complete specified item: item_id, data, epistemic_kind, source_refs[], dependencies[]. Preserve unchanged fields/references from its current version. Unmentioned sibling items remain.
 - Evidence contains evidence_id, source_version_id, kind, optional locator/asset_id. Dependencies refer to a draft object, revision and stable item ID (`*` only when the whole object is truly required). Within one batch, op_id can refer to a newly produced draft operation.
-- D09 schedules: use `time_kind=date` with a date-only `start`, `instant` with an RFC3339 `start` including its actual offset, or `range` with compatible `start/end`. There is no writable `date` field. Dates only embedded in event/note will not enter the Gantt chart. Split distinct calendar occurrences; see the D09 examples in objects.md and inspect `draft.apply --type milestones` before using unfamiliar fields.
+- D13 schedules: use `time_kind=date` with a date-only `start`, `instant` with an RFC3339 `start` including its actual offset, or `range` with compatible `start/end`. There is no writable `date` field. Dates only embedded in event/note will not enter the Gantt chart. Split distinct calendar occurrences; see the D13 examples in objects.md and inspect `draft.apply --type milestones` before using unfamiliar fields.
 - Money uses integer **strings in the smallest currency unit** plus currency: CNY 60 万 = `"60000000"` 分. Never fill unknown amounts with zero.
 - Adopted decisions require decision_key, statement, decided_by, instruction_source_version_id, rationale and affected_items with op_id/item_id. Use supersedes_id when replacing a recorded decision. Altering or deleting an adopted item also needs a decision; changing its label to hypothesis is not a shortcut.
 - Output objects[].revision_id and meta.change_id supply the new basis/cause; affected_draft_items and affected_reviews show work to inspect next. Do not blindly regenerate all project content.
@@ -139,7 +139,7 @@ Use the Python environment in which Yu+ is installed:
 PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output OUTPUT_DIR
 ```
 
-This module reads one consistent saved snapshot and writes `review.md` plus `manifest.json` outside the business data directory. It does not mutate project records or publish remotely. The bundle contains all current Review instances, the same D15 Q&A, cited/current draft versions, provenance, source text and registered asset metadata. Inspect `references_complete`, warnings, missing references, and basis freshness. Resolve incomplete/stale content as authorized, or explicitly preserve and report it; never silently label it synchronized. Asset metadata does not upload media or verify that an external original is still available.
+This module reads one consistent saved snapshot and writes `review.md` plus `manifest.json` outside the business data directory. It does not mutate project records or publish remotely. The bundle contains all current Review instances, the same D18 Q&A, cited/current draft versions, provenance, source text and registered asset metadata. Inspect `references_complete`, warnings, missing references, and basis freshness. Resolve incomplete/stale content as authorized, or explicitly preserve and report it; never silently label it synchronized. Asset metadata does not upload media or verify that an external original is still available.
 
 Both files are internal evidence, not publication drafts: never publish the technical text or full provenance appendix verbatim. Follow [export.md](export.md) to author readable Review and hash the final publication draft for the receipt, retaining the fixed manifest's version basis. Later project changes do not change that basis. Local preparation alone is not successful Feishu publication or receipt recording.
 
@@ -155,8 +155,17 @@ Installed service management, complete backup/restore and `source check` are ava
 
 ## Feishu export receipts
 
-`export record --project ID --request-id ID --input receipt.json` persists a verified remote export; `export list --project ID` reads the project’s receipts. Read [export.md](export.md) when exporting or recording results. Local preparation alone creates no receipt.
+`export record --project ID --request-id ID --input receipt.json` persists a verified remote export; `export list --project ID` reads the project’s receipts. These commands read/record standalone exports; the current planning-document workflow uses collab bindings and synchronization records instead. Local preparation alone creates no receipt.
 
 ## Case research
 
 `research create/update --project P --input FILE --request-id KEY` saves only round metadata and Feishu locators. `research list --project P`, `research show --project P --research ID`, and `research preview --project P --research ID` read rounds / fetch a disposable board preview. Use the explicit data directory. New rounds increment `version`; updates use `base_version = metadata_version` and keep the round/board identity. Read [case-research.md](case-research.md#save-the-research-round) before creating, binding or revising a research board.
+
+
+## Collaborative planning documents
+
+Use `collab ACTION --project PROJECT_ID --json`. Read [collaboration.md](collaboration.md) for ordered execution and JSON inputs. Read actions: show/pending/schedule. Pull/prepare fetch remote versions and persist inbox/source snapshots; neither rewrites business content. Mutations create/bind/map/push/accept/resolve/pause/resume/scheduler-bind require `--request-id`; commands with payload accept `--input FILE`. `step` wraps the existing source/draft/review contract.
+
+`accept.handled_keys` lists every remotely changed mapped section returned by comparison (remote/conflict), including ones whose local Review was updated in this operation. An empty array is only appropriate when no mapped section changed. Acceptance rechecks the latest remote snapshot. A changed snapshot requires a new pull.
+
+Use new types `creative_proposals` and `creative_feedback` under draft; `creative_plan` under review with scope `proposal:<existing draft item_id>`. Set `outline_version:2` on every new/reorganized review document. Query schema definitions on demand; display D/R codes are not IDs. User edits and conflict resolution always preserve draft-first causality.

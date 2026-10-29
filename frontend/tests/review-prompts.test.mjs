@@ -5,7 +5,7 @@ import { reviewContext, reviewExportPrompt, reviewUpdatePrompt } from '../public
 
 test('export includes all current review instances, shared Q&A, and exact source snapshots', () => {
   const c = reviewContext(DATA, 'prj_city');
-  assert.deepEqual(new Set(c.documents.map(d => d.object_id)), new Set(['obj_r01','obj_r02','obj_r03','obj_qa']));
+  assert.deepEqual(new Set(c.documents.map(d => d.object_id)), new Set(['obj_r01','obj_r02','obj_r03','obj_rplan','obj_qa']));
   assert.ok(c.objects.every(o => o.project_id === 'prj_city'));
   assert.ok(c.revisions.some(r => r.id === 'rev_deliv_1'));
   assert.ok(c.revisions.some(r => r.id === 'rev_deliv_2'));

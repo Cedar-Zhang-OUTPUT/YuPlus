@@ -649,6 +649,18 @@
         "review_opinion": {
           "type": "string",
           "minLength": 1
+        },
+        "insight": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exploration": {
+          "type": "string",
+          "minLength": 1
+        },
+        "judgment_criteria": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [],
@@ -714,6 +726,18 @@
             "minLength": 1
           },
           "minItems": 0
+        },
+        "task": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evaluation_criteria": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [],
@@ -1020,7 +1044,9 @@
             "risks",
             "assessment_decision",
             "expression_guide",
-            "open_questions"
+            "open_questions",
+            "creative_proposals",
+            "creative_feedback"
           ]
         },
         "scope_key": {
@@ -1633,6 +1659,50 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "type_key": {
+                "const": "creative_proposals"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "set_items": {
+                "items": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/data_creative_proposals"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type_key": {
+                "const": "creative_feedback"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "set_items": {
+                "items": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/$defs/data_creative_feedback"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       ]
     },
@@ -2008,7 +2078,8 @@
           "enum": [
             "debrief",
             "advancement",
-            "creative_review"
+            "creative_review",
+            "creative_plan"
           ]
         },
         "scope_key": {
@@ -2137,6 +2208,9 @@
             "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,127}$"
           },
           "minItems": 0
+        },
+        "outline_version": {
+          "const": 2
         }
       },
       "required": [
@@ -2597,6 +2671,176 @@
         "source_id",
         "base_snapshot_id"
       ]
+    },
+    "data_creative_proposals": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "round_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,127}$"
+        },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "experience": {
+          "type": "string",
+          "minLength": 1
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "development": {
+          "type": "object",
+          "properties": {
+            "script": {
+              "type": "string",
+              "minLength": 1
+            },
+            "storyboard": {
+              "type": "string",
+              "minLength": 1
+            },
+            "key_visual": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sound": {
+              "type": "string",
+              "minLength": 1
+            },
+            "zones": {
+              "type": "string",
+              "minLength": 1
+            },
+            "journey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "exhibits": {
+              "type": "string",
+              "minLength": 1
+            },
+            "interaction": {
+              "type": "string",
+              "minLength": 1
+            },
+            "touchpoints": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "task_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "open_question_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "adoption": {
+          "enum": [
+            "proposed",
+            "exploring",
+            "adopted",
+            "deferred",
+            "rejected"
+          ]
+        },
+        "adoption_basis": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "data_creative_feedback": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "round_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,127}$"
+        },
+        "target": {
+          "$ref": "#/$defs/dependency"
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "feedback_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "feedback": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nature": {
+          "enum": [
+            "suggestion",
+            "reported_decision",
+            "confirmed_decision"
+          ]
+        },
+        "conclusion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decided_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_basis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
     }
   }
 }

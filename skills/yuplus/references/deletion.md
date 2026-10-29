@@ -24,7 +24,7 @@ Every input has `api_version:"1"`, matching `command`, and a meaningful `reason`
 
 - Object delete/restore: `object_id`, `base_revision` from current `show`.
 - Source delete/restore: `source_id`, `base_snapshot_id` from `source show.head_snapshot_id`.
-- `draft delete`: optional `decisions` and `instruction_source_version_id`. Deleting adopted decisions **requires** decision records: point each affected item to the internal `op_id:"delete"`, retain the real user instruction and supersession history. If D19 resources remain named by deliverables/responsibilities, correct those references first (or remove the affected items together with `draft apply`), then delete the empty object. A failed command leaves it intact.
+- `draft delete`: optional `decisions` and `instruction_source_version_id`. Deleting adopted decisions **requires** decision records: point each affected item to the internal `op_id:"delete"`, retain the real user instruction and supersession history. If D15 resources remain named by deliverables/responsibilities, correct those references first (or remove the affected items together with `draft apply`), then delete the empty object. A failed command leaves it intact.
 - `review delete`: `read_basis` from `review prepare` and `cause_change_ids` covering every removed block. For an instruction to delete the whole output, save the user's instruction source, update its draft `expression_guide` targeting `*` with intent `omit`, then prepare and delete. A source-import receipt alone is not a cause.
 
 Example source deletion input:

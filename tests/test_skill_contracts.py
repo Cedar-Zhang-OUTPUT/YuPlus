@@ -37,7 +37,7 @@ class SkillContractTests(unittest.TestCase):
 
     def test_type_exposes_meaning_and_only_selected_data(self):
         result = self.output("type", "budget_range")
-        self.assertEqual(result["type"]["code"], "D07")
+        self.assertEqual(result["type"]["code"], "D11")
         self.assertIn("possible_sources", result["type"])
         self.assertIn("currency", result["schema"]["properties"])
         self.assertNotIn("data_venue", json.dumps(result))
@@ -68,7 +68,7 @@ class SkillContractTests(unittest.TestCase):
 
     def test_open_questions_scoped_contract_and_client_qa_are_distinct(self):
         result=self.output('type','open_questions')
-        self.assertEqual(result['type']['code'],'D24')
+        self.assertEqual(result['type']['code'],'D25')
         schema=self.output('command','draft.apply','--type','open_questions')['schema']
         payload={'api_version':'1','command':'draft.apply','reason':'讨论议题','decisions':[],
             'objects':[{'op_id':'topic','type_key':'open_questions','scope_key':'project','base_revision':None,

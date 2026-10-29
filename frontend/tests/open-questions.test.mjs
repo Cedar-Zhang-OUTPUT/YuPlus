@@ -8,7 +8,7 @@ const catalog=JSON.parse(await readFile(new URL('../../src/yuplus/contracts/obje
 test('live and preview catalogs expose open questions in judgment, separately from shared QA',()=>{
   const live=hydrateView({meta:{demo:false},projects:[],catalog,objects:[],object_revisions:[],sources:[],source_versions:[]});
   for(const data of [live,DATA]){
-    assert.equal(data.catalog.find(t=>t.type_key==='open_questions').code,'D24');
+    assert.equal(data.catalog.find(t=>t.type_key==='open_questions').code,'D25');
     assert.ok(data.THEMES.find(t=>t.key==='judgment').types.includes('open_questions'));
     assert.equal(data.REVIEW_KINDS.find(t=>t.code==='R05').type_key,'qa_view');
     assert.ok(!data.REVIEW_KINDS.some(t=>t.type_key==='open_questions'));

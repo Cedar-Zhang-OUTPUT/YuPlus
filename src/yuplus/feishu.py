@@ -7,10 +7,11 @@ from urllib.parse import urlsplit
 from .core import YuError
 
 
-def run_lark(args, *, cwd=None, timeout=30):
+def run_lark(args, *, cwd=None, timeout=30, input_text=None):
     env={**os.environ,'LARKSUITE_CLI_NO_UPDATE_NOTIFIER':'1','LARKSUITE_CLI_NO_SKILLS_NOTIFIER':'1'}
     try:
-        result=subprocess.run(['lark-cli',*args],cwd=cwd,env=env,stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=timeout)
+        options={'stdin':subprocess.DEVNULL} if input_text is None else {'input':input_text}
+        result=subprocess.run(['lark-cli',*args],cwd=cwd,env=env,capture_output=True,text=True,timeout=timeout,**options)
     except (OSError,subprocess.TimeoutExpired) as exc:
         raise YuError('FEISHU_UNAVAILABLE','飞书 CLI 不可用或检查超时。') from exc
     try: response=json.loads(result.stdout if result.returncode==0 else result.stderr)
