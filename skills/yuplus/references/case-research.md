@@ -1,4 +1,4 @@
-# Find cases
+# Case analysis
 
 Use for a project’s 案例分析 research, new rounds and changes to an existing board. This workflow can start from user text, files or available project context; completing draft/review is not a prerequisite. Do not create sources or modify draft/review merely to conduct research.
 
@@ -25,7 +25,14 @@ Use browser/web tools for websites and the installed Feishu Skills/CLI for folde
 
 Read the specific case page/document, not just a search snippet or homepage. Match each visual to its actual case; split multi-case pages into the right sections. Exclude placeholders, duplicate responsive images, generic site background media and unrelated recommendations. Follow authorized access; if login is required, have the user complete it in the site. An access failure is not evidence that no cases exist.
 
-For each selected case, explain its actual design idea, supported OUTPUT fit, fit to this request, concrete reusable aspects, reference limits and next action. Tie reasons to images, mechanisms or evidence. Partial relevance is allowed when scoped. Distinguish the original work from proposed adaptations. Only label AI use, tools, responsibilities or results when supported; an uploader is not automatically a project owner. Separate reference studios, comparable cases and evidenced competitors. Do not infer this bid’s competitor proposal, budget, schedule or effectiveness from public imagery. Compare and combine cases when useful without forced pairing or quotas.
+Distinguish three uses of reference material:
+- **Visual references:** images selected for a specific visual relationship or concept. They need a traceable source, not a full case-study card or invented project background.
+- **Case Studies:** selected projects whose methods deserve explanation. Extract project/time/place → creative theme → visual language → experience mechanism → reusable approach → source. Explain project fit and reference limits; include OUTPUT fit only when supported. Keep detailed analysis in the accompanying Feishu document, with short takeaways beside relevant board images.
+- **Inspiration synthesis:** connect references to this project's concept, visual symbols and possible creative translations. Label adaptations as proposals, separate from the original case's facts.
+
+Only label AI use, tools, responsibilities or results when supported; an uploader is not automatically a project owner. Separate reference studios, comparable cases and evidenced competitors. Do not infer this bid's competitor proposal, budget, schedule or effectiveness from public imagery.
+
+For a full new visual research round, aim for **50–60 distinct, useful images across roughly 4–5 thematic groups**. A first useful batch can contain 30–40 images; continue toward the full set rather than presenting that batch as finished. These are image counts, not case counts or per-group quotas. User-specified scope takes precedence; a targeted addition or explanation edit does not require another full set. Collect candidates broadly, then select and deduplicate. Different views of one case count only when they add information; repeated crops/resolutions, logos and color swatches do not fill the quota. If access or relevance limits the result, report the actual count and remaining work rather than padding it.
 
 ## Capture visuals and preserve evidence
 
@@ -39,16 +46,18 @@ Yu+ retains only research-version metadata and document/board locators. It does 
 
 ## Compose, verify and iterate
 
-Read installed `lark-doc` authoring/whiteboard guidance and `lark-whiteboard` when creating or changing the board; load only the needed references, reuse already-read instructions. Put actual case images into the board, not merely image URLs. Use proportional images, short text, clear hierarchy and spacing; keep text beside its images.
+Read installed `lark-doc` authoring/whiteboard guidance and `lark-whiteboard` when creating or changing the board; load only needed references and reuse already-read instructions. Inspect user-supplied Moodboard examples visually before choosing a composition. Use their organizational logic, not their brand identity as this project's style.
 
-Board outline:
-1. **How we selected cases:** brief project criteria, supported OUTPUT guidance and necessary uncertainties; a few representative images where useful.
-2. **External references / Internal references:** within each, group by actual selection reasons such as concept, visual language, spatial experience, interaction, AI or production. Use only applicable groups, prioritize strongest matches and tag multiple reasons without duplicating cards.
-3. **Recommended directions and next steps:** combinations and useful validation actions, without treating research as a finalized creative proposal.
+**Images lead; cards are optional.** Place actual images as individual editable board elements, preserving proportions. Pure visual references form image groups without a card or paragraph for every image. Reserve short case explanations for references whose methods need interpretation; keep operational logs, resource keys and detailed provenance in the Feishu evidence index. Give each image a small source link or index identifier so unboxed images remain traceable.
 
-Each case card: **original name | source → key images → design idea → OUTPUT fit → project fit → reusable aspects / limits → next action → original link**. Keep detailed provenance, operational logs, personnel lists and resource keys in the Feishu index, not across the board.
+Organize the board around **concept → image relationships → visual symbols → creative translation**:
+1. Give each of roughly 4–5 groups a project-relevant theme and a short concept statement. Group by creative question or intended feeling, not mandatory internal/external source divisions or fixed color/material/interaction categories. Libraries and public sources may coexist in a group.
+2. Compose image relationships deliberately: juxtaposition for common structures or contrast; surrounding arrangements for a brand world; collage for associations; grouping for style boundaries; sequences for narrative. Use scale, repetition, whitespace and reading paths to convey those relationships. No universal grid, hero-image ratio or color-card requirement.
+3. Add concise group-level notes identifying meaningful visual symbols and what they express. Explain possible translation into project graphics, space, motion, actions or narrative; avoid merely listing colors, materials and shapes. Keep these as research directions, not a finalized proposal.
 
-Read back the actual board and inspect its rendered preview: images loaded, text readable, grouping correct, links point to the intended case and user edits survived. Link the selected research version to its verified board URL/locator. Report research coverage, saved material/index, board completion and unresolved items separately; do not claim completion for failed uploads or unverified rendering.
+A collection without concept synthesis is a **案例参考板**. Call it a **Moodboard** only when its composition and concise explanations communicate a core concept, image relationships, visual symbols and creative translation. More images alone do not make a Moodboard.
+
+Upload and compose large sets in recoverable batches, preserving image-to-source and remote-node mappings. Read back the actual board and inspect both the whole preview and individual groups: verify the number of distinct loaded images, clear themes, useful image relationships, readable images/text at working zoom, correct source links and preserved user edits. Avoid shrinking the entire collection into an unreadable single panorama or flattening the board into one image. Link the research version to its verified board URL/locator. Report actual image/group counts, search coverage, saved index and unresolved work; failed uploads or unverified rendering are not completion.
 
 Use feedback to improve the current research and its explanations. Do not infer acceptance from silence, generalize a one-off preference into company policy or claim to have fully learned OUTPUT’s aesthetic. End with relevant choices such as supplementing criteria, refining this round or explicitly starting another; do not steer this workflow automatically into draft/review.
 
