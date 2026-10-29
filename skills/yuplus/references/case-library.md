@@ -4,7 +4,7 @@ Read this when adding, finding cases in, or removing 案例库. A library is a F
 
 For the full find-cases workflow, read [case-research.md](case-research.md). Unless the user narrows scope, search every active registered website/folder for this round’s direction; do not skip a registered type that exists, and do not require absent types. Use the user-imported aesthetic guidance as evidence without creating a lasting preference profile. Public web research (including GitHub when relevant) is encouraged alongside libraries; use the current registry rather than a separate studio list. Targeted searches do not mean mirroring a whole library.
 
-The CLI initializes 18 bundled source registrations once per workspace (one Feishu folder and 17 websites). Read `library list` for the actual current set; do not re-add defaults, override user edits or restore removed sources automatically. Registration does not grant Feishu access or mean source contents have been read.
+The CLI initializes 31 Official source registrations (one Feishu folder and 30 websites), all enabled by default. Upgrades seed only newly introduced sources once per workspace. Read `library list` for the actual current set; do not re-add defaults, override user edits or restore removed sources automatically. Before research, read `library list --include-deleted` to identify disabled sources, then use `library list` for the enabled set. Never search a disabled source or re-enable it automatically, including during broader web research. Registration does not grant Feishu access or mean source contents have been read.
 
 ## Register or use
 
@@ -15,7 +15,7 @@ The CLI initializes 18 bundled source registrations once per workspace (one Feis
 
 ## CLI
 
-Use the verified workspace `--data-dir`; never `--project`. Page controls copy prompts only. After writes, verify the CLI result and refresh `#/libraries`.
+Use the verified workspace `--data-dir`; never `--project`. The catalog groups sources into Official (bundled) and Personal (user-added). Page controls persist source preferences directly: add enables, remove disables, and adding a disabled source restores its existing registration. New Personal sources are enabled by default. After writes, verify the CLI result and refresh `#/libraries`.
 
 ```sh
 yu library list --json
@@ -48,6 +48,6 @@ yu library delete --request-id UNIQUE_ID --input request.json --json
 {"api_version":"1","command":"library.delete","library_id":"LIBRARY_ID","base_version":1}
 ```
 
-Use the actual ID/version, not the example values. Removal is soft: it hides the library from the page and ordinary lists, while preserving metadata and receipts. Verify with `library list`. To recover, locate it using `library list --include-deleted`, read its current version, then use `library restore` with the matching command and the same `library_id` / `base_version` fields. Restoring only restores the link registration; no remote operation or content download occurs.
+Use the actual ID/version, not the example values. Removal is soft: it excludes the library from ordinary CLI lists but keeps it visible as disabled in the browser catalog, while preserving metadata and receipts. Verify with `library list`. To recover, locate it using `library list --include-deleted`, read its current version, then use `library restore` with the matching command and the same `library_id` / `base_version` fields. Restoring only restores the link registration; no remote operation or content download occurs.
 
 Explicit permanent deletion uses `library purge`; read [deletion.md](deletion.md) for preview, confirmation fields and retry handling. It still never removes remote content.

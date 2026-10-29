@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.28](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.28)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.29](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.29)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -22,7 +22,7 @@ Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多�
 ~/.local/share/yuplus-app/venv/bin/yu stop --json
 ```
 
-安装后的 CLI 默认沿用安装时选定的数据目录；显式 `--data-dir DIR` 可选择另一目录。`start` 自动分配端口并复用身份匹配的服务；打开返回的 URL。`status` 恢复实际地址，`stop` 只终止核验过的托管服务。`serve --port 0` 仍可前台运行。页面保持业务只读，CLI 写入或后台检查后，刷新页面查看已保存结果。
+安装后的 CLI 默认沿用安装时选定的数据目录；显式 `--data-dir DIR` 可选择另一目录。`start` 自动分配端口并复用身份匹配的服务；打开返回的 URL。`status` 恢复实际地址，`stop` 只终止核验过的托管服务。`serve --port 0` 仍可前台运行。页面项目内容保持只读，案例库源设置可直接保存；CLI 写入或后台检查后，刷新页面查看已保存结果。
 
 开发安装仍可使用 `python3 -m venv .venv`、`.venv/bin/python -m pip install -e .`、`.venv/bin/yu --data-dir .local/work doctor --json`。开发和验收目录与正式数据分开。`npm --prefix frontend run dev` 仅启动模拟预览，不连接真实数据库。
 
@@ -224,9 +224,9 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 
 策划文档页常驻飞书协作文档链接，显示已保存的同步状态和记录。旧独立导出记录仍可通过 `export list` 查询。
 
-案例库支持 `kind=feishu_folder` 和 `kind=website` 两种源，均仅保存类型、名称和链接。前端提供两条独立的新增 Prompt；网站通过浏览器/网页工具按需查找，飞书文件夹通过飞书 CLI 查找。`library delete/restore` 均只影响本地登记。schema 5 为旧记录补充飞书文件夹类型，迁移前自动完整备份，保留原项目和案例库身份。
+案例库支持 `kind=feishu_folder` 和 `kind=website` 两种源，均仅保存类型、名称和链接。案例库页面采用 Official / Personal 分组、搜索和双列来源列表，可直接添加 Personal 源，并通过添加／移除启用或关闭来源；网站通过浏览器/网页工具按需查找，飞书文件夹通过飞书 CLI 查找。`library delete/restore` 均只影响本地登记。schema 5 为旧记录补充飞书文件夹类型，迁移前自动完整备份，保留原项目和案例库身份。
 
-CLI 随包提供 18 个已确认的初始案例库源（1 个飞书共享文件夹、17 个网站），清单见 `src/yuplus/contracts/default-case-libraries.json`。安装器初始化或首次运行 CLI 时，每个数据目录仅登记一次；已有同链接记录（包括已移除记录）直接复用，保留名称、身份和版本。之后的重启、升级与备份恢复不会覆盖用户修改或重新添加已移除来源。只登记来源，不下载内容，也不会授予飞书访问权限。
+CLI 随包提供 31 个已确认的初始案例库源（1 个飞书共享文件夹、30 个网站），默认全部启用，清单见 `src/yuplus/contracts/default-case-libraries.json`。安装器初始化或首次运行 CLI 时，按版本批次在每个数据目录仅登记一次，升级只补充新来源；已有同链接记录（包括已移除记录）直接复用，保留名称、身份和版本。之后的重启、升级与备份恢复不会覆盖用户修改或重新添加已移除来源。只登记来源，不下载内容，也不会授予飞书访问权限。
 
 
 ## 找案例与工作空间头像（v0.3.20）
@@ -284,3 +284,8 @@ Agent 决定完整飞书文档的标题、排版、正文和素材，服务端�
 按核心概念、图片关系、视觉符号和创意转译组织画板，参考用户提供的 Moodboard 构图逻辑，支持并置、环绕、拼贴与序列。各图保留来源，重复图不凑数；检查真实加载数量、分组与放大可读性。补图和修改说明继续使用当前研究版本，用户明确新开研究才新增版本。
 
 英文 Skill 与中文审阅版同步更新。升级不自动修改已有画板或项目数据，数据库仍为 schema 10。
+
+
+## 案例库来源目录（v0.3.29）
+
+案例库采用可搜索的 Official / Personal 双列目录，内置 31 个来源默认全部启用。新增文档所列的 13 个灵感网站，不包含 Milanote Moodboard Guide。用户可直接添加 Personal 网站或飞书文件夹，默认启用；点击移除关闭使用，重新添加恢复。Agent 只检索启用的来源。升级按批次补充新来源，保留用户关闭、修改和永久删除的记录；数据库仍为 schema 10。内置来源使用从官方站点或官方账号获取、随包分发的图标，个人网站尝试读取原站 favicon，失败时显示名称缩写。

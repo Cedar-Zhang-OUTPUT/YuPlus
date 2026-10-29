@@ -180,8 +180,8 @@ def browser_view(db, data_dir, project_id=None):
     from .monitor import summaries
     view['chat_monitors'] = [m for m in summaries(db) if m['project_id'] in {p['id'] for p in view['projects']}]
     view['monitor_runs'] = []
-    from .case_library import listed
-    view['case_libraries'] = listed(db)
+    from .case_library import catalog
+    view['case_libraries'] = catalog(db)
     from .appearance import metadata
     view['logo'] = metadata(db)
     from .case_research import listed as research_list

@@ -4,7 +4,7 @@
 
 完整找案例工作流按需阅读 [找案例参考](case-research.zh-CN.md)。用户未缩小范围时，每个有效登记的网站/文件夹都要按本轮方向检索，已有类型不跳过，缺失类型不必补齐。用户导入的审美说明作为依据，不生成长期偏好画像。鼓励同时探索相关公开网络（适合时包括 GitHub），以当前登记清单为准，不另维护工作室名单；定向检索不等于镜像整库。
 
-CLI 在每个工作空间首次初始化时登记 18 个内置来源（1 个飞书文件夹、17 个网站）。实际可用清单以 `library list` 为准，不重复添加默认来源、不覆盖用户修改、不自动恢复已移除来源。登记链接不代表取得飞书权限或已读其中内容。
+CLI 在每个工作空间登记 31 个 Official 内置来源（1 个飞书文件夹、30 个网站），默认全部启用；升级按批次补充新来源。实际可用清单以 `library list` 为准，不重复添加默认来源、不覆盖用户修改、不自动恢复已移除来源。研究前用 `library list --include-deleted` 识别关闭的来源，再用 `library list` 获取启用清单。关闭的源不得检索或自动恢复，扩展网络搜索也需遵守。登记链接不代表取得飞书权限或已读其中内容。
 
 ## 登记与使用
 
@@ -17,7 +17,7 @@ CLI 在每个工作空间首次初始化时登记 18 个内置来源（1 个飞�
 
 ## CLI
 
-使用已核验的工作空间 `--data-dir`，不传 `--project`。页面只复制 Prompt；写入成功后核对回执、刷新 `#/libraries`。
+使用已核验的工作空间 `--data-dir`，不传 `--project`。页面按 Official（内置）与 Personal（用户添加）分组，直接保存来源设置：添加即启用、移除即关闭；已关闭来源可重新添加，Personal 新来源默认启用。写入成功后核对回执、刷新 `#/libraries`。
 
 ```sh
 yu library list --json
@@ -50,6 +50,6 @@ yu library delete --request-id UNIQUE_ID --input request.json --json
 {"api_version":"1","command":"library.delete","library_id":"LIBRARY_ID","base_version":1}
 ```
 
-替换为真实 ID 和版本。软删除后页面及普通列表隐藏该库，登记元数据与操作回执保留。用 `library list` 核验。恢复时先 `library list --include-deleted` 找到记录并读取当前版本，再执行 `library restore`，使用匹配的 command 和相同的 `library_id`、`base_version` 字段。恢复只恢复链接登记，不操作飞书或下载内容。
+替换为真实 ID 和版本。软删除后普通 CLI 列表排除该库，页面仍保留该源并标为未启用，登记元数据与操作回执保留。用 `library list` 核验。恢复时先 `library list --include-deleted` 找到记录并读取当前版本，再执行 `library restore`，使用匹配的 command 和相同的 `library_id`、`base_version` 字段。恢复只恢复链接登记，不操作飞书或下载内容。
 
 明确要求硬删除时使用 `library purge`，按[删除参考](deletion.zh-CN.md)预览、执行及重试；仍不删除远端内容。

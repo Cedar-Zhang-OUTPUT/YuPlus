@@ -63,3 +63,9 @@ npm --prefix frontend test
 - `server.mjs`、`data/demo.js`、`source.html/source.js`：独立模拟预览。
 
 当前选定项目的视图一次读取全部已保存版本，资产逐个做完整哈希校验；大量历史或大视频可能影响加载速度，尚未做分页或校验缓存。新服务启动会后台检查飞书来源；页面刷新后显示检查结果。没有实时推送或编辑/审批/聊天界面。本轮沿用[交接说明](../docs/design/2026-10-16-frontend-integration-handoff.md)，验证范围见[集成验收](../docs/validation/2026-10-16-live-integration.md)。
+
+## 案例库源设置
+
+`/#/libraries` 按 Official / Personal 展示所有来源，包含已关闭项；默认全部启用。名称、说明和网址均可搜索。添加 Personal 源需填名称、链接和类型，默认启用。移除仅关闭使用，再次添加恢复原登记。
+
+同源 `POST /api/libraries` 是案例库设置的专用写入口，仅接受 add/delete/restore，复用 CLI 的版本校验和幂等回执。要求准确的本地 Host、Origin、JSON 和有界请求体。项目内容继续只读，模拟服务不写数据库。CLI `library list` 仅返回已启用源；浏览器目录保留所有源。

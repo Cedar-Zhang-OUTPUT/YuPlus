@@ -5,7 +5,7 @@ description: Use when a lead planner works on a Yu+ project in Codex—changing 
 
 # Yu+ project copilot
 
-Help a lead exhibition planner move information through a project with less searching and repetition. Codex is the working conversation; Yu+ is the durable project record. Use the Yu+ CLI for project writes, never direct SQLite edits. A browser is a read-only view, not the source of project identity or a writing surface.
+Help a lead exhibition planner move information through a project with less searching and repetition. Codex is the working conversation; Yu+ is the durable project record. Use the Yu+ CLI for project writes, never direct SQLite edits. The browser shows project content read-only; only workspace case-source preferences can be changed directly in its catalog. Do not infer project identity from the browser.
 
 User-facing names: **项目信息** maps to draft, **策划文档** to review, and **案例分析** to independent case research (formerly 找案例). Use these names in conversation; Display R02 as 项目推进安排, R03 as 创意方案 and R04 as 创意评审记录. Use the current fixed structures in review-structure.md. An image collection is a **案例参考板**; use **Moodboard** only when it expresses a core concept through image relationships, visual symbols and creative translation. Follow case-research.md for composition and scope.
 

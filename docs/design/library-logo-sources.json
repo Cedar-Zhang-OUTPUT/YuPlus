@@ -1,0 +1,253 @@
+{
+  "note": "Official website icons and brand images; MNFST uses its official Behance profile. Logos remain the property of their respective owners. Images are resized for UI display, without recoloring; the white Local Projects wordmark is placed on a dark background for visibility.",
+  "sources": [
+    {
+      "name": "案例库",
+      "file": "frontend/public/assets/library-logos/feishu-cn.png",
+      "page": "https://www.feishu.cn/",
+      "source": "https://www.feishu.cn/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "10679c42a0dc761f6d9e89805895375a148f0550c47d56b7b3af604cf385003b"
+    },
+    {
+      "name": "Random Studio",
+      "file": "frontend/public/assets/library-logos/random-studio.png",
+      "page": "https://random.studio/",
+      "source": "https://random.studio/favicons/apple-touch-icon.png",
+      "retrieved": "2026-10-29",
+      "sha256": "ad793f66d3140d482505b073c0a53c7e4506bbea113dc249dcdf74d7772ef46c"
+    },
+    {
+      "name": "Modem — Office for design and innovation",
+      "file": "frontend/public/assets/library-logos/modemworks-com.png",
+      "page": "https://modemworks.com/",
+      "source": "https://modemworks.com/wp-content/uploads/2026/02/cropped-cropped-modem_favico-270x270-1-180x180.png",
+      "retrieved": "2026-10-29",
+      "sha256": "8b322e69a1a0f66450bf229860504211450900481a74ad11883365713eb6dee3"
+    },
+    {
+      "name": "OBJ.Studio",
+      "file": "frontend/public/assets/library-logos/obj-studio.png",
+      "page": "https://obj.studio/",
+      "source": "https://obj.studio/apple-touch-icon.png",
+      "retrieved": "2026-10-29",
+      "sha256": "4af8c0fbb7731ccfe5507765ab13cc84a1f4405f32bf5796945cb7ed983f2c89"
+    },
+    {
+      "name": "FIELD.IO — Creative Intelligence for a Living World",
+      "file": "frontend/public/assets/library-logos/field-systems.png",
+      "page": "https://field.systems/",
+      "source": "https://field.io/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "43b9df287c586809817b29975350a7d7d6f966d76b7abb287e4f7bfcc45b633d"
+    },
+    {
+      "name": "FutureDeluxe — Design, Technology & Moving Image",
+      "file": "frontend/public/assets/library-logos/futuredeluxe-com.png",
+      "page": "https://futuredeluxe.com/",
+      "source": "https://futuredeluxe.com/wp-content/themes/lg_k/images/favicon/apple-touch-icon-152x152.png",
+      "retrieved": "2026-10-29",
+      "sha256": "07579f38acc893fa2a65820ac9ab2d8f4215c2fdf7b5cd730db816315d0f920f"
+    },
+    {
+      "name": "iart — Studio for Media Architectures",
+      "file": "frontend/public/assets/library-logos/iart-ch.png",
+      "page": "https://iart.ch/en",
+      "source": "https://iart.ch/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "77724868d5b435f11db5776b63d86599cd1cb69a36d0335b138b5a44b6c4fcd3"
+    },
+    {
+      "name": "Tellart",
+      "file": "frontend/public/assets/library-logos/tellart-com.png",
+      "page": "https://www.tellart.com/",
+      "source": "https://www.tellart.com/wp-content/themes/tellart/dist/favicon/apple-touch-icon.png",
+      "retrieved": "2026-10-29",
+      "sha256": "5e31b6884defc45bb767b45470ea77f52dfd11b405fc0caa8ee64e46ed5bc9a3"
+    },
+    {
+      "name": "Local Projects",
+      "file": "frontend/public/assets/library-logos/localprojects-com.png",
+      "page": "https://localprojects.com/",
+      "source": "https://localprojects.com/wp-content/themes/localprojects/img/logo-white.png",
+      "retrieved": "2026-10-29",
+      "sha256": "dd15476c987dee3b590b71bfe2082f0d4e054d6465acbf9b44646aece0774bc4"
+    },
+    {
+      "name": "FLOAT4",
+      "file": "frontend/public/assets/library-logos/float4-com.png",
+      "page": "https://float4.com/en/",
+      "source": "https://www.float4.com/icon.png?ca00616b235f45a8",
+      "retrieved": "2026-10-29",
+      "sha256": "c2c82578e9751832f0d36acf39f990a5efea57c012fddc81109798a278eaa5b7"
+    },
+    {
+      "name": "Moment Factory — Global Entertainment Studio",
+      "file": "frontend/public/assets/library-logos/momentfactory-com.png",
+      "page": "https://momentfactory.com/home",
+      "source": "https://momentfactory.com/cdn/shop/files/01-favicon.png?crop=center&height=32&v=1725905556&width=32",
+      "retrieved": "2026-10-29",
+      "sha256": "0ea10f1ae05ae82e72f402fd67dd3fbb596bea2888c2b1f720df90f866641846"
+    },
+    {
+      "name": "Onionlab — Creativity, audiovisual design and innovation",
+      "file": "frontend/public/assets/library-logos/onionlab-com.png",
+      "page": "https://www.onionlab.com/",
+      "source": "https://www.onionlab.com/wp-content/uploads/2024/04/cropped-favicon-180x180.png",
+      "retrieved": "2026-10-29",
+      "sha256": "4d5900f2fc8d888898b7437680e5bc33fca94c7876970071eb69cc372d6f3cdb"
+    },
+    {
+      "name": "MNFST",
+      "file": "frontend/public/assets/library-logos/mnfst-studio.png",
+      "page": "https://www.behance.net/mnfst-studio/",
+      "source": "https://pps.services.adobe.com/api/profile/FD5F6A535F9145220A495CD5%40AdobeID/image/8d5255d3-6c3c-458d-9c50-91ae84825289/276",
+      "retrieved": "2026-10-29",
+      "sha256": "1cb5060d70b462ced4437c527797ef97cdb65708222d981e5b669b43040dc01e"
+    },
+    {
+      "name": "Media.Work",
+      "file": "frontend/public/assets/library-logos/media-work.png",
+      "page": "https://media.work/",
+      "source": "https://uploads.media.work/2024/07/fav-300x300.png",
+      "retrieved": "2026-10-29",
+      "sha256": "d4932330a61625fa917ef5feabcd28aef6eb44a67a904bc25440099065c211ef"
+    },
+    {
+      "name": "New Format",
+      "file": "frontend/public/assets/library-logos/newformat-io.png",
+      "page": "https://newformat.io/",
+      "source": "https://newformat.io/apple-touch-icon.png",
+      "retrieved": "2026-10-29",
+      "sha256": "e04e867a8c20e53cd7bce53ea5fc86e00100c9f6b184124a34f024e591be1359"
+    },
+    {
+      "name": "Studio Woolston",
+      "file": "frontend/public/assets/library-logos/woolston-studio.png",
+      "page": "https://woolston.studio/",
+      "source": "https://freight.cargo.site/t/original/i/d9449d9a42e49d50f7dc008f6e6c6a593691d05e84367a37be5e441e8762b30b/box-trans-2.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "6d45a6066af0d543a154857bb24c23d6f95a70429536645dfce0b6a03b14c6dd"
+    },
+    {
+      "name": "Six N. Five",
+      "file": "frontend/public/assets/library-logos/sixnfive-com.png",
+      "page": "https://sixnfive.com/",
+      "source": "https://sixnfive.com/wp-content/themes/sixnfive/images/logo.png",
+      "retrieved": "2026-10-29",
+      "sha256": "55967bed13b62a67f852c9bbb34750ac3fd604b6668b828fab0640c9cd776bbe"
+    },
+    {
+      "name": "Tomorrow Bureau — Speculative. Digital. Realities.",
+      "file": "frontend/public/assets/library-logos/tomorrowbureau-io.png",
+      "page": "https://www.tomorrowbureau.io/",
+      "source": "https://www.tomorrowbureau.io/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "72a6cd64835771bc90b8f090b76c8662778f9027c2d87b6973436fc2424e4eef"
+    },
+    {
+      "name": "Wallpaper*",
+      "file": "frontend/public/assets/library-logos/wallpaper-com.png",
+      "page": "https://www.wallpaper.com/",
+      "source": "https://cdn.mos.cms.futurecdn.net/flexiimages/fpqjm7sfgp1656622778.png",
+      "retrieved": "2026-10-29",
+      "sha256": "53265aaa62a5a4a47009f5c855e5fade12eb79b367f316f32ae25bd603d0931c"
+    },
+    {
+      "name": "T Magazine",
+      "file": "frontend/public/assets/library-logos/nytimes-com.png",
+      "page": "https://www.nytimes.com/section/t-magazine",
+      "source": "https://www.nytimes.com/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "0cbfc00a853d1a67e7dfeafd633bfaed31cee5b8aa96b80f5ad4cf8227a36e97"
+    },
+    {
+      "name": "IGNANT",
+      "file": "frontend/public/assets/library-logos/ignant-com.png",
+      "page": "https://www.ignant.com/",
+      "source": "https://www.ignant.com/wp-content/themes/ignant/assets/favicon/apple-touch-icon.png?ver=1.1.138",
+      "retrieved": "2026-10-29",
+      "sha256": "d494411286ecd6207e1ae7bbe61d5126e3cb1c8bb0f4bedff5752c331e22c342"
+    },
+    {
+      "name": "FRAME",
+      "file": "frontend/public/assets/library-logos/frameweb-com.png",
+      "page": "https://frameweb.com/",
+      "source": "https://frameweb.com/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "b7c380536e5be6d59971262e801ddb98a53c50abbc51e9ddf869908ebada5eed"
+    },
+    {
+      "name": "designboom",
+      "file": "frontend/public/assets/library-logos/designboom-com.png",
+      "page": "https://www.designboom.com/",
+      "source": "https://www.designboom.com/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "fb0c2151af15dd7bc526e566069fc36d2bf3068bc1a4f1a72643fcd6813cb4bb"
+    },
+    {
+      "name": "Fuorisalone",
+      "file": "frontend/public/assets/library-logos/fuorisalone-it.png",
+      "page": "https://www.fuorisalone.it/en/",
+      "source": "https://assets.fuorisalone.it/assets/fuorisalone/img/favicon/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "8e831041a5da97b01524dead2a22a19e96aa7b0f18150b7f3b6420bf8019fbf5"
+    },
+    {
+      "name": "ONSITECLUB",
+      "file": "frontend/public/assets/library-logos/onsiteclub-com.png",
+      "page": "https://www.onsiteclub.com/",
+      "source": "https://static.onsiteclub.com/static/imgs/logo-y.png",
+      "retrieved": "2026-10-29",
+      "sha256": "3d1b3fcdaa69ef44c6afbc89d260d4cd419d110252c96138ccc7fab1a842331d"
+    },
+    {
+      "name": "WindowsWear",
+      "file": "frontend/public/assets/library-logos/windowswear-com.png",
+      "page": "https://www.windowswear.com/about/",
+      "source": "https://www.windowswear.com/wp-content/uploads/2018/08/cropped-ICON-PROFILE-192x192.jpg",
+      "retrieved": "2026-10-29",
+      "sha256": "cf85cfa3ab0edb28f8d34fa255916c83dd6d3cbbd7b722f27ee38941d2c3eafc"
+    },
+    {
+      "name": "OMA",
+      "file": "frontend/public/assets/library-logos/oma-com.png",
+      "page": "https://www.oma.com/projects",
+      "source": "https://www.oma.com/favicon/apple-touch-icon-57x57.png",
+      "retrieved": "2026-10-29",
+      "sha256": "49858c25ea0bcdad4637ad9c8d554d624af32b3c9a5fe317288f2f5b7b3189b0"
+    },
+    {
+      "name": "Balich Wonder Studio",
+      "file": "frontend/public/assets/library-logos/balichwonderstudio-com.png",
+      "page": "https://www.balichwonderstudio.com/",
+      "source": "https://www.balichwonderstudio.com/wp-content/uploads/2021/09/cropped-balich-wonder-studio-logo-180x180.jpg",
+      "retrieved": "2026-10-29",
+      "sha256": "e7d2b4dd3dd395a76ec78b4a78f09a6a6b52f4329a63ef64204470407774b590"
+    },
+    {
+      "name": "March Studio",
+      "file": "frontend/public/assets/library-logos/march-studio.png",
+      "page": "https://www.march.studio/aesop-salone-del-mobile",
+      "source": "https://images.squarespace-cdn.com/content/v1/6837d6a144a97d18a791b1be/2d8d8a82-3cd6-46fd-89de-9e628ec11449/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "5061b884ec8c4238caaa8df7a49dc2fab0d5c2f4e7be2fae7fdaa9c22011fca9"
+    },
+    {
+      "name": "ACTIVATION",
+      "file": "frontend/public/assets/library-logos/activation-gp-com.png",
+      "page": "https://www.activation-gp.com/en/work",
+      "source": "https://www.activation-gp.com/sites/default/files/favicon.ico",
+      "retrieved": "2026-10-29",
+      "sha256": "45517884b8907a1809c15ac0f55c75a74bc327241a46502a617f228af21a8524"
+    },
+    {
+      "name": "Are.na",
+      "file": "frontend/public/assets/library-logos/are-na.png",
+      "page": "https://www.are.na/",
+      "source": "https://www.are.na/apple-touch-icon.png",
+      "retrieved": "2026-10-29",
+      "sha256": "ab81e62ca494cc85cbdfc2bfd2b6ef70131ce9f9b1bd16f060113bc756be68be"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ description: Open and explain the Yu+ project browser, including navigation, sou
 
 # Yu+ visualization
 
-Help the user read their saved Yu+ project and use its actual controls. The browser is a read-only business view. It can copy references/prompts and reveal registered files; saving project content belongs to the CLI. Navigating a page does not select an Agent's project or change its stored working scene.
+Help the user read their saved Yu+ project and use its actual controls. The browser shows project content read-only; workspace case-source preferences can be saved directly in the catalog. It can copy references/prompts and reveal registered files; saving project content belongs to the CLI. Navigating a page does not select an Agent's project or change its stored working scene.
 
 ## Read only what the task needs
 

@@ -60,7 +60,7 @@ class LibraryTests(unittest.TestCase):
         try:
             self.assertEqual(migrated.execute('doctor')['data']['schema_version'],10)
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
-            self.assertEqual(len(migrated.execute('library.list')['data']['libraries']),18)
+            self.assertEqual(len(migrated.execute('library.list')['data']['libraries']),31)
         finally:migrated.close()
         backups=list((self.root/'legacy-migration-backups').iterdir());self.assertEqual(len(backups),1)
         with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],3)

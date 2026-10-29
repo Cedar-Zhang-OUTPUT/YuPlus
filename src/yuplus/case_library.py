@@ -52,7 +52,8 @@ def source_url(value,kind):
 
 # Reserved prefix cannot collide with public CLI request IDs. The receipt travels
 # with database backups, so removed or edited defaults stay that way on restore.
-_DEFAULT_RECEIPT = '__builtin_case_libraries_v1'
+_LEGACY_RECEIPT = '__builtin_case_libraries_v1'
+_DEFAULT_RECEIPT = '__builtin_case_libraries_v2'
 _DEFAULTS = Path(__file__).parent/'contracts'/'default-case-libraries.json'
 
 
@@ -61,6 +62,10 @@ def initialize_defaults(db):
     if db.execute('SELECT 1 FROM case_library_requests WHERE request_id=?', (_DEFAULT_RECEIPT,)).fetchone():
         return
     entries = json.loads(_DEFAULTS.read_text())['libraries']
+    # v1 already installed the first 18 sources. Only seed the new batch on
+    # upgrade, even if a user edited, disabled or purged an older source.
+    if db.execute('SELECT 1 FROM case_library_requests WHERE request_id=?', (_LEGACY_RECEIPT,)).fetchone():
+        entries = entries[18:]
     stamp = now()
     added, reused = [], []
     for entry in entries:
@@ -84,6 +89,27 @@ def initialize_defaults(db):
 def listed(db,include_deleted=False):
     if not db.execute("SELECT 1 FROM sqlite_master WHERE name='case_libraries'").fetchone():return []
     return [dict(r) for r in db.execute('SELECT * FROM case_libraries'+('' if include_deleted else ' WHERE deleted_at IS NULL')+' ORDER BY created_at DESC,id')]
+
+
+def catalog(db):
+    """Browser catalog includes disabled sources; CLI list remains enabled-only.
+
+    Seed receipts keep Official provenance stable across renames and URL edits.
+    No schema change or mutable client-supplied provenance is needed.
+    """
+    official = set()
+    for row in db.execute('SELECT result_json FROM case_library_requests WHERE request_id IN (?,?)',
+                          (_LEGACY_RECEIPT, _DEFAULT_RECEIPT)):
+        receipt = json.loads(row['result_json'])
+        official.update(receipt.get('added', []))
+        official.update(receipt.get('reused', []))
+    metadata = {source_url(e['url'], e['kind']): e for e in json.loads(_DEFAULTS.read_text())['libraries']}
+    return [{**row, 'origin': 'official' if row['id'] in official else 'personal',
+             'enabled': row['deleted_at'] is None,
+             'logo': metadata.get(row['url'], {}).get('logo'),
+             'description': metadata.get(row['url'], {}).get('description', ''),
+             'category': metadata.get(row['url'], {}).get('category', '其他来源')}
+            for row in listed(db, include_deleted=True)]
 
 def execute(app,command,payload,project_id,request_id):
     action=command.split('.')[1]

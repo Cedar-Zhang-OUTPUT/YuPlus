@@ -3,92 +3,250 @@
     {
       "kind": "feishu_folder",
       "name": "案例库",
-      "url": "https://k1mai98sti.feishu.cn/drive/folder/MiFifQzyel9JCDdYx0GcG9KXn6g"
+      "url": "https://k1mai98sti.feishu.cn/drive/folder/MiFifQzyel9JCDdYx0GcG9KXn6g",
+      "category": "团队案例",
+      "description": "团队共享的策展与项目参考",
+      "logo": "/assets/library-logos/feishu-cn.png"
     },
     {
       "kind": "website",
       "name": "Random Studio",
-      "url": "https://random.studio/"
+      "url": "https://random.studio/",
+      "category": "创意工作室",
+      "description": "random.studio",
+      "logo": "/assets/library-logos/random-studio.png"
     },
     {
       "kind": "website",
       "name": "Modem — Office for design and innovation",
-      "url": "https://modemworks.com/"
+      "url": "https://modemworks.com/",
+      "category": "创意工作室",
+      "description": "modemworks.com",
+      "logo": "/assets/library-logos/modemworks-com.png"
     },
     {
       "kind": "website",
       "name": "OBJ.Studio",
-      "url": "https://obj.studio/"
+      "url": "https://obj.studio/",
+      "category": "创意工作室",
+      "description": "obj.studio",
+      "logo": "/assets/library-logos/obj-studio.png"
     },
     {
       "kind": "website",
       "name": "FIELD.IO — Creative Intelligence for a Living World",
-      "url": "https://field.systems/"
+      "url": "https://field.systems/",
+      "category": "创意工作室",
+      "description": "field.systems",
+      "logo": "/assets/library-logos/field-systems.png"
     },
     {
       "kind": "website",
       "name": "FutureDeluxe — Design, Technology & Moving Image",
-      "url": "https://futuredeluxe.com/"
+      "url": "https://futuredeluxe.com/",
+      "category": "创意工作室",
+      "description": "futuredeluxe.com",
+      "logo": "/assets/library-logos/futuredeluxe-com.png"
     },
     {
       "kind": "website",
       "name": "iart — Studio for Media Architectures",
-      "url": "https://iart.ch/en"
+      "url": "https://iart.ch/en",
+      "category": "创意工作室",
+      "description": "iart.ch",
+      "logo": "/assets/library-logos/iart-ch.png"
     },
     {
       "kind": "website",
       "name": "Tellart",
-      "url": "https://www.tellart.com/"
+      "url": "https://www.tellart.com/",
+      "category": "创意工作室",
+      "description": "www.tellart.com",
+      "logo": "/assets/library-logos/tellart-com.png"
     },
     {
       "kind": "website",
       "name": "Local Projects",
-      "url": "https://localprojects.com/"
+      "url": "https://localprojects.com/",
+      "category": "创意工作室",
+      "description": "localprojects.com",
+      "logo": "/assets/library-logos/localprojects-com.png"
     },
     {
       "kind": "website",
       "name": "FLOAT4",
-      "url": "https://float4.com/en/"
+      "url": "https://float4.com/en/",
+      "category": "创意工作室",
+      "description": "float4.com",
+      "logo": "/assets/library-logos/float4-com.png"
     },
     {
       "kind": "website",
       "name": "Moment Factory — Global Entertainment Studio",
-      "url": "https://momentfactory.com/home"
+      "url": "https://momentfactory.com/home",
+      "category": "创意工作室",
+      "description": "momentfactory.com",
+      "logo": "/assets/library-logos/momentfactory-com.png"
     },
     {
       "kind": "website",
       "name": "Onionlab — Creativity, audiovisual design and innovation",
-      "url": "https://www.onionlab.com/"
+      "url": "https://www.onionlab.com/",
+      "category": "创意工作室",
+      "description": "www.onionlab.com",
+      "logo": "/assets/library-logos/onionlab-com.png"
     },
     {
       "kind": "website",
       "name": "MNFST",
-      "url": "https://www.mnfst.studio/"
+      "url": "https://www.mnfst.studio/",
+      "category": "创意工作室",
+      "description": "www.mnfst.studio",
+      "logo": "/assets/library-logos/mnfst-studio.png"
     },
     {
       "kind": "website",
       "name": "Media.Work",
-      "url": "https://media.work/"
+      "url": "https://media.work/",
+      "category": "创意工作室",
+      "description": "media.work",
+      "logo": "/assets/library-logos/media-work.png"
     },
     {
       "kind": "website",
       "name": "New Format",
-      "url": "https://newformat.io/"
+      "url": "https://newformat.io/",
+      "category": "创意工作室",
+      "description": "newformat.io",
+      "logo": "/assets/library-logos/newformat-io.png"
     },
     {
       "kind": "website",
       "name": "Studio Woolston",
-      "url": "https://woolston.studio/"
+      "url": "https://woolston.studio/",
+      "category": "创意工作室",
+      "description": "woolston.studio",
+      "logo": "/assets/library-logos/woolston-studio.png"
     },
     {
       "kind": "website",
       "name": "Six N. Five",
-      "url": "https://sixnfive.com/"
+      "url": "https://sixnfive.com/",
+      "category": "创意工作室",
+      "description": "sixnfive.com",
+      "logo": "/assets/library-logos/sixnfive-com.png"
     },
     {
       "kind": "website",
       "name": "Tomorrow Bureau — Speculative. Digital. Realities.",
-      "url": "https://www.tomorrowbureau.io/"
+      "url": "https://www.tomorrowbureau.io/",
+      "category": "创意工作室",
+      "description": "www.tomorrowbureau.io",
+      "logo": "/assets/library-logos/tomorrowbureau-io.png"
+    },
+    {
+      "kind": "website",
+      "name": "Wallpaper*",
+      "url": "https://www.wallpaper.com/",
+      "description": "高端品牌、设计周、艺术与工艺策展",
+      "category": "设计媒体与灵感",
+      "logo": "/assets/library-logos/wallpaper-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "T Magazine",
+      "url": "https://www.nytimes.com/section/t-magazine",
+      "description": "文化语境、人物、静物与编辑视觉",
+      "category": "设计媒体与灵感",
+      "logo": "/assets/library-logos/nytimes-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "IGNANT",
+      "url": "https://www.ignant.com/",
+      "description": "艺术、摄影、建筑的色彩与光影",
+      "category": "设计媒体与灵感",
+      "logo": "/assets/library-logos/ignant-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "FRAME",
+      "url": "https://frameweb.com/",
+      "description": "零售空间、展览与体验设计",
+      "category": "设计媒体与灵感",
+      "logo": "/assets/library-logos/frameweb-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "designboom",
+      "url": "https://www.designboom.com/",
+      "description": "装置、建筑与设计周新项目",
+      "category": "设计媒体与灵感",
+      "logo": "/assets/library-logos/designboom-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "Fuorisalone",
+      "url": "https://www.fuorisalone.it/en/",
+      "description": "米兰设计周项目与年度线索",
+      "category": "展览与品牌体验",
+      "logo": "/assets/library-logos/fuorisalone-it.png"
+    },
+    {
+      "kind": "website",
+      "name": "ONSITECLUB",
+      "url": "https://www.onsiteclub.com/",
+      "description": "国内品牌活动、快闪与现场多图",
+      "category": "展览与品牌体验",
+      "logo": "/assets/library-logos/onsiteclub-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "WindowsWear",
+      "url": "https://www.windowswear.com/",
+      "description": "奢侈品橱窗、零售与快闪",
+      "category": "展览与品牌体验",
+      "logo": "/assets/library-logos/windowswear-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "OMA",
+      "url": "https://www.oma.com/projects",
+      "description": "展览叙事、空间系统与过程资料",
+      "category": "展览与品牌体验",
+      "logo": "/assets/library-logos/oma-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "Balich Wonder Studio",
+      "url": "https://www.balichwonderstudio.com/",
+      "description": "品牌展览、沉浸体验与大型事件",
+      "category": "展览与品牌体验",
+      "logo": "/assets/library-logos/balichwonderstudio-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "March Studio",
+      "url": "https://www.march.studio/aesop-salone-del-mobile",
+      "description": "材料、构造、模型与空间过程",
+      "category": "展览与品牌体验",
+      "logo": "/assets/library-logos/march-studio.png"
+    },
+    {
+      "kind": "website",
+      "name": "ACTIVATION",
+      "url": "https://www.activation-gp.com/en/work",
+      "description": "品牌体验、快闪与美妆活动",
+      "category": "展览与品牌体验",
+      "logo": "/assets/library-logos/activation-gp-com.png"
+    },
+    {
+      "kind": "website",
+      "name": "Are.na",
+      "url": "https://www.are.na/",
+      "description": "跨领域视觉线索整理",
+      "category": "设计媒体与灵感",
+      "logo": "/assets/library-logos/are-na.png"
     }
   ]
 }

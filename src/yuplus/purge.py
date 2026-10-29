@@ -325,6 +325,15 @@ def execute(app, command, p, pid, request_id):
                 for table in ('changes', 'case_library_requests'):
                     for row in db.execute(f'SELECT rowid AS _rowid,* FROM {table}').fetchall():
                         if refers(json.loads(row['result_json']), identities):
+                            if table == 'case_library_requests' and row['command'] == 'library.initialize':
+                                # Keep provenance for other bundled sources while removing
+                                # every reference to the purged registration.
+                                receipt = json.loads(row['result_json'])
+                                retained = {key: [value for value in receipt.get(key, []) if value not in identities]
+                                            for key in ('added', 'reused')}
+                                db.execute('UPDATE case_library_requests SET result_json=? WHERE rowid=?',
+                                           (canonical(retained), row['_rowid']))
+                                continue
                             db.execute(f'UPDATE {table} SET result_json=? WHERE rowid=?',
                                        (canonical({'effect': 'purged', 'retained_data': False, 'deletion_mode': 'hard'}), row['_rowid']))
                             if table == 'changes':

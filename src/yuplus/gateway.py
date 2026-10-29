@@ -1,4 +1,4 @@
-"""Loopback-only browser gateway. Business writes belong to the CLI."""
+"""Loopback gateway; source preferences are the only browser business writes."""
 import json
 import os
 import threading
@@ -89,7 +89,8 @@ class GatewayHandler(BaseHTTPRequestHandler):
             self.route(url)
         except YuError as exc:
             status = 404 if exc.code.endswith('_NOT_FOUND') else 409 if exc.code in {'FILE_HASH_MISMATCH', 'INTEGRITY_FAILURE'} else 400
-            status = {'AUTH_REQUIRED':401,'FORBIDDEN':403,'FEISHU_UNAVAILABLE':503,'PREVIEW_BUSY':503}.get(exc.code,status)
+            status = {'AUTH_REQUIRED':401,'FORBIDDEN':403,'FEISHU_UNAVAILABLE':503,'PREVIEW_BUSY':503,
+                      'VERSION_CONFLICT':409,'IDEMPOTENCY_CONFLICT':409,'ALREADY_EXISTS':409}.get(exc.code,status)
             self.error(exc.code, exc.message, status)
         except (sqlite3.DatabaseError, OSError, subprocess.SubprocessError) as exc:
             if isinstance(exc, (BrokenPipeError, ConnectionResetError)):
@@ -108,6 +109,9 @@ class GatewayHandler(BaseHTTPRequestHandler):
         path = unquote(url.path)
         if self.command == 'POST' and path == '/api/local-files/reveal':
             return self.reveal()
+        if self.command == 'POST' and path == '/api/libraries':
+            self.params(url, set())
+            return self.library_write()
         if self.command not in {'GET', 'HEAD'}:
             return self.error('METHOD_NOT_ALLOWED', '本地浏览器不提供业务写入接口。', 405)
         if path == '/api/health':
@@ -189,6 +193,31 @@ class GatewayHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(content)))
         self.end_headers()
         if self.command != 'HEAD': self.wfile.write(content)
+
+    def library_write(self):
+        if self.headers.get('Origin') != f"http://{self.headers['Host']}":
+            return self.error('FORBIDDEN', '案例库设置需要同源请求。', 403)
+        if self.headers.get_content_type() != 'application/json' or self.headers.get('Transfer-Encoding'):
+            return self.error('INVALID_INPUT', '需要 JSON 请求。', 400)
+        lengths = self.headers.get_all('Content-Length', [])
+        if len(lengths) != 1 or not lengths[0].isdigit() or not 0 < int(lengths[0]) <= 16384:
+            return self.error('INVALID_INPUT', 'JSON 请求长度无效。', 400)
+        from .cli import parse_json
+        body = parse_json(self.rfile.read(int(lengths[0])).decode('utf-8'))
+        if not isinstance(body, dict) or set(body) != {'request_id', 'action', 'input'} or body['action'] not in ('add', 'delete', 'restore'):
+            raise YuError('INVALID_INPUT', '仅支持添加、移除或重新添加案例库源。')
+        if not isinstance(body['input'], dict) or set(body['input']) & {'api_version', 'command'}:
+            raise YuError('INVALID_INPUT', '无效案例库输入。')
+        from .app import App
+        from .case_library import catalog
+        app = App(self.server.data_dir)
+        try:
+            command = 'library.' + body['action']
+            result = app.execute(command, {'api_version': '1', 'command': command, **body['input']}, request_id=body['request_id'])
+            result['libraries'] = catalog(app.db)
+            return self.json_response(result)
+        finally:
+            app.close()
 
     def reveal(self):
         # POST requires an explicit same-origin Origin in addition to the common checks.

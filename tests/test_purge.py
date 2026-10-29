@@ -141,6 +141,10 @@ class PurgeTests(unittest.TestCase):
         self.assertEqual(len(self.invoke('library','list')['data']['libraries']),len(entries)-1)
         self.invoke('library','show','--library',ident,code=5)
         self.assertFalse(self.preview('library',ident=entries[1]['id'])[1]['blockers'])
+        from yuplus.case_library import catalog
+        remaining=catalog(self.db().db)
+        self.assertTrue(all(row['origin']=='official' for row in remaining))
+        self.assertNotIn(ident,json.dumps(remaining))
 
     def test_storage_lock_blocks_source_import_and_purge(self):
         pid=self.project()['data']['project_id'];a=self.db();b=self.db()

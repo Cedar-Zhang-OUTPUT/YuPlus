@@ -1,8 +1,8 @@
 import { collaborationPanel, collaborationStartPrompt, collaborationUpdatePrompt } from "./data/collaboration.js";
 /* ═══════════════════════════════════════════════════════════════════════════
    Yu+ 只读浏览界面
-   本文件只读取服务提供的数据并渲染，模拟预览必须由服务明确声明。没有任何写入路径：没有编辑、批准、删除、上传，
-   没有页面内聊天或评论。业务写入一律在 Codex 中由 Agent 通过 Yu+ CLI 完成。
+   本文件读取服务提供的数据并渲染，模拟预览必须由服务明确声明。案例库源设置允许直接添加、移除；
+   没有页面内聊天或评论。项目内容的业务写入在 Codex 中由 Agent 通过 Yu+ CLI 完成。
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { loadingProgress } from "./data/loading-progress.js";
@@ -2636,7 +2636,7 @@ function renderStage(updateChrome = true) {
 
   let view;
   if (S.route.view === "projects") view = viewProjects();
-  else if (S.route.view === "libraries") view = libraryView(DATA.case_libraries, S.libraryPrompt, copyText, fullTime);
+  else if (S.route.view === "libraries") view = libraryView(DATA.case_libraries, S.libraryPrompt, {demo: DATA.meta.demo, onChange: records => { DATA.case_libraries = records; }});
   else if (S.route.view === "types") view = viewCatalog();
   else if (S.route.view === "draft") view = viewDraft(S.route.pid);
   else if (S.route.view === "review") view = viewReview(S.route.pid);

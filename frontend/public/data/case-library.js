@@ -1,4 +1,4 @@
-// This page only reads registered sources and prepares a clipboard request.
+// Workspace source preferences; project content remains read-only.
 export function folderUrl(value) {
   if (typeof value !== 'string' || value.length > 4096 || /[\x00-\x1f]/.test(value)) return null;
   const text = value.trim();
@@ -36,75 +36,179 @@ export function libraryRemovalPrompt(library) {
   return `请用 Yu+ 移除案例库登记 ${JSON.stringify(library.name)}（library_id：${library.id}）。先读取当前记录核对身份和版本，再执行 library delete；仅移除 Yu+ 中的登记，不删除${library.kind === 'website' ? '网站或网站内容' : '飞书文件夹或里面的内容'}。`;
 }
 
-export function libraryView(libraries, state, copy, fullTime) {
-  const el = (tag, cls, text) => {
-    const node = document.createElement(tag); node.className = cls;
-    if (text) node.textContent = text;
-    return node;
-  };
-  const page = el('div', 'content wide projects-content');
-  page.append(el('p', 'muted', '保存可供项目参考的飞书共享文件夹和网站，所有项目共用。'));
-  const grid = el('div', 'library-grid');
-  const records = (libraries || []).filter(row => !row.deleted_at);
-  for (const library of records) {
-    const card = el('article', 'card library-card');
-    const header = el('header');
-    const title = el('h3', 'grow');
-    const website = library.kind === 'website';
-    const url = website ? websiteUrl(library.url) : folderUrl(library.url);
-    if (url) {
-      const link = el('a', 'library-link', library.name);
-      link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer';
-      link.setAttribute('aria-label', `${library.name}（在新标签页打开${website ? '网站' : '飞书文件夹'}）`);
-      title.append(link);
-    } else title.textContent = library.name;
-    header.append(title, el('span', 'tag library-tag-gray', website ? '网站' : '飞书共享文件夹'));
-    const body = el('div', 'body');
-    if (!url) body.append(el('p', 'small muted', '链接不可用，请让 Agent 检查这条案例库记录。'));
-    body.append(el('p', 'tiny muted', `保存于 ${fullTime(library.created_at)}`));
-    const remove = el('button', 'chipbtn library-remove', '复制移除指令');
-    remove.type = 'button';
-    remove.setAttribute('aria-label', `复制移除案例库 ${library.name} 的提示词`);
-    remove.onclick = () => copy(libraryRemovalPrompt(library), remove);
-    body.append(remove);
-    card.append(header, body); grid.append(card);
-  }
-  if (!records.length) {
-    const card = el('section', 'card'); const body = el('div', 'body');
-    body.append(el('h3', '', '还没有案例库'), el('p', 'small muted', '填写下方的飞书共享文件夹或网站链接，复制对应提示词交给 Agent 添加。'));
-    card.append(body); page.append(card);
-  } else page.append(grid);
+export async function saveLibraryRequest(request, fetcher = fetch) {
+  const response = await fetcher('/api/libraries', {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(request),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.ok) throw new Error(result.error?.message || '保存失败，请稍后重试。');
+  return result.libraries;
+}
 
-  const dock = el('section', 'card project-create-dock'); dock.setAttribute('aria-label', '新增案例库');
-  const header = el('header'); header.append(el('h3', 'grow', '新增案例库'), el('span', 'tag library-tag-blue', '在 Codex 中添加'));
-  const body = el('div', 'body');
-  for (const [kind, key, id, title, placeholder] of [
-    ['feishu_folder', 'url', 'library-url', '飞书共享文件夹', '粘贴飞书共享文件夹链接'],
-    ['website', 'websiteUrl', 'library-website-url', '网站', '粘贴网站链接，如 https://example.com']
-  ]) {
-    const row = el('div', 'library-create-row');
-    const label = el('label', 'small', `${title}链接（必填）`); label.htmlFor = id;
-    const box = el('div', 'copyable library-prompt-box');
-    const input = el('input', 'project-prompt-input library-url');
-    input.id = id; input.type = 'url'; input.required = true; input.autocomplete = 'off';
-    input.placeholder = placeholder; input.value = state[key] || '';
-    input.setAttribute('aria-describedby', id + '-help');
-    const button = el('button', 'chipbtn', `复制新增${title}指令`); button.type = 'button';
-    const hint = el('p', 'small muted'); hint.id = id + '-help'; hint.setAttribute('aria-live', 'polite');
-    const update = () => {
-      state[key] = input.value;
-      const valid = !!libraryPrompt(input.value, kind);
-      button.disabled = !valid;
-      input.setAttribute('aria-invalid', String(!!input.value.trim() && !valid));
-      hint.textContent = !input.value.trim() ? `填写${title}链接后即可复制。` : valid
-        ? '复制后发给 Agent，保存完成后刷新即可查看。'
-        : kind === 'website' ? '请填写有效的 http 或 https 网站链接，不支持含登录凭据的链接。'
-          : '请填写 https 飞书共享文件夹链接（/drive/folder/…），不支持文档或群聊链接。';
-    };
-    input.oninput = update; input.onchange = update;
-    button.onclick = () => { update(); const prompt = libraryPrompt(input.value, kind); if (prompt) copy(prompt, button); };
-    update(); box.append(input, button); row.append(label, box, hint); body.append(row);
+export function libraryLogo(library) {
+  if (typeof library.logo === 'string' && /^\/assets\/library-logos\/[a-z0-9-]+\.png$/.test(library.logo)) return library.logo;
+  if (library.kind === 'feishu_folder') return '/assets/library-logos/feishu-cn.png';
+  const url = websiteUrl(library.url);
+  return url ? new URL(url).origin + '/favicon.ico' : null;
+}
+
+export function libraryView(libraries, state, {save = saveLibraryRequest, onChange = () => {}, demo = false} = {}) {
+  const el = (tag, cls = '', text = '') => {
+    const node = document.createElement(tag); node.className = cls;
+    node.textContent = text; return node;
+  };
+  let records = libraries || [];
+  state.tab ||= 'official';
+  const page = el('div', 'content library-catalog');
+  const header = el('div', 'library-heading');
+  const intro = el('div', 'library-intro');
+  intro.append(el('p', 'muted', '连接灵感来源，让每一次案例研究都有迹可循。'));
+  const summary = el('p', 'library-summary'); intro.append(summary);
+  const tools = el('div', 'library-tools');
+  const search = el('input', 'library-search'); search.type = 'search';
+  search.placeholder = '搜索案例库源'; search.value = state.search || '';
+  search.setAttribute('aria-label', '搜索案例库源');
+  const add = el('button', 'library-primary', '＋ 添加源'); add.type = 'button';
+  add.setAttribute('aria-expanded', String(!!state.addOpen)); add.setAttribute('aria-controls', 'library-add-form');
+  tools.append(search, add); header.append(intro, tools); page.append(header);
+  const tabs = el('div', 'library-tabs'); tabs.setAttribute('aria-label', '来源分类');
+  const tabButtons = {};
+  for (const [key, label] of [['official', 'Official'], ['personal', 'Personal']]) {
+    const button = el('button', '', label); button.type = 'button';
+    button.onclick = () => { state.tab = key; draw(); };
+    tabButtons[key] = button; tabs.append(button);
   }
-  dock.append(header, body); page.append(dock);
-  return page;
+  const notice = el('p', 'library-notice'); notice.setAttribute('role', 'status'); notice.setAttribute('aria-live', 'polite');
+  const list = el('div', 'library-sections');
+  const form = el('form', 'library-add-form'); form.id = 'library-add-form'; form.hidden = !state.addOpen;
+  form.append(el('h2', '', '添加 Personal 源'), el('p', 'muted', '保存你常用的网站或飞书共享文件夹，添加后默认启用。'));
+  const fields = {};
+  for (const [key, label, tag] of [['kind', '来源类型', 'select'], ['name', '名称', 'input'], ['url', '链接', 'input']]) {
+    const field = el('div', 'library-field'); const caption = el('label', '', label); caption.htmlFor = 'library-' + key;
+    const input = el(tag); input.id = caption.htmlFor; input.required = true;
+    if (key === 'kind') {
+      for (const [value, text] of [['website', '网站'], ['feishu_folder', '飞书共享文件夹']]) {
+        const option = el('option', '', text); option.value = value; input.append(option);
+      }
+      input.value = state.kind || 'website';
+    } else {
+      input.type = key === 'url' ? 'url' : 'text'; input.maxLength = key === 'url' ? 4096 : 200;
+      input.value = state[key] || ''; input.placeholder = key === 'url' ? 'https://…' : '为这个来源命名';
+    }
+    input.oninput = () => { state[key] = input.value; validate(); };
+    input.onchange = input.oninput;
+    fields[key] = input; field.append(caption, input); form.append(field);
+  }
+  const formError = el('p', 'library-form-error'); formError.id = 'library-form-error'; formError.setAttribute('aria-live', 'polite');
+  fields.url.setAttribute('aria-describedby', formError.id);
+  const actions = el('div', 'library-form-actions');
+  const submit = el('button', 'library-primary', '添加并启用'); submit.type = 'submit';
+  const cancel = el('button', 'chipbtn', '取消'); cancel.type = 'button';
+  const showForm = (open) => { state.addOpen = open; form.hidden = !open; add.setAttribute('aria-expanded', String(open)); };
+  add.onclick = () => { showForm(!state.addOpen); if (state.addOpen) fields.name.focus(); };
+  cancel.onclick = () => { showForm(false); add.focus(); };
+  actions.append(submit, cancel); form.append(formError, actions);
+  page.append(tabs, form, notice, list);
+  let pending = false;
+  // Retain the same request ID for a failed request so an uncertain write is safe to retry.
+  let retry;
+  const write = async (action, input, button) => {
+    if (pending || demo) return false;
+    const fingerprint = JSON.stringify({action, input});
+    if (retry?.fingerprint !== fingerprint) retry = {fingerprint, request: {action, input, request_id: 'ui_' + crypto.randomUUID()}};
+    pending = true; button.disabled = true; const label = button.textContent; button.textContent = '保存中…';
+    notice.textContent = ''; page.setAttribute('aria-busy', 'true');
+    try {
+      records = await save(retry.request); retry = null; onChange(records);
+      notice.textContent = action === 'delete' ? '已移除，此来源不会参与案例研究。' : '已添加，此来源可以用于案例研究。';
+      return true;
+    } catch (error) {
+      notice.textContent = error.message; return false;
+    } finally {
+      pending = false; button.disabled = false; button.textContent = label; page.setAttribute('aria-busy', 'false'); draw();
+    }
+  };
+  const validate = () => {
+    const url = fields.kind.value === 'website' ? websiteUrl(fields.url.value) : folderUrl(fields.url.value);
+    const invalid = !!fields.url.value.trim() && !url;
+    fields.url.setAttribute('aria-invalid', String(invalid));
+    formError.textContent = invalid ? (fields.kind.value === 'website' ? '请输入有效的 http 或 https 网站链接。' : '请输入飞书共享文件夹链接（/drive/folder/…）。') : '';
+    submit.disabled = demo || pending || !url || !fields.name.value.trim(); return url;
+  };
+  form.onsubmit = async (event) => {
+    event.preventDefault(); const url = validate(); const name = fields.name.value.trim();
+    if (!url || !name || pending || demo) return;
+    const existing = records.find(row => row.url === url);
+    if (existing && !existing.deleted_at) {
+      formError.textContent = '此来源已经启用，可以在列表中搜索查看。'; return;
+    }
+    const ok = await write(existing ? 'restore' : 'add', existing
+      ? {library_id: existing.id, base_version: existing.version}
+      : {kind: fields.kind.value, name, url}, submit);
+    if (ok) {
+      state.tab = existing?.origin || 'personal'; state.search = ''; search.value = '';
+      fields.name.value = fields.url.value = ''; state.name = state.url = ''; showForm(false); draw();
+      add.focus();
+    }
+    validate();
+  };
+  function draw() {
+    summary.textContent = `${records.filter(row => !row.deleted_at).length} / ${records.length} 个来源已启用 · 默认全部启用，按需移除`;
+    for (const [key, button] of Object.entries(tabButtons)) {
+      button.setAttribute('aria-pressed', String(state.tab === key));
+      button.textContent = `${key === 'official' ? 'Official' : 'Personal'}  ${records.filter(row => (row.origin || 'personal') === key).length}`;
+    }
+    list.replaceChildren();
+    const query = (state.search || '').trim().toLocaleLowerCase();
+    const filtered = records.filter(row => (row.origin || 'personal') === state.tab &&
+      `${row.name} ${row.url} ${row.description || ''}`.toLocaleLowerCase().includes(query));
+    if (!filtered.length) {
+      const empty = el('div', 'library-empty');
+      empty.append(el('h2', '', query ? '没有匹配的来源' : '收藏你的灵感来源'), el('p', 'muted', query ? '试试其他名称或网址。' : '点击“添加源”，把常用网站和飞书文件夹放在这里。'));
+      list.append(empty);
+    }
+    const groups = new Map();
+    for (const row of filtered) {
+      const group = state.tab === 'personal' ? '我的来源' : row.category || '内置来源';
+      if (!groups.has(group)) groups.set(group, []); groups.get(group).push(row);
+    }
+    for (const [name, rows] of groups) {
+      const section = el('section', 'library-section'); section.append(el('h2', '', name));
+      const grid = el('div', 'library-source-grid');
+      for (const row of rows.sort((a, b) => a.name.localeCompare(b.name))) {
+        const item = el('article', 'library-source');
+        const icon = el('span', 'library-source-icon');
+        icon.setAttribute('aria-hidden', 'true');
+        const fallback = el('span', '', row.name.slice(0, 2).toUpperCase()); icon.append(fallback);
+        const logo = libraryLogo(row);
+        if (logo) {
+          const img = el('img', 'library-logo'); img.alt = ''; img.width = img.height = 32;
+          img.referrerPolicy = 'no-referrer'; img.decoding = 'async'; img.hidden = true;
+          img.onload = () => { img.hidden = false; fallback.hidden = true; };
+          img.onerror = () => { img.hidden = true; fallback.hidden = false; };
+          img.src = logo; icon.append(img);
+        }
+        const body = el('div', 'library-source-body'); const title = el('h3');
+        const url = row.kind === 'website' ? websiteUrl(row.url) : folderUrl(row.url);
+        if (url) {
+          const link = el('a', '', row.name); link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; title.append(link);
+        } else title.textContent = row.name;
+        const description = row.description || (row.kind === 'feishu_folder' ? '飞书共享文件夹' : url ? new URL(url).hostname : '链接不可用');
+        body.append(title, el('p', 'muted', description), el('span', 'library-source-status', row.deleted_at ? '未启用' : '已启用'));
+        const toggle = el('button', 'library-toggle', row.deleted_at ? '＋ 添加' : '− 移除'); toggle.type = 'button';
+        toggle.disabled = demo || pending;
+        toggle.setAttribute('aria-label', `${row.deleted_at ? '添加' : '移除'} ${row.name}`);
+        toggle.onclick = async () => {
+          await write(row.deleted_at ? 'restore' : 'delete', {library_id: row.id, base_version: row.version}, toggle);
+          list.querySelector(`[data-library-id="${CSS.escape(row.id)}"]`)?.focus();
+        };
+        toggle.dataset.libraryId = row.id;
+        item.append(icon, body, toggle); grid.append(item);
+      }
+      section.append(grid); list.append(section);
+    }
+  }
+  search.oninput = () => { state.search = search.value; draw(); };
+  if (demo) notice.textContent = '模拟预览：请在本地工作空间中添加或移除来源。';
+  validate(); draw(); return page;
 }
