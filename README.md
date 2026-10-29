@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.22](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.22)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.23](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.23)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -225,6 +225,9 @@ Skill 中的 `scripts/inspect_contract.py` 使用安装了 Yu+ 的 Python，只�
 飞书成果导出使用 Skill 的 `references/export.md` 完成准备、写入和回读；核验后由 `yu export record` 保存标题、链接、版本和时间，`yu export list --project ID` 查询。Review 页的历史图标只展示已保存记录。
 
 案例库支持 `kind=feishu_folder` 和 `kind=website` 两种源，均仅保存类型、名称和链接。前端提供两条独立的新增 Prompt；网站通过浏览器/网页工具按需查找，飞书文件夹通过飞书 CLI 查找。`library delete/restore` 均只影响本地登记。schema 5 为旧记录补充飞书文件夹类型，迁移前自动完整备份，保留原项目和案例库身份。
+
+CLI 随包提供 18 个已确认的初始案例库源（1 个飞书共享文件夹、17 个网站），清单见 `src/yuplus/contracts/default-case-libraries.json`。安装器初始化或首次运行 CLI 时，每个数据目录仅登记一次；已有同链接记录（包括已移除记录）直接复用，保留名称、身份和版本。之后的重启、升级与备份恢复不会覆盖用户修改或重新添加已移除来源。只登记来源，不下载内容，也不会授予飞书访问权限。
+
 
 ## 找案例与工作空间头像（v0.3.20）
 

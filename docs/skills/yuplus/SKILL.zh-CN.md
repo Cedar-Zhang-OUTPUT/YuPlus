@@ -1,6 +1,6 @@
 # Yu+ Skill 中文审阅版
 
-本文件是实际 Skill 指令的完整中文译文，包含主文件、材料处理参考和 CLI 参考。业务对象说明本身使用中文，见[全部 24 类对象属性与成果关系](../../../skills/yuplus/references/objects.md)。代码、命令和字段名保留原样。
+本文件是实际 Skill 指令的完整中文译文，包含主文件、材料处理参考和 CLI 参考。业务对象说明本身使用中文，见[全部 23 类对象属性与成果关系](../../../skills/yuplus/references/objects.md)。代码、命令和字段名保留原样。
 
 对应可安装文件：[SKILL.md](../../../skills/yuplus/SKILL.md)。本译文供开发与审阅，不作为第二份独立安装的 Skill；修改规则时同步更新两份文件。
 
@@ -8,7 +8,7 @@
 
 面向用户使用「项目信息」（draft）、「策划文档」（review）与「案例分析」（原“找案例”）等栏目名称。CLI 字段与 Review 固定结构保持不变；当前案例图集称为「案例参考板」，不直接称为已完成的 Moodboard。
 
-R02、R03、R04 在界面分别称为「项目推进安排」「创意评审记录」「创作者 Brief」，CLI 类型键与固定内容结构保持不变。
+R02、R03 在界面分别称为「项目推进安排」「创意评审记录」，CLI 类型键与固定内容结构保持不变。
 
 ## 主文件：Yu+ 项目协作助手
 
@@ -95,7 +95,7 @@ R02、R03、R04 在界面分别称为「项目推进安排」「创意评审记�
 
 ### 信息整理 — review
 
-进入整理场景或收到 Review 请求时，按需读取[Review 固定结构](review-structure.zh-CN.md)，已读则复用。检查对应 draft 内容，生成请求范围内所有已有依据的成果，不能只写 Debrief；D09 和 D18 已有内容就必须生成 R02。每份成果只能使用规定的二级栏目及顺序。信息不全可补充，也可直接整理已知部分，不能编造事实或章节；没有 D19 可以暂不生成 R04。选择真实 draft 依据 → `review prepare` → `review publish`，回读核对结构和成果覆盖。新事实或采用口径先落到 draft。R05 仍展示同一个 D15。
+进入整理场景或收到 Review 请求时，按需读取[Review 固定结构](review-structure.zh-CN.md)，已读则复用。检查对应 draft 内容，生成请求范围内所有已有依据的成果，不能只写 Debrief；D09 和 D18 已有内容就必须生成 R02。每份成果只能使用规定的二级栏目及顺序。信息不全可补充，也可直接整理已知部分，不能编造事实或章节。选择真实 draft 依据 → `review prepare` → `review publish`，回读核对结构和成果覆盖。新事实或采用口径先落到 draft。R05 仍展示同一个 D15。
 
 用户要求修改并保存 review 时，先改因，再改果：
 
@@ -248,6 +248,8 @@ yu --data-dir DATA_DIR review publish --project PROJECT_ID --request-id REQUEST_
 - 输出 data.source_id 和 data.snapshot_id 供后续引用。`effect=noop` 或 snapshot_reused 表示未产生新内容版本；资产存储清单单独变化时，可能产生内容哈希相同的新本地快照。
 
 #### draft.apply
+
+时间项负责人 `owners` 使用可选姓名/角色数组，支持空、单人或多人；问答双方分别使用 `asked_by`（提问人）和 `answered_by`（回答方）。具体写入规则按需读取对象属性参考，不根据跟进文本自动猜测身份。
 
 D24 使用 `type_key=open_questions`、普通 draft 的 `scope_key=project` 和相同的 `draft apply` / `draft show` 命令。写入前用 `PYTHON SKILL_DIR/scripts/inspect_contract.py command draft.apply --type open_questions` 按需查字段，不另造 questions 命令。`options` 为字符串数组；status 使用 `open`、`exploring`、`resolved`、`deferred`、`closed`，表达讨论状态，与 D15 答复状态不同。D15 另支持可选 `asked_by` 与 `answered_by`。
 

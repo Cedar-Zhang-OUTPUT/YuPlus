@@ -39,7 +39,7 @@ for(const kind of REVIEW_KINDS.filter(k=>k.persistable)) {
 }
 test('empty categories can switch directly back to a populated review without using the dock',()=>{
   const env=setup([{id:'obj_debrief',project_id:'p',layer:'review',type_key:'debrief',current_revision_id:'rev1'}]);
-  for(const kind of REVIEW_KINDS.filter(k=>['creative_review','creator_brief'].includes(k.type_key))) {
+  for(const kind of REVIEW_KINDS.filter(k=>['advancement','creative_review'].includes(k.type_key))) {
     let page=env.render();assert.ok(text(page).includes('已有成果正文 obj_debrief'));
     buttons(page).find(b=>text(b).includes(kind.name)).onclick();
     page=env.render();assert.ok(text(page).includes('尚未生成 '+kind.name));

@@ -32,7 +32,7 @@
   /* ── 2. 语义色 · 阅读主题（draft 对象按主题分组，仅改变展示） ──────── */
   --theme-background: var(--blue);    /* 背景与需求 D01 D02 D03 D11 D13 D14 */
   --theme-research:   var(--teal);    /* 研究与资料 D04 D05 D06 D12 */
-  --theme-plan:       var(--orange);  /* 计划与协作 D09 D19 D20 D18 D07 D08 D16 */
+  --theme-plan:       var(--orange);  /* 计划与协作 D09 D19 D20 D18 D07 D08 */
   --theme-judgment:   var(--purple);  /* 判断与决定 D17 D22 D10 D21 D23 D15 */
 
   /* ── 3. 语义色 · 信息性质（★ 核心约束：不可把推断显示成客户原话） ──── */
@@ -50,7 +50,7 @@
   --provider-web:    var(--gray);
 
   /* ── 5. 语义色 · 成果类型 ──────────────────────────────────────────── */
-  --review-persistable: var(--indigo);  /* R01–R04，可持久化成果 */
+  --review-persistable: var(--indigo);  /* R01–R03，可持久化成果 */
   --review-derived:     var(--teal);    /* R05，读取 D15，不单独持久化 */
 
   /* ── 6. 语义色 · 状态 ──────────────────────────────────────────────

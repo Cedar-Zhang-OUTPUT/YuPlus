@@ -1,0 +1,94 @@
+{
+  "libraries": [
+    {
+      "kind": "feishu_folder",
+      "name": "案例库",
+      "url": "https://k1mai98sti.feishu.cn/drive/folder/MiFifQzyel9JCDdYx0GcG9KXn6g"
+    },
+    {
+      "kind": "website",
+      "name": "Random Studio",
+      "url": "https://random.studio/"
+    },
+    {
+      "kind": "website",
+      "name": "Modem — Office for design and innovation",
+      "url": "https://modemworks.com/"
+    },
+    {
+      "kind": "website",
+      "name": "OBJ.Studio",
+      "url": "https://obj.studio/"
+    },
+    {
+      "kind": "website",
+      "name": "FIELD.IO — Creative Intelligence for a Living World",
+      "url": "https://field.systems/"
+    },
+    {
+      "kind": "website",
+      "name": "FutureDeluxe — Design, Technology & Moving Image",
+      "url": "https://futuredeluxe.com/"
+    },
+    {
+      "kind": "website",
+      "name": "iart — Studio for Media Architectures",
+      "url": "https://iart.ch/en"
+    },
+    {
+      "kind": "website",
+      "name": "Tellart",
+      "url": "https://www.tellart.com/"
+    },
+    {
+      "kind": "website",
+      "name": "Local Projects",
+      "url": "https://localprojects.com/"
+    },
+    {
+      "kind": "website",
+      "name": "FLOAT4",
+      "url": "https://float4.com/en/"
+    },
+    {
+      "kind": "website",
+      "name": "Moment Factory — Global Entertainment Studio",
+      "url": "https://momentfactory.com/home"
+    },
+    {
+      "kind": "website",
+      "name": "Onionlab — Creativity, audiovisual design and innovation",
+      "url": "https://www.onionlab.com/"
+    },
+    {
+      "kind": "website",
+      "name": "MNFST",
+      "url": "https://www.mnfst.studio/"
+    },
+    {
+      "kind": "website",
+      "name": "Media.Work",
+      "url": "https://media.work/"
+    },
+    {
+      "kind": "website",
+      "name": "New Format",
+      "url": "https://newformat.io/"
+    },
+    {
+      "kind": "website",
+      "name": "Studio Woolston",
+      "url": "https://woolston.studio/"
+    },
+    {
+      "kind": "website",
+      "name": "Six N. Five",
+      "url": "https://sixnfive.com/"
+    },
+    {
+      "kind": "website",
+      "name": "Tomorrow Bureau — Speculative. Digital. Realities.",
+      "url": "https://www.tomorrowbureau.io/"
+    }
+  ]
+}

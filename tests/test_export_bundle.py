@@ -44,7 +44,7 @@ class ExportBundleTests(unittest.TestCase):
         self.qa = self.save('obj_qa', 'qa', [{'item_id': 'q1', 'epistemic_kind': 'fact', 'data': {'question': '包含税费吗？', 'answer': '包含 6% 税费。', 'status': 'answered', 'owner': '小鱼', 'affected_object_ids': ['obj_budget'], 'extra': {'all': '保留'}}},
             {'item_id': 'q2', 'epistemic_kind': 'unknown', 'data': {'question': '未答复问题', 'status': 'open'}}], sources={'q1': [self.source_ref]})
         self.reviews = []
-        for typ, scope in [('debrief', 'project'), ('advancement', 'project'), ('creative_review', 'round:one'), ('creator_brief', 'creator:design:round:one'), ('creator_brief', 'creator:film:round:two')]:
+        for typ, scope in [('debrief', 'project'), ('advancement', 'project'), ('creative_review', 'round:one')]:
             self.reviews.append(self.save('obj_review' + str(len(self.reviews)), typ,
                 [{'block_id': 'p1', 'markdown': '采用预算 100000000 分。\n第二段完整文字。'}, {'block_id': 'p2', 'markdown': '保留未变化条目。'}],
                 layer='review', scope=scope, deps={'p1': [self.dep(self.strategy, 'plan')], 'p2': [self.dep(self.budget, 'other')]}))
@@ -87,7 +87,7 @@ class ExportBundleTests(unittest.TestCase):
         for name in ('review.md', 'manifest.json'):
             self.assertEqual((self.root / 'export' / name).read_bytes(), (self.root / 'second' / name).read_bytes())
         self.assertEqual(before, '\n'.join(self.app.db.iterdump()))
-        self.assertEqual(len(one['review_instances']), 5)
+        self.assertEqual(len(one['review_instances']), 3)
         self.assertEqual([q['object_id'] for q in one['shared_qa']], ['obj_qa'])
         self.assertTrue(one['references_complete'])
         self.assertEqual(one['missing_references'], [])
@@ -171,7 +171,7 @@ class ExportBundleTests(unittest.TestCase):
                               '--output', str(self.root / 'cli-export')], text=True, capture_output=True)
         self.assertEqual(run.returncode, 0, run.stderr)
         receipt = json.loads(run.stdout)
-        self.assertEqual(receipt['review_instances'], 5)
+        self.assertEqual(receipt['review_instances'], 3)
         self.assertFalse(receipt['remote_published'])
         self.assertTrue((self.root / 'cli-export/manifest.json').is_file())
 
@@ -236,7 +236,7 @@ class ExportBundleTests(unittest.TestCase):
         result=self.app.execute('export.record',payload,project_id=self.pid,request_id='exp_verified')
         retry=self.app.execute('export.record',payload,project_id=self.pid,request_id='exp_verified')
         self.assertEqual(result['data'],retry['data']);self.assertTrue(retry['meta']['replayed'])
-        self.assertEqual(len(result['data']['view_basis']),6)
+        self.assertEqual(len(result['data']['view_basis']),4)
         self.assertTrue(result['data']['exported_at'])
         self.assertEqual(result['data']['external_url'],'https://example.feishu.cn/docx/VerifiedExport')
         self.assertEqual(self.app.db.execute('SELECT count(*) FROM sources').fetchone()[0],sources)

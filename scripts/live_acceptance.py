@@ -83,8 +83,6 @@ def seed(root):
     publish('debrief','project',[('film_scope','## 视频交付\n本轮交付 **成片**。','deliverables','film'),('wall_scope','## 视觉交付\n本轮交付展墙图。','deliverables','wall')])
     publish('advancement','project',[('timeline','2026-10-20 提交初稿。','milestones','delivery_day')])
     publish('creative_review','project',[('strategy','仅核验流程，不产生真实策划结论。','lead_strategy','strategy')])
-    publish('creator_brief','creator:video_team:round:r1',[('film_scope','视频团队本轮交付成片。','deliverables','film')])
-    publish('creator_brief','creator:visual_team:round:r1',[('wall_scope','视觉团队本轮交付展墙图。','deliverables','wall')])
     # Verify bypass rejection before introducing a real cause.
     illegal=copy.deepcopy(docs[0]['document']); illegal['target']['object_id']=docs[0]['saved']['object_id']; illegal['base_revision']=docs[0]['saved']['revision_id']
     illegal['set_blocks'][0]['markdown']='绕过 draft 的非法修改'
@@ -106,7 +104,7 @@ def check_http(state,url):
         with urlopen(url+path,timeout=15) as response:return json.load(response)
     view=get('/api/view?project='+state['project_id'])
     assert view['meta']['demo'] is False
-    assert len([o for o in view['objects'] if o['layer']=='review'])==5
+    assert len([o for o in view['objects'] if o['layer']=='review'])==3
     assert len([o for o in view['objects'] if o['type_key']=='qa'])==1
     old=state['objects']['deliverables']
     assert view['basis_status_by_key'][f"{old['object_id']}:{old['revision_id']}:film"]=='changed'

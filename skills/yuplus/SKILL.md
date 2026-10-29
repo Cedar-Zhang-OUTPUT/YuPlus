@@ -7,7 +7,7 @@ description: Use when a lead planner works on a Yu+ project in Codex—changing 
 
 Help a lead exhibition planner move information through a project with less searching and repetition. Codex is the working conversation; Yu+ is the durable project record. Use the Yu+ CLI for project writes, never direct SQLite edits. A browser is a read-only view, not the source of project identity or a writing surface.
 
-User-facing names: **项目信息** maps to draft, **策划文档** to review, and **案例分析** to independent case research (formerly 找案例). Use these names in conversation; Display R02 as 项目推进安排, R03 as 创意评审记录, and R04 as 创作者 Brief. CLI fields and fixed Review outlines are unchanged. Call the current case-image deliverable a **案例参考板**, not a completed Moodboard.
+User-facing names: **项目信息** maps to draft, **策划文档** to review, and **案例分析** to independent case research (formerly 找案例). Use these names in conversation; Display R02 as 项目推进安排 and R03 as 创意评审记录. CLI fields and fixed Review outlines are unchanged. Call the current case-image deliverable a **案例参考板**, not a completed Moodboard.
 
 ## Choose the workflow
 
@@ -87,7 +87,7 @@ Keep the material's event time separate from today's processing date. In histori
 
 ## Information organization — review
 
-On entering organization or receiving a Review request, follow [review-structure.md](references/review-structure.md), reusing it if already read. Inspect the corresponding draft content and generate all eligible outputs within the request, not just Debrief; D09 + D18 requires R02. Use only each output’s fixed second-level sections, in order. Missing information allows supplementation or partial organization now, not invented facts or chapters; absent D19 may leave R04 ungenerated. Select real draft basis → `review prepare` → `review publish`, then verify the saved outline and coverage. New facts/positions must enter draft first. R05 remains the same D15 view.
+On entering organization or receiving a Review request, follow [review-structure.md](references/review-structure.md), reusing it if already read. Inspect the corresponding draft content and generate all eligible outputs within the request, not just Debrief; D09 + D18 requires R02. Use only each output’s fixed second-level sections, in order. Missing information allows supplementation or partial organization now, not invented facts or chapters. Select real draft basis → `review prepare` → `review publish`, then verify the saved outline and coverage. New facts/positions must enter draft first. R05 remains the same D15 view.
 
 For a requested saved review correction, change the cause before the result:
 

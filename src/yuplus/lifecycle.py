@@ -11,6 +11,18 @@ def change_lifecycle(ctx, command, request):
     record = (_get_source if source else get_object)(ctx.db, ctx.project_id, request['source_id' if source else 'object_id'])
     if not source and record['layer'] != layer:
         raise YuError('INVALID_SCOPE', '对象层与命令不一致。')
+    if not source and action == 'restore':
+        from .app import CONTRACTS
+        import json
+        catalog = json.loads((CONTRACTS/'object-types.json').read_text())
+        supported = {t['type_key'] for t in catalog['objects'] + catalog['internal_types']}
+        from .review import _REVIEW_TYPES
+        if record['type_key'] not in supported | _REVIEW_TYPES:
+            raise YuError('INVALID_SCOPE', '该类型不属于当前可用对象。')
+        if record['type_key'] == 'expression_guide':
+            target = ctx.db.execute('SELECT type_key FROM objects WHERE project_id=? AND id=?', (ctx.project_id, record['scope_key'].removeprefix('review:'))).fetchone()
+            if not target or target[0] not in _REVIEW_TYPES:
+                raise YuError('INVALID_SCOPE', '编写依据的目标不是当前可用成果。')
     head = record['latest_snapshot_id' if source else 'current_revision_id']
     if request['base_snapshot_id' if source else 'base_revision'] != head:
         raise YuError('BASE_REVISION_CONFLICT', '版本已变化，请重新读取后再删除或恢复。')

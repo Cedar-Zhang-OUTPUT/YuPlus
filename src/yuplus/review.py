@@ -12,7 +12,7 @@ import re
 from .core import (YuError, canonical, fingerprint, get_object, insert, is_fresh,
                    load_revision, new_id, now, resolve_dependency, write_revision)
 
-_REVIEW_TYPES = {'debrief', 'advancement', 'creative_review', 'creator_brief'}
+_REVIEW_TYPES = {'debrief', 'advancement', 'creative_review'}
 _STRUCTURE = '__document__'
 
 
@@ -32,20 +32,11 @@ def _scope(ctx, target):
     if typ not in _REVIEW_TYPES:
         _error('INVALID_SCOPE', '该类型不是可发布的 review；Q&A 请读取 draft。')
     if scope == 'project':
-        if typ == 'creator_brief':
-            _error('INVALID_SCOPE', '创作者 Brief 需要明确资源条目和轮次。')
         return
-    creator = re.fullmatch(r'creator:([A-Za-z][A-Za-z0-9_-]*):round:([A-Za-z][A-Za-z0-9_-]*)', scope)
     round_only = re.fullmatch(r'round:([A-Za-z][A-Za-z0-9_-]*)', scope)
-    if creator and typ == 'creator_brief':
-        resource, round_key = creator.groups()
-        resource_obj = ctx.db.execute("SELECT current_revision_id FROM objects WHERE project_id=? AND type_key='resources' AND layer='draft' AND archived_at IS NULL", (ctx.project_id,)).fetchone()
-        if not resource_obj or resource not in _items(load_revision(ctx.db, ctx.project_id, resource_obj[0])):
-            _error('INVALID_SCOPE', 'Brief 指定的资源条目不存在。', item_id=resource)
-    elif round_only and typ != 'creator_brief':
-        round_key = round_only.group(1)
-    else:
-        _error('INVALID_SCOPE', '成果范围必须是 project、有效轮次或创作者与轮次。', scope_key=scope)
+    if not round_only:
+        _error('INVALID_SCOPE', '成果范围必须是 project 或有效轮次。', scope_key=scope)
+    round_key = round_only.group(1)
     delivery = ctx.db.execute("SELECT current_revision_id FROM objects WHERE project_id=? AND type_key='deliverables' AND layer='draft' AND archived_at IS NULL", (ctx.project_id,)).fetchone()
     if not delivery or not any(i['data'].get('round_key') == round_key for i in _items(load_revision(ctx.db, ctx.project_id, delivery[0])).values()):
         _error('INVALID_SCOPE', '成果轮次未在同项目交付条目中定义。', round_key=round_key)

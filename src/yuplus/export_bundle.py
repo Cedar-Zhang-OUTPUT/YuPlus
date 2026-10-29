@@ -24,7 +24,6 @@ _REVIEW = {
     'debrief': ('R01', '主策 Debrief'),
     'advancement': ('R02', '推进要素'),
     'creative_review': ('R03', '创意审查结果'),
-    'creator_brief': ('R04', '内外部创作者 Brief'),
 }
 
 
@@ -302,7 +301,7 @@ def prepare_bundle(data_dir, project_id, output_dir):
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
         try:
-            if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7):
+            if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7,8):
                 raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
             manifest = collect_snapshot(db, data_dir, project_id)
             db.execute('COMMIT')

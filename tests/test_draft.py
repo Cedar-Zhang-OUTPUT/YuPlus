@@ -61,7 +61,7 @@ class DraftTests(unittest.TestCase):
     def test_item_order_must_be_complete_permutation(self):
         with self.assertRaises(YuError):self.execute('draft.apply',self.request([self.op(item_order=[])]))
     def test_same_batch_dependencies_resolve_and_cycles_reject(self):
-        second={'op_id':'assessment','type_key':'project_assessment','scope_key':'project','base_revision':None,'set_items':[{'item_id':'investment','data':{'finding':'投入估算'},'epistemic_kind':'hypothesis','source_refs':[],'dependencies':[{'dependency_id':'dep','op_id':'budget','item_id':'budget','kind':'derivation'}]}]}
+        second={'op_id':'assessment','type_key':'risks','scope_key':'project','base_revision':None,'set_items':[{'item_id':'investment','data':{'risk':'投入风险'},'epistemic_kind':'hypothesis','source_refs':[],'dependencies':[{'dependency_id':'dep','op_id':'budget','item_id':'budget','kind':'derivation'}]}]}
         result=self.execute('draft.apply',self.request([second,self.op()]))
         self.assertEqual(len(result['data']['objects']),2)
         self.assertEqual(self.app.db.execute('SELECT count(*) FROM revision_dependencies').fetchone()[0],1)

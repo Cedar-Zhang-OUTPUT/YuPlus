@@ -4,7 +4,7 @@ Read for an export request or history query; reuse once loaded. Export means a *
 
 ## Prepare and compose
 
-1. Bind the real `data_dir` and `project_id` to the installed CLI/Python. Unless the user narrows scope, include all saved current R01–R04 instances (every creator/round) and shared customer Q&A. Do not export only the selected card or create missing Review just for export. Empty content is not a completed export.
+1. Bind the real `data_dir` and `project_id` to the installed CLI/Python. Unless the user narrows scope, include all saved current R01–R03 instances (every round) and shared customer Q&A. Do not export only the selected card or create missing Review just for export. Empty content is not a completed export.
 2. Capture a consistent local basis outside the business data directory:
    ```sh
    PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output OUTPUT_DIR

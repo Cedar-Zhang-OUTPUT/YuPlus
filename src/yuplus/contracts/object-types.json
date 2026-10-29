@@ -41,7 +41,7 @@
       "content_and_boundary": "图纸、照片、地址等材料集合，以及有依据的场地条件；未核实尺寸不填成事实",
       "possible_sources": "本地/飞书材料、可核实公开资料",
       "display": "图片/图纸预览与场地条件说明",
-      "downstream": "D17、D22；R01/R04 按实际需要引用",
+      "downstream": "D17、D22；R01 按实际需要引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_venue",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -52,7 +52,7 @@
       "content_and_boundary": "品牌材料集合、定位、文化资产、核心信息与视觉规范；资产使用条件关联 D18",
       "possible_sources": "品牌文件、客户公开资料",
       "display": "材料集合、视觉预览与主题摘要",
-      "downstream": "D17；R01/R04 按需引用",
+      "downstream": "D17；R01 按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_brand_assets",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -74,7 +74,7 @@
       "content_and_boundary": "客户预算、期望区间、币种及口径；保留不同说法和本轮采用值",
       "possible_sources": "D01、D02、D03、D14，用户明确决定",
       "display": "预算字段、来源说法对照、当前采用口径",
-      "downstream": "D08、D16、D22；R01/R03 按需引用",
+      "downstream": "D08、D22；R01/R03 按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_budget_range",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -83,7 +83,7 @@
       "type_key": "budget_allocation",
       "name": "策划预算分配",
       "content_and_boundary": "投入重点、克制项、分配建议与已采用分配；预估与报价分开；相关实际审查意见",
-      "possible_sources": "D07、D16、D19、D23，用户评审意见",
+      "possible_sources": "D07、D19、D23，用户评审意见",
       "display": "可编辑对象的只读分配表与说明，来源及决定记录",
       "downstream": "R03 创意审查结果、D17",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_budget_allocation",
@@ -93,10 +93,10 @@
       "code": "D09",
       "type_key": "milestones",
       "name": "时间节点或区间",
-      "content_and_boundary": "事件、日期/区间、对应交付及 Review 看什么；倒排结果注明依据",
+      "content_and_boundary": "事件、日期/区间、对应交付及 Review 看什么；倒排结果注明依据 owners 为负责人姓名/角色数组，可为空、单人或多人；只记录有依据的分工。",
       "possible_sources": "D02、D03、D14、用户安排，关联 D18/D20",
       "display": "有具体日历节点或完整区间时必须以 time_kind 和 start/end 结构化保存，进入甘特图；多个不连续安排分别保存。TBC 日期保留暂定说明；只有无法确定日期的内容使用文字条目。",
-      "downstream": "R02 推进要素、R04；其他成果直接引用日期",
+      "downstream": "R02 推进要素；其他成果直接引用日期",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_milestones",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -107,7 +107,7 @@
       "content_and_boundary": "客户侧谁决定什么、哪些事项待客户确认、双方决策边界",
       "possible_sources": "D01、D03、D14；决策标准引用 D01",
       "display": "决策角色与事项清单",
-      "downstream": "R01、R04；相关日期引用 D09",
+      "downstream": "R01；相关日期引用 D09",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_client_decisions",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -118,7 +118,7 @@
       "content_and_boundary": "竞标、直接委托、前期咨询、在执行追加等类型及依据",
       "possible_sources": "D01、D02、D03",
       "display": "简单选项及补充说明",
-      "downstream": "D16、D17、D18；R01 按需引用",
+      "downstream": "D17、D18；R01 按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_cooperation_type",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -159,7 +159,7 @@
       "code": "D15",
       "type_key": "qa",
       "name": "客户 Q&A 问题表",
-      "content_and_boundary": "客户沟通中具体问题的澄清及往来答复，包括客户提问与团队答复、团队向客户核实事实及客户回应；可记录提问方和答复方。开放探索或待讨论议题归 D24，不因来自会议或客户就归为 Q&A。",
+      "content_and_boundary": "客户沟通中具体问题的澄清及往来答复，包括客户提问与团队答复、团队向客户核实事实及客户回应；可记录提问方和答复方。开放探索或待讨论议题归 D24，不因来自会议或客户就归为 Q&A。 asked_by 为提问人、answered_by 为回答方，分别记录；follow_up_person 仅表示跟进人，不能代替问答双方。未知不推定。",
       "possible_sources": "客户往来、Brief 澄清、会议中的明确问答或具体待确认事项；不自动收纳所有未知与开放性议题。",
       "display": "问题清单及详情、答复与影响对象",
       "downstream": "R05 展示同一问题表；其他成果引用",
@@ -167,24 +167,13 @@
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
     {
-      "code": "D16",
-      "type_key": "project_assessment",
-      "name": "立项评估结果",
-      "content_and_boundary": "档期、资源、供应商、预估投入及价值匹配判断；建议与正式评估区分",
-      "possible_sources": "D07、D09、D19、D22，用户评估",
-      "display": "分项评估正文与判断依据",
-      "downstream": "D21、D23、D17；R01/R03 按需引用",
-      "data_schema_ref": "cli-input.schema.json#/$defs/data_project_assessment",
-      "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
-    },
-    {
       "code": "D17",
       "type_key": "lead_strategy",
       "name": "主策策略",
       "content_and_boundary": "本轮目标、策略、调研判断、方向候选与取舍理由；保存已有策略及实际审查意见，不要求收集阶段必须完成创意策划",
-      "possible_sources": "D01、D04—D08、D12、D13、D16、D23",
+      "possible_sources": "D01、D04—D08、D12、D13、D23",
       "display": "分主题策略正文、研究引用、方向条目与取舍依据",
-      "downstream": "R03；R01/R04 按需引用",
+      "downstream": "R03；R01 按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_lead_strategy",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -195,7 +184,7 @@
       "content_and_boundary": "轮次、交付物、颗粒度、格式/规格、数量、限制、外部依赖和不做范围；日期统一引用 D09",
       "possible_sources": "D01—D03、D14、用户约定；关联 D05/D19",
       "display": "交付清单、规格和边界说明",
-      "downstream": "R01、R02、R04",
+      "downstream": "R01、R02",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_deliverables",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -204,9 +193,9 @@
       "type_key": "resources",
       "name": "内外部资源",
       "content_and_boundary": "人员/机构、能力、作品依据、档期条件，以及候选/已核实可用/已确认参与的区别",
-      "possible_sources": "团队与合作资料、D01、D16；任务引用 D20",
+      "possible_sources": "团队与合作资料、D01；任务引用 D20",
       "display": "资源卡片、作品与参与情况",
-      "downstream": "D16、D17、R04；D08 按需引用",
+      "downstream": "D17；D08 按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_resources",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -217,7 +206,7 @@
       "content_and_boundary": "主策、专业负责人、BD 接口与内部拍板人，以及任务职责和协作接口；建议分工与实际承接分开",
       "possible_sources": "用户明确安排、D19、相关会议记录",
       "display": "人—职责—任务清单",
-      "downstream": "R01、R02、R04；日期/规格引用 D09/D18",
+      "downstream": "R01、R02；日期/规格引用 D09/D18",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_responsibilities",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -226,7 +215,7 @@
       "type_key": "project_rating",
       "name": "项目评级",
       "content_and_boundary": "A/B/C 等评级、理由及确认依据；建议评级与正式评级区分",
-      "possible_sources": "D16、D23、用户明确判断",
+      "possible_sources": "D23、用户明确判断",
       "display": "评级及理由，关联决定",
       "downstream": "资源投入和策略判断；R03 按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_project_rating",
@@ -239,7 +228,7 @@
       "content_and_boundary": "风险线索、触发条件、影响、应对建议、待核实事项及接受/处理决定",
       "possible_sources": "各对象与材料，用户判断",
       "display": "风险清单、来源、影响对象及处理说明",
-      "downstream": "D16、D17、D23；R01—R04 按需引用",
+      "downstream": "D17、D23；R01—R03 按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_risks",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -248,9 +237,9 @@
       "type_key": "assessment_decision",
       "name": "评审会结论",
       "content_and_boundary": "实际立项评审结论、Go/No-Go、补材料/调整交付/重新评估等决定；不与创意审查混用",
-      "possible_sources": "真实评审记录、用户明确结论，关联 D16/D21/D22",
+      "possible_sources": "真实评审记录、用户明确结论，关联 D21/D22",
       "display": "结论正文、行动项及决策历史",
-      "downstream": "R04、D17；其他成果按需引用",
+      "downstream": "D17；其他成果按需引用",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_assessment_decision",
       "missing_policy": "允许未知与不适用；可建议补充，不阻止场景推进。"
     },
@@ -261,7 +250,7 @@
       "content_and_boundary": "尚待探索、讨论或判断的项目议题；记录问题、背景、影响、候选思路、跟进人、状态与结论。按用途分类，不按发言人或来源分类；不是客户澄清问答、既定行动或已采用决定。",
       "possible_sources": "主策思考、会议与群聊、客户或团队提出的开放议题、材料与现有对象中的探索问题。",
       "display": "议题卡片、背景与影响、候选思路、讨论状态、结论、来源及关联对象",
-      "downstream": "D17 策略、D18 交付等相关 draft；形成实际决定时保留决策历史；R01—R04 按需依赖，不加入 R05 客户 Q&A。",
+      "downstream": "D17 策略、D18 交付等相关 draft；形成实际决定时保留决策历史；R01—R03 按需依赖，不加入 R05 客户 Q&A。",
       "data_schema_ref": "cli-input.schema.json#/$defs/data_open_questions",
       "missing_policy": "允许未决、暂缓和未知；不要求先有答案，不阻止信息收集或整理。"
     }

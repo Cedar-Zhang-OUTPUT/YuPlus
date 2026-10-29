@@ -121,10 +121,10 @@ CREATE TABLE objects (
   CHECK((layer='draft' AND type_key IN (
     'bd_context','client_brief','tender_documents','venue','brand_assets','audience',
     'budget_range','budget_allocation','milestones','client_decisions','cooperation_type',
-    'competitor_analysis','client_history','client_meetings','qa','project_assessment',
+    'competitor_analysis','client_history','client_meetings','qa',
     'lead_strategy','deliverables','resources','responsibilities','project_rating',
     'risks','assessment_decision','expression_guide'))
-    OR (layer='review' AND type_key IN ('debrief','advancement','creative_review','creator_brief'))),
+    OR (layer='review' AND type_key IN ('debrief','advancement','creative_review')) OR archived_at IS NOT NULL),
   CHECK((layer='draft' AND type_key<>'expression_guide' AND scope_key='project')
      OR (layer='draft' AND type_key='expression_guide' AND length(scope_key)>0)
      OR (layer='review' AND length(scope_key)>0)),

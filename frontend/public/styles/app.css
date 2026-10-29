@@ -800,3 +800,9 @@ html.reading-draft { overflow-anchor:none; }
 .case-board-dialog::backdrop { background:rgba(29,29,31,.35); backdrop-filter:blur(4px); }
 
 .case-board-tools a[aria-disabled="true"] { color:var(--label-3); opacity:.55; cursor:default; }
+
+/* Project-level classification help and schedule responsibility. */
+.project-info-heading { display:flex; align-items:center; gap:10px; }
+.project-info-heading .object-help { flex:none; }
+.gantt-owners { margin-left:8px; font-size:12px; font-weight:400; color:var(--label-2); overflow-wrap:anywhere; }
+.qa-parties { margin-top:12px; }

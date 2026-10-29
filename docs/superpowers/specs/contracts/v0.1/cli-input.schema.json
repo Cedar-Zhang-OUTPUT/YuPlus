@@ -428,6 +428,16 @@
         "note": {
           "type": "string",
           "minLength": 1
+        },
+        "owners": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "uniqueItems": true,
+          "description": "负责人姓名或角色；可省略、为空数组、单人或多人。"
         }
       },
       "required": [],
@@ -601,32 +611,6 @@
           "minLength": 1
         },
         "answered_by": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [],
-      "additionalProperties": false,
-      "minProperties": 1
-    },
-    "data_project_assessment": {
-      "type": "object",
-      "properties": {
-        "dimension": {
-          "enum": [
-            "schedule",
-            "resources",
-            "suppliers",
-            "investment",
-            "value",
-            "other"
-          ]
-        },
-        "finding": {
-          "type": "string",
-          "minLength": 1
-        },
-        "recommendation": {
           "type": "string",
           "minLength": 1
         }
@@ -1028,7 +1012,6 @@
             "client_history",
             "client_meetings",
             "qa",
-            "project_assessment",
             "lead_strategy",
             "deliverables",
             "resources",
@@ -1446,28 +1429,6 @@
                   "properties": {
                     "data": {
                       "$ref": "#/$defs/data_qa"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type_key": {
-                "const": "project_assessment"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "set_items": {
-                "items": {
-                  "properties": {
-                    "data": {
-                      "$ref": "#/$defs/data_project_assessment"
                     }
                   }
                 }
@@ -2047,8 +2008,7 @@
           "enum": [
             "debrief",
             "advancement",
-            "creative_review",
-            "creator_brief"
+            "creative_review"
           ]
         },
         "scope_key": {

@@ -2,7 +2,9 @@
 
 Read this when adding, finding cases in, or removing 案例库. A library is a Feishu shared folder (`kind=feishu_folder`) or website (`kind=website`), independent of projects and draft/review objects. **Yu+ stores only its kind, title, URL and registration metadata. Contents stay at the original source:** do not import files, bodies, excerpts, directory inventories or search indexes into Yu+ storage. Do not mirror folders/websites or run background crawling.
 
-For the full find-cases workflow, read [case-research.md](case-research.md). Unless the user narrows scope, search every active registered website/folder for this round’s direction; do not skip a registered type that exists, and do not require absent types. Use the user-imported aesthetic guidance as evidence without creating a lasting preference profile. Public web research (including GitHub when relevant) is encouraged alongside libraries; no hardcoded studio list. Targeted searches do not mean mirroring a whole library.
+For the full find-cases workflow, read [case-research.md](case-research.md). Unless the user narrows scope, search every active registered website/folder for this round’s direction; do not skip a registered type that exists, and do not require absent types. Use the user-imported aesthetic guidance as evidence without creating a lasting preference profile. Public web research (including GitHub when relevant) is encouraged alongside libraries; use the current registry rather than a separate studio list. Targeted searches do not mean mirroring a whole library.
+
+The CLI initializes 18 bundled source registrations once per workspace (one Feishu folder and 17 websites). Read `library list` for the actual current set; do not re-add defaults, override user edits or restore removed sources automatically. Registration does not grant Feishu access or mean source contents have been read.
 
 ## Register or use
 

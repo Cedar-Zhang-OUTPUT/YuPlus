@@ -1,6 +1,7 @@
 """Workspace-wide source registry; contents stay remote and are read on demand."""
 import json
 import re
+from pathlib import Path
 from urllib.parse import urlsplit
 from .core import YuError, canonical, digest, new_id, now
 
@@ -47,6 +48,37 @@ def source_url(value,kind):
     if kind=='feishu_folder':return folder_url(value)
     if kind=='website':return website_url(value)
     raise YuError('INVALID_INPUT','kind 必须为 feishu_folder 或 website。')
+
+
+# Reserved prefix cannot collide with public CLI request IDs. The receipt travels
+# with database backups, so removed or edited defaults stay that way on restore.
+_DEFAULT_RECEIPT = '__builtin_case_libraries_v1'
+_DEFAULTS = Path(__file__).parent/'contracts'/'default-case-libraries.json'
+
+
+def initialize_defaults(db):
+    """Called inside App's initialization transaction, once per workspace."""
+    if db.execute('SELECT 1 FROM case_library_requests WHERE request_id=?', (_DEFAULT_RECEIPT,)).fetchone():
+        return
+    entries = json.loads(_DEFAULTS.read_text())['libraries']
+    stamp = now()
+    added, reused = [], []
+    for entry in entries:
+        kind, name = entry['kind'], entry['name']
+        if not isinstance(name,str) or not name.strip() or len(name)>200:
+            raise YuError('INVALID_INPUT','内置案例库名称无效。')
+        url = source_url(entry['url'],kind)
+        # Include removed registrations: initialization must never undo removal.
+        row = db.execute('SELECT id FROM case_libraries WHERE url=?',(url,)).fetchone()
+        if row:
+            reused.append(row['id'])
+            continue
+        identity = new_id('lib')
+        db.execute('INSERT INTO case_libraries(id,name,url,kind,version,created_at,updated_at) VALUES(?,?,?,?,1,?,?)',
+                   (identity,name.strip(),url,kind,stamp,stamp))
+        added.append(identity)
+    db.execute('INSERT INTO case_library_requests VALUES(?,?,?,?,?)',
+               (_DEFAULT_RECEIPT,digest(entries),'library.initialize',canonical({'added':added,'reused':reused}),stamp))
 
 
 def listed(db,include_deleted=False):

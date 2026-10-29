@@ -31,7 +31,7 @@ class LiveAcceptanceTests(unittest.TestCase):
             state=json.loads((root/'state.json').read_text())
             manifest=json.loads((root/'export/manifest.json').read_text())
             self.assertEqual(state['phase'],'complete')
-            self.assertEqual(len(manifest['review_instances']),5)
+            self.assertEqual(len(manifest['review_instances']),3)
             self.assertEqual(len(manifest['shared_qa']),1)
             self.assertTrue(manifest['references_complete'])
             self.assertEqual(manifest['warnings'],[])

@@ -4,7 +4,7 @@
 
 ## 准备与编写
 
-1. 用已安装 CLI/Python 核对真实 `data_dir`、`project_id`。用户未缩小范围时，包括所有已保存的当前 R01–R04 实例（每位创作者、每轮）和共用客户 Q&A。不只导出选中卡片，不为导出额外生成缺失 Review。空内容不算导出完成。
+1. 用已安装 CLI/Python 核对真实 `data_dir`、`project_id`。用户未缩小范围时，包括所有已保存的当前 R01–R03 实例（每轮）和共用客户 Q&A。不只导出选中卡片，不为导出额外生成缺失 Review。空内容不算导出完成。
 2. 在业务数据目录外获取一致快照：
    ```sh
    PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output OUTPUT_DIR

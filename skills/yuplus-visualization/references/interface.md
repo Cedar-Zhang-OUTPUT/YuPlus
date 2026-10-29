@@ -8,9 +8,11 @@ The project list supports search and empty states. Open the intended project by 
 
 Project navigation contains “项目信息”, “策划文档”, “原始资料”, and “修改与确认记录”; the object definitions page explains supported types. The navigation toggle expands/collapses the sidebar. Its footer reports page refresh time and offers “刷新页面”. That timestamp is not a remote-source check time. The history page presents stored changes and decisions, not an audit approval or export created merely by clicking a button.
 
+The “信息分类说明” page opens from the question-mark button beside “项目信息”, not a dock entry. Timeline `owners` may be empty, one name or several names; saved names appear in smaller gray text after the Gantt event title. Q&A shows “提问人” and “回答方” separately; unknown values show “未明确”. Follow-up ownership does not establish either identity.
+
 ## Information collection: draft
 
-The reading area groups the 24 business object types. They are available categories, not 24 mandatory completed records. “全部 24 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
+The reading area groups the 23 business object types. They are available categories, not 23 mandatory completed records. “全部 23 类” / “只看有内容” switches the directory filter. Clicking a directory entry scrolls to its object; scrolling updates the selected entry.
 
 The “信息目录” is initially collapsed. Hover opens a floating preview without resizing the reading layout. Moving away or choosing an entry closes that preview. Clicking “展开信息目录” or “固定展开信息目录” pins it open and changes the layout; choosing entries then leaves it open. “收起信息目录” collapses it. In a narrow window expansion appears downward. The click controls are also the touch/keyboard route.
 
@@ -26,7 +28,7 @@ The D09 Gantt chart reads saved structured start/end values, not dates embedded 
 
 Q&A cards show both question and answer. Missing answers remain pending; an inapplicable answer retains its explanation. Source evidence appears in the shared “依据” row.
 
-D24 “开放性问题” appears under “判断与决定”, with question, context, impact, options, discussion status, conclusion, evidence and related objects when recorded. Its states are 待讨论 / 探索中 / 已有结论 / 暂缓 / 已关闭. It is separate from client clarification Q&A; R01–R04 may cite it, while R05 still shows only D15.
+D24 “开放性问题” appears under “判断与决定”, with question, context, impact, options, discussion status, conclusion, evidence and related objects when recorded. Its states are 待讨论 / 探索中 / 已有结论 / 暂缓 / 已关闭. It is separate from client clarification Q&A; R01–R03 may cite it, while R05 still shows only D15.
 
 ## Monitored groups in draft and review
 
@@ -45,10 +47,9 @@ Each group shows its configured interval, enabled/paused/pending schedule state,
 | R01 | 主策 Debrief | Saved review object |
 | R02 | 项目推进安排 | Saved review object |
 | R03 | 创意评审记录 | Saved review object |
-| R04 | 创作者 Brief | Multiple creator/round instances may coexist |
 | R05 | 客户 Q&A | View of the same D15 draft Q&A, not another persisted review copy |
 
-Select the type and, where applicable, the Brief instance. Review versions are available through the version area and its “查看” buttons; historical reading is labelled. Paragraph actions are “完整追溯路径” and “复制引用”; changed paragraphs additionally have yellow “查看差异”. The orange changed-basis banner offers “查看受影响段落” and “复制更新指令”. The title's “复制生成飞书文档指令” covers the entire project, regardless of the selected card. See [review-actions.md](review-actions.md) for scope and execution.
+Select the type and, where applicable, the round. Review versions are available through the version area and its “查看” buttons; historical reading is labelled. Paragraph actions are “完整追溯路径” and “复制引用”; changed paragraphs additionally have yellow “查看差异”. The orange changed-basis banner offers “查看受影响段落” and “复制更新指令”. The title's “复制生成飞书文档指令” covers the entire project, regardless of the selected card. See [review-actions.md](review-actions.md) for scope and execution.
 
 ## Original, snapshot, and actual file
 

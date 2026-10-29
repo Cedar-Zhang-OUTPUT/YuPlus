@@ -962,7 +962,12 @@ function viewDraft(pid) {
   h.id = "draft-title";
   h.style.margin = "0 0 6px";
   h.textContent = "项目信息";
-  head.append(h);
+  const help = el("button", "object-help");
+  help.type = "button"; help.textContent = "?";
+  help.setAttribute("aria-label", "查看信息分类说明");
+  help.title = "查看信息分类说明"; help.onclick = () => go("#/types");
+  head.classList.add("project-info-heading");
+  head.append(h, help);
   c.append(head);
   c.append(projectMonitorPanel(pid));
 
@@ -1431,6 +1436,11 @@ function milestoneChart(o, rev, hue) {
       const dates = milestoneDates(it); const row = el("div", "gantt-row");
       const label = el("div", "gantt-label");
       const name = el("b"); name.textContent = it.data.event;
+      const owners = Array.isArray(it.data.owners) ? it.data.owners : [];
+      if (owners.length) {
+        const people = el("span", "gantt-owners"); people.textContent = owners.join("、");
+        name.append(people);
+      }
       const date = el("small"); date.textContent = dates.start === dates.end ? dates.start : `${dates.start} — ${dates.end}`;
       label.append(name, date);
       const track = el("div", "gantt-track");
@@ -1440,7 +1450,7 @@ function milestoneChart(o, rev, hue) {
       mark.style.setProperty("--h", hue);
       mark.style.left = percent(dates.from) + "%";
       if (dates.start !== dates.end) mark.style.width = Math.max(1, percent(dates.to)-percent(dates.from)) + "%";
-      mark.setAttribute("aria-label", it.data.event + "，" + date.textContent + "，查看详情");
+      mark.setAttribute("aria-label", it.data.event + (owners.length ? "，负责人：" + owners.join("、") : "") + "，" + date.textContent + "，查看详情");
       mark.setAttribute("aria-expanded", "false"); mark.title = it.data.source_note || it.data.basis || it.data.event;
       const details = el("div", "gantt-details"); details.id = `milestone-${o.id}-${it.item_id}`; details.hidden = true;
       mark.setAttribute("aria-controls", details.id);
@@ -1538,12 +1548,22 @@ function itemCard(o, rev, it, hue) {
     d.append(p);
   }
 
-  const rest = fields.filter((k) => !["text", "requirement", "risk", "answer", "answer_basis"].includes(k) && !(plainValue && k === "value"));
+  if (isQa) {
+    const parties = el("dl", "field qa-parties");
+    for (const [key, label] of [["asked_by", "提问人"], ["answered_by", "回答方"]]) {
+      const term = el("dt"); term.textContent = label;
+      const value = el("dd"); value.textContent = dd[key] || "未明确";
+      parties.append(term, value);
+    }
+    d.append(parties);
+  }
+  if (o.type_key === "milestones" && !fields.includes("owners")) fields.push("owners");
+  const rest = fields.filter((k) => !["text", "requirement", "risk", "answer", "answer_basis"].includes(k) && !(isQa && ["asked_by", "answered_by"].includes(k)) && !(plainValue && k === "value"));
   if (rest.length) {
     const dl = el("dl", "field");
     dl.style.marginTop = proseLike ? "12px" : "0";
     for (const k of rest) {
-      let v = dd[k];
+      let v = k === "owners" ? (dd.owners?.length ? dd.owners.join("、") : "未指定") : dd[k];
       let isMoney = false;
       if (moneyKeys.has(k)) { const m = money(v, dd.currency); if (m) { v = m; isMoney = true; } }
       if (k === "currency" && fields.some(field => moneyKeys.has(field))) continue;
@@ -1639,7 +1659,7 @@ const FIELD_LABEL = {
   round_key: "轮次", budget_kind: "口径", currency: "币种", min_minor: "金额下限", max_minor: "金额上限",
   applies_to: "适用范围", scope: "适用范围", raw: "原文金额", decided_by: "决定者", rationale: "理由", event: "事件",
   time_kind: "时间类型", date: "日期", start: "开始", end: "结束", source_note: "时间来源",
-  context: "议题背景", options: "候选思路", asked_by: "提问方", answered_by: "答复方",
+  context: "议题背景", options: "候选思路", asked_by: "提问人", answered_by: "回答方", owners: "负责人",
   question: "问题", status: "状态", follow_up: "跟进人", answer: "答复", answer_basis: "答复依据",
   related_object_ids: "关联对象", risk: "风险", trigger: "触发条件", impact: "影响", response: "应对",
   decision: "处理决定", to_verify: "待核实", meeting: "会议", meeting_at: "会议时间", focus: "议题",
@@ -1686,7 +1706,7 @@ function viewReview(pid) {
   layout.style.cssText = "display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr);gap:26px;align-items:start;margin-top:20px;";
   layout.classList.add("object-layout");
 
-  /* 左侧五类成果 */
+  /* 左侧成果目录 */
   const nav = el("div", "card");
   const nh = el("header");
   const nh3 = el("h3"); nh3.textContent = "成果"; nh.append(nh3);
@@ -1789,17 +1809,6 @@ function viewReview(pid) {
 
 function instanceLabel(o) {
   const scope = o.scope_key || "";
-  const m = scope.match(/creator:([^:]+):round:([^:]+)/);
-  if (m) {
-    const res = DATA.objects.find(r => r.project_id === o.project_id && r.type_key === "resources");
-    const rev = headRev(res);
-    let who = m[1];
-    if (rev && rev.payload.items) {
-      const it = rev.payload.items.find((x) => x.item_id === m[1]);
-      if (it) who = it.data.name;
-    }
-    return `${who} · ${m[2]}`;
-  }
   return scope || "整体";
 }
 
@@ -2037,11 +2046,13 @@ function qaReviewView(pid, qaObj, kindMeta) {
     if (it.data.follow_up_person || it.data.follow_up) { const f = el("span", "when"); f.textContent = "跟进：" + (it.data.follow_up_person || it.data.follow_up); top.append(f); }
     row.append(top);
     const q = el("div"); q.style.cssText = "font-weight:600;font-size:14.5px;"; q.textContent = it.data.question; row.append(q);
-    if (it.data.asked_by || it.data.answered_by) {
-      const parties = el('div', 'small muted');
-      parties.textContent = [it.data.asked_by && '提问方：' + it.data.asked_by, it.data.answered_by && '答复方：' + it.data.answered_by].filter(Boolean).join(' · ');
-      row.append(parties);
+    const parties = el('dl', 'field qa-parties');
+    for (const [key, label] of [['asked_by', '提问人'], ['answered_by', '回答方']]) {
+      const term = el('dt'); term.textContent = label;
+      const value = el('dd'); value.textContent = it.data[key] || '未明确';
+      parties.append(term, value);
     }
+    row.append(parties);
     if (it.data.answer) {
       const a = el("div"); a.style.cssText = "font-size:14px;margin-top:6px;color:var(--label-2);"; a.textContent = "答复：" + it.data.answer; row.append(a);
     } else if (it.data.note) {
@@ -2323,7 +2334,7 @@ function viewCatalog() {
   const rh = el("header");
   const rh3 = el("h3"); rh3.textContent = "策划文档类型"; rh.append(rh3);
   const rg = el("span", "grow"); rh.append(rg);
-  rh.append(tag("5 类", "indigo"));
+  rh.append(tag(`${DATA.REVIEW_KINDS.length} 类`, "indigo"));
   rc.append(rh);
   const rb = el("div", "body");
   for (const k of DATA.REVIEW_KINDS) {
@@ -2502,7 +2513,6 @@ function renderChrome() {
   };
   addNav(sm, "项目", "#/", { icon: "▦", current: S.route.view === "projects" });
   addNav(sm, "案例库", "#/libraries", { icon: "▤", current: S.route.view === "libraries" });
-  addNav(sm, "信息分类说明", "#/types", { icon: "◇", current: S.route.view === "types", n: String(DATA.catalog.length) });
 
   const sp = $("sideProject"); sp.replaceChildren();
   const secondary = $("sideProjectSecondary"); secondary.replaceChildren();

@@ -31,6 +31,6 @@
 {"api_version":"1","command":"source.delete","source_id":"ACTUAL_SOURCE_ID","base_snapshot_id":"ACTUAL_SNAPSHOT_ID","reason":"用户要求移出材料库"}
 ```
 
-检查回执、列表可见性、历史版本和返回的 `affected_draft_items`／`affected_reviews` 或 `referenced_by`。按请求范围处理真实关联：draft 删除可用于移除依赖它的 Review 段落；只隐藏来源不撤回或改写事实。不能级联删除其他对象。即使旧创作者/轮次已不存在，仍可在真实原因和准确身份下删除相应 Review。
+检查回执、列表可见性、历史版本和返回的 `affected_draft_items`／`affected_reviews` 或 `referenced_by`。按请求范围处理真实关联：draft 删除可用于移除依赖它的 Review 段落；只隐藏来源不撤回或改写事实。不能级联删除其他对象。即使旧轮次已不存在，仍可在真实原因和准确身份下删除相应 Review。
 
 重新启用空 Review 后，`review prepare` 要显式选回实际 draft 条目；重新编写所需的新表达指令先存 draft，不能复用已消费的删除原因。原对象/段落身份保留，历史因果不重置。写入后刷新页面：当前列表隐藏删除记录，历史引用仍可追溯。没有永久清除命令。

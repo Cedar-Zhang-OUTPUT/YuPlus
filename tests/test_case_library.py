@@ -18,6 +18,7 @@ class LibraryTests(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.root=Path(self.tmp.name);self.data=self.root/'data'
         self.app=App(self.data);self.addCleanup(self.app.close);self.n=0
+        self.defaults=self.app.execute('library.list')['data']['libraries']
     def write(self,action,**fields):
         self.n+=1
         return self.app.execute('library.'+action,{'api_version':'1','command':'library.'+action,**fields},request_id=f'req_{self.n}')['data']
@@ -38,10 +39,10 @@ class LibraryTests(unittest.TestCase):
         for pid in (None,project):
             with read_snapshot(self.data) as db:self.assertEqual(browser_view(db,self.data,pid)['case_libraries'][0]['name'],'新名称')
         self.write('delete',library_id=row['id'],base_version=2)
-        self.assertEqual(self.app.execute('library.list')['data']['libraries'],[])
-        self.assertEqual(len(self.app.execute('library.list',{'include_deleted':True})['data']['libraries']),1)
+        self.assertEqual(self.app.execute('library.list')['data']['libraries'],self.defaults)
+        self.assertEqual(len(self.app.execute('library.list',{'include_deleted':True})['data']['libraries']),len(self.defaults)+1)
         self.write('restore',library_id=row['id'],base_version=3)
-        with read_snapshot(self.data) as db:self.assertEqual(len(browser_view(db,self.data)['case_libraries']),1)
+        with read_snapshot(self.data) as db:self.assertEqual(len(browser_view(db,self.data)['case_libraries']),len(self.defaults)+1)
         backup=self.root/'backup';create_backup(self.data,backup);restored=self.root/'restored';restore_backup(backup,restored)
         with read_snapshot(restored) as db:self.assertEqual(browser_view(db,restored)['case_libraries'][0]['id'],row['id'])
     def test_invalid_inputs_and_project_scope_are_rejected(self):
@@ -50,16 +51,16 @@ class LibraryTests(unittest.TestCase):
         for url in urls:
             with self.subTest(url=url),self.assertRaises(YuError):self.write('add',name='A',url=url)
         with self.assertRaises(YuError):self.app.execute('library.list',{},project_id='project')
-        self.assertEqual(self.app.execute('library.list')['data']['libraries'],[])
+        self.assertEqual(self.app.execute('library.list')['data']['libraries'],self.defaults)
     def test_schema_three_upgrade_preserves_projects_and_backs_up(self):
         legacy=self.root/'legacy';old=App(legacy)
         project=old.execute('project.create',{'name':'旧项目'},request_id='old')['data']['project_id']
         old.db.execute('DROP TABLE case_library_requests');old.db.execute('DROP TABLE case_libraries');old.db.execute('PRAGMA user_version=3');old.close()
         migrated=App(legacy)
         try:
-            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],7)
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],8)
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
-            self.assertEqual(migrated.execute('library.list')['data']['libraries'],[])
+            self.assertEqual(len(migrated.execute('library.list')['data']['libraries']),18)
         finally:migrated.close()
         backups=list((self.root/'legacy-migration-backups').iterdir());self.assertEqual(len(backups),1)
         with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],3)
@@ -73,7 +74,7 @@ class LibraryTests(unittest.TestCase):
         self.assertEqual(run('library','list')['libraries'][0]['id'],added['id'])
         deleted=run('library','delete','--request-id','cli_delete','--input','-',payload={'api_version':'1','command':'library.delete','library_id':added['id'],'base_version':added['version']})
         self.assertTrue(deleted['deleted_at'])
-        self.assertEqual(run('library','list')['libraries'],[])
+        self.assertEqual(run('library','list')['libraries'],self.defaults)
         self.assertEqual(run('library','list','--include-deleted')['libraries'][0]['id'],added['id'])
         restored=run('library','restore','--request-id','cli_restore','--input','-',payload={'api_version':'1','command':'library.restore','library_id':added['id'],'base_version':deleted['version']})
         self.assertIsNone(restored['deleted_at'])
@@ -100,7 +101,7 @@ class LibraryTests(unittest.TestCase):
             self.assertEqual(json.loads(response.read())['case_libraries'][0]['id'],saved['id'])
             connection.request('POST','/api/view',body='{}');response=connection.getresponse()
             self.assertEqual(response.status,405);response.read();connection.close()
-            self.assertEqual(len(self.app.execute('library.list')['data']['libraries']),1)
+            self.assertEqual(len(self.app.execute('library.list')['data']['libraries']),len(self.defaults)+1)
         finally:
             server.shutdown();server.server_close();thread.join()
 
@@ -127,7 +128,7 @@ class LibraryTests(unittest.TestCase):
         with read_snapshot(self.data) as db:
             self.assertEqual(browser_view(db,self.data)['case_libraries'][0]['kind'],'website')
         self.write('delete',library_id=row['id'],base_version=2)
-        self.assertEqual(self.app.execute('library.list')['data']['libraries'],[])
+        self.assertEqual(self.app.execute('library.list')['data']['libraries'],self.defaults)
         restored=self.write('restore',library_id=row['id'],base_version=3)
         self.assertEqual(restored['kind'],'website')
         backup=self.root/'web-backup';create_backup(self.data,backup)
@@ -154,7 +155,7 @@ class LibraryTests(unittest.TestCase):
             self.assertEqual(saved['kind'],'feishu_folder')
             self.assertEqual(saved['version'],row['version'])
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
-            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],7)
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],8)
         finally:migrated.close()
         backups=list((self.root/'legacy4-migration-backups').iterdir());self.assertEqual(len(backups),1)
         with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:
