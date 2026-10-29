@@ -25,7 +25,18 @@ R01/R02/R04 use `project` or a real `round:<round_key>` already present in D14. 
 
 D19 holds insight, strategy and judgment criteria. D20 holds the specific creative direction, its rationale, experience, references and development. Supplementing images or rewriting a scheme revises its existing item; a genuinely different direction creates a new item. Do not synthesize creative proposals merely because the user entered organization.
 
+Distinguish independent directions from iterations, layout studies and historical references using their content and chronology. A separate file or date is not a separate proposal. Preserve prior versions and provenance; if the relationship is uncertain, leave it explicit rather than merging or presenting all material as current alternatives. Correct misclassified saved items through draft before regenerating Review.
+
 Within 深化内容 choose only relevant defined modules: film (`script`, `storyboard`, `key_visual`, `sound`), exhibition (`zones`, `journey`, `exhibits`), interaction (`interaction`), integrated communication (`touchpoints`). Reference images explain what is borrowed. Case research stays independent; bring selected conclusions into project evidence explicitly, never synchronize the whole case library.
+
+## Content responsibilities
+
+- **Debrief:** explain the task, audience, strategic judgment, creative questions and boundaries. 本轮创意任务 describes what the creative work must solve; detailed deliverable inventories, equipment and assignments belong in advancement.
+- **Advancement:** maintain delivery, owners, dates and review arrangements. Link the relevant creative judgment instead of repeating the Debrief.
+- **Creative plan:** describe this direction. 深化内容 adds concrete development beyond 叙事与体验 and 视觉与案例参考; it must not repeat those sections. 待讨论事项 contains direction-specific questions and effects only. Keep project-wide open issues in D25 and client clarification in D18; refer to them where relevant instead of copying the same list into every plan.
+- **Review record:** record actual feedback, decisions and resulting changes against the original target version; do not retell the whole proposal.
+
+Each substantive fact or list has one primary location; other sections add only the relevant implication or a short reference. Preserve meaningful distinctions between rounds. Put a shared reading/permission limitation once, with its scope; repeat only a distinct impact. Required but unsupported sections get one brief note, never filler. Render module keys as natural labels such as 动线、展区、关键视觉, not raw `journey:` or `zones:`. Before publishing, check for duplicated paragraphs, repeated issue tables and misplaced detail across all outputs in scope.
 
 ## Corrections
 

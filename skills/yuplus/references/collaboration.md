@@ -2,12 +2,28 @@
 
 Read on entering planning documents, receiving team edits, or running the collaboration schedule. Reuse context. The service checks every 60 seconds while running; it records observations, not business judgments. The Agent interprets changes. Never treat another editor's last-write time as decision authority.
 
+The Agent owns document composition and semantic writeback through draft → Review. The service stores the binding, source snapshots, synchronization baseline and conflicts; it transports authored XML without inventing headings or content. Mappings use actual content ranges, independently of the reader's outline. Direct Feishu editing alone does not update the Yu+ baseline.
+
 ## Start the second scene
 
 1. Organize all eligible outputs in scope under review-structure.md, saving draft causes before Review. Keep incomplete facts explicit. No invented proposals or decisions.
-2. `collab show --project PID --json` returns the binding and local section keys. If bound, reuse that document. Otherwise read export.md and installed lark-doc authoring/media guidance; author native XML for each returned key. `collab create --input FILE --request-id ID` takes `{"sections":{"OBJECT:BLOCK":"<h2>…</h2><p>…</p>"}}`. Include all local keys. Dates require a verified in-document Gantt, references use titled links, selected images/files become actual media. Never publish logs or technical bundles. Verify the created document and media; repair the same document on partial failure.
+2. `collab show --project PID --json` returns the binding and local section keys/revisions. Reuse a bound document. Otherwise read export.md and installed lark-doc authoring/media guidance; compose the complete native XML with a readable hierarchy. Submit it through `collab create` using the contract below. The Agent determines titles, prose, tables and media. Dates require a verified in-document Gantt; use titled source links and actual selected images/files. Verify the created document and media; repair the same document on partial failure.
 3. `collab schedule` gives a proposed prompt/interval. Use the host's real automation tool to schedule project synchronization, preferably every five minutes when supported. Follow the user's chosen interval and actual host limits. Persist its real receipt with `collab scheduler-bind` and `{"schedule":{"automation_id":"…","thread_id":"…","host_id":"…","interval_minutes":5,"state":"active"}}`. Saving a receipt does not create a task. If the host cannot schedule, report that limitation; do not claim automatic content maintenance. Existing group schedules remain separate.
 4. Return the permanent document link; the page reads it from the binding. No copy-export step is needed. Remote failure leaves local documents intact.
+
+## Authored documents and content ranges
+
+`collab create --input FILE --request-id ID` accepts:
+
+```json
+{"xml":"<title>项目策划文档</title><h1>主策 Debrief</h1><h2>项目任务</h2><p>已保存的项目任务正文</p>","mappings":{"OBJECT:BLOCK":{"start":1,"end":2}},"expected_local_revisions":{"OBJECT:BLOCK":"REVISION_ID"}}
+```
+
+Replace example identities with `show` results and cover every local key. Creation indexes are zero-based, inclusive **top-level body blocks**, excluding `<title>`; headings, paragraphs, tables and media each occupy one position. Keep meaningful small ranges: a section's heading and paragraphs, or one table. Multiple Q&A keys may share exactly the same table range; partially overlapping ranges are rejected. Do not map the entire document merely to avoid tracking sections.
+
+After creation, `pull/prepare` returns actual block-ID mappings: `{"OBJECT:BLOCK":{"start":"BLOCK_ID","end":"BLOCK_ID"}}`. Agent-created Feishu documents can instead be registered with `collab bind` using `url`, these actual mappings and the fetched `base_revision`; binding is intake, not proof of synchronization. Pull and reconcile through draft → Review before accepting the imported content. Never create a second document because registration failed.
+
+`collab map` replaces the complete mapping dictionary, using actual sibling block IDs and the current `base_revision`. Use it after inspecting new team contributions or repairing transformed/missing blocks. Mapping changes enter the inbox; they do not acknowledge content or resolve conflicts. Creation/readback uncertainty preserves the saved URL: inspect it and repair mappings, never retry creation blindly.
 
 ## Read team changes and preserve causality
 
@@ -19,9 +35,9 @@ Read on entering planning documents, receiving team edits, or running the collab
 
 ## Publish local changes safely
 
-- `collab prepare` rechecks remote state. For each changed local section use `collab push` with `key`, authored `xml`, exact `base_revision` and `expected_local_revision`. It checks both revisions, patches only that section, reads back and records a baseline. Refresh before each next patch. Same-section remote changes block writing until absorbed/resolved. Do not bypass this with overwrite or `--revision-id -1`.
+- `collab prepare` rechecks remote state. Use `collab push` with `key`, complete replacement `xml` for its mapped range, exact `base_revision` and `expected_local_revision`. For a shared range, use `expected_local_revisions:{"KEY":"REVISION_ID",…}` instead, including **every** key mapped to that range, and preserve every row's current content. The service checks all those local revisions and remote conflicts, patches only that range, reads back and advances the corresponding baselines. Refresh before each next patch. Same-range remote changes block writing until absorbed/resolved. Do not bypass this with overwrite or `--revision-id -1`.
 - Preserve images, attachments, whiteboards, embedded tables and comments. If a section cannot be replaced without losing rich content, retain it and apply only supported in-place changes, then reread and reconcile. Never erase collaborator content to obtain a clean comparison. Read media with the corresponding Feishu Skill when needed.
-- New local sections append; new team sections can be mapped using `collab map` with a full `mappings` dictionary from local keys to distinct existing top-level heading IDs. Deleted anchors require reconciliation, not silent recreation. Reuse current IDs; changing an anchor is not a conflict resolution.
+- An unmapped local key can be appended through `push`; supply its complete XML, including any needed reader heading. Existing range updates must preserve the headings the Agent intends to keep. Legacy string mappings retain their existing heading when pushed; new mappings use explicit start/end ranges. Deleted endpoints require reconciliation, not silent recreation.
 - Rewrites preserve section identities and unrelated material. New independent directions get distinct proposal items/scopes. Small edits stay on the current direction, not a duplicate document.
 
 ## Recovery and observation

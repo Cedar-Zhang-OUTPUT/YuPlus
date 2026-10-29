@@ -122,7 +122,7 @@ class CollaborationTests(unittest.TestCase):
         self.assertEqual(c.changes(base,base['local'],{'a':None,'b':{'hash':'TWO'}})['a'],'remote')
     def test_mapping_and_xml_validation(self):
         self.code('INVALID_INPUT',lambda:self.runcommand('collab.create',{'sections':{self.key:5}}))
-        self.code('INVALID_INPUT',lambda:self.runcommand('collab.create',{'sections':{self.key:'<h1>wrong</h1>'}}))
+        self.code('INVALID_INPUT',lambda:self.runcommand('collab.create',{'sections':{self.key:'<title>wrong</title>'}}))
         self.assertEqual(self.remote.writes,0)
     def test_no_business_change_cannot_ignore_body_change(self):
         self.create();self.remote.edit('100','50');d=self.pull();e=d['events'][-1]
@@ -159,3 +159,167 @@ class CollaborationTests(unittest.TestCase):
             binding=c.public(app.db,self.pid);self.assertFalse(binding['enabled']);self.assertEqual(binding['schedule'],{})
             self.assertEqual(binding['url'],c.public(self.app.db,self.pid)['url'])
         finally:app.close()
+
+    def authored_create(self,xml=None,mappings=None):
+        local=c.local_sections(self.app.db,self.pid)
+        return self.runcommand('collab.create',{'xml':xml or '<title>项目策划</title><h1>主策 Debrief</h1><h2>项目任务</h2><p>100</p>',
+            'mappings':mappings or {self.key:{'start':1,'end':2}},
+            'expected_local_revisions':{k:v['revision_id'] for k,v in local.items()}})
+
+    def add_qa(self,answers=('待答复','待答复'),source=None):
+        items=[{'item_id':'q'+str(i),'data':{'question':q,'answer':a,'asked_by':'主策','answered_by':'客户'},
+                'epistemic_kind':'source_statement' if source else 'hypothesis',
+                'source_refs':[{'evidence_id':'remote','source_version_id':source,'kind':'supports'}] if source else [],'dependencies':[]}
+               for i,(q,a) in enumerate(zip(('是否确认档期？','是否确认场地？'),answers))]
+        current=getattr(self,'qa',None)
+        op={'op_id':'qa','type_key':'qa','scope_key':'project','base_revision':current['revision_id'] if current else None,'set_items':items}
+        if current:op['object_id']=current['object_id']
+        result=self.runcommand('draft.apply',{'api_version':'1','command':'draft.apply','reason':'整理客户澄清','objects':[op],'decisions':[]})
+        self.qa=result['data']['objects'][0];self.qa_keys=[self.qa['object_id']+':q'+str(i) for i in range(2)]
+        return result
+
+    def grouped_create(self):
+        self.add_qa()
+        xml='<title>项目策划</title><h1>主策 Debrief</h1><p>100</p><h1>客户 Q&amp;A</h1><table><tr><td>档期：待答复</td><td>场地：待答复</td></tr></table>'
+        mappings={self.key:{'start':1,'end':1},**{k:{'start':3,'end':3} for k in self.qa_keys}}
+        return self.authored_create(xml,mappings)
+
+    def test_agent_outline_survives_create_and_range_push(self):
+        # Real fetch responses include the document title; it must not shift body indexes.
+        identify=self.remote.identify
+        self.remote.identify=lambda xml: '<title id="document">项目策划</title>'+identify(xml) if '<title>' in xml else identify(xml)
+        self.authored_create();snapshot=self.remote.snapshot['content']
+        self.assertEqual(snapshot.count('<h1 '),1);self.assertNotIn(' · ',snapshot)
+        data=self.pull();self.assertEqual(c.nodes({'content':data['remote'][self.key]['xml']})[0].tag,'h2')
+        self.update('80');self.publish('80');data=self.pull()
+        self.runcommand('collab.push',{'key':self.key,'xml':'<h2>项目任务</h2><p>80</p>',
+            'base_revision':data['remote_revision'],'expected_local_revision':self.review['revision_id']})
+        self.assertEqual(self.remote.snapshot['content'].count('<h1 '),1)
+        self.assertEqual(self.pull()['events'],[])
+
+    def test_create_checks_all_local_versions_before_writing(self):
+        self.code('BASE_REVISION_CONFLICT',lambda:self.runcommand('collab.create',{'xml':'<p>100</p>',
+            'mappings':{self.key:{'start':0,'end':0}},'expected_local_revisions':{self.key:'old'}}))
+        self.assertEqual(self.remote.writes,0)
+
+    def test_malformed_group_versions_return_contract_error(self):
+        self.authored_create();data=self.pull()
+        for expected in (None,[],{self.key:False}):
+            self.code('INVALID_INPUT',lambda:self.runcommand('collab.push',{'key':self.key,'xml':'<p>100</p>',
+                'base_revision':data['remote_revision'],'expected_local_revisions':expected}))
+        self.assertEqual(self.remote.writes,1)
+
+    def test_create_transformed_blocks_preserves_locator_without_guessing(self):
+        original=self.remote.write
+        def transform(args,xml):
+            result=original(args,xml);self.remote.snapshot['content']+='<p id="extra">团队补充</p>';return result
+        with patch('yuplus.collaboration.remote_write',transform):
+            self.code('COLLAB_WRITE_UNCERTAIN',self.authored_create)
+        binding=self.runcommand('collab.show')['data']['binding']
+        self.assertTrue(binding['url']);self.assertIsNone(binding['last_synced_at'])
+        self.assertTrue(binding['local_pending'])
+        self.authored_create();self.assertEqual(self.remote.writes,1)
+
+    def test_shared_qa_table_checks_and_updates_every_local_key(self):
+        self.grouped_create();self.add_qa(('已确认','已确认'));data=self.pull()
+        request={'key':self.qa_keys[0],'xml':'<table><tr><td>档期：已确认</td><td>场地：已确认</td></tr></table>',
+            'base_revision':data['remote_revision'],'expected_local_revision':self.qa['revision_id']}
+        self.code('INVALID_INPUT',lambda:self.runcommand('collab.push',request))
+        request.pop('expected_local_revision');request['expected_local_revisions']={k:self.qa['revision_id'] for k in self.qa_keys}
+        self.runcommand('collab.push',request)
+        data=self.pull();self.assertTrue(all(v=='same' for v in data['classification'].values()))
+        self.assertEqual(data['remote'][self.qa_keys[0]],data['remote'][self.qa_keys[1]])
+        self.assertEqual(self.remote.snapshot['content'].count('<h1 '),2)
+
+    def test_shared_qa_remote_edits_return_through_draft(self):
+        self.grouped_create();self.remote.edit('档期：待答复','档期：已确认');data=self.pull();event=data['events'][-1]
+        self.assertEqual({data['classification'][k] for k in self.qa_keys},{'remote'})
+        changed=self.add_qa(('已确认','待答复'),event['source_snapshot_id'])
+        accept={'event_id':event['id'],'outcome':'applied','reason':'吸收客户确认','change_ids':[changed['meta']['change_id']],'handled_keys':self.qa_keys}
+        self.code('INVALID_INPUT',lambda:self.runcommand('collab.accept',{**accept,'handled_keys':self.qa_keys[:1]}))
+        self.runcommand('collab.accept',accept)
+        self.assertEqual(self.pull()['events'],[])
+        self.assertFalse(self.runcommand('collab.show')['data']['binding']['local_pending'])
+
+    def test_ranges_reject_partial_overlap_nested_or_missing_endpoints(self):
+        self.add_qa();local=c.local_sections(self.app.db,self.pid)
+        snapshot={'content':'<h1 id="a">客户 Q&amp;A</h1><p id="b">问题</p><table id="c"><tr><td id="nested">回答</td></tr></table>'}
+        for mappings in ({self.qa_keys[0]:{'start':'a','end':'b'},self.qa_keys[1]:{'start':'b','end':'c'}},
+                         {self.key:{'start':'c','end':'a'}},{self.key:{'start':'nested','end':'nested'}},
+                         {self.key:{'start':'b','end':'gone'}}):
+            self.code('INVALID_INPUT',lambda:c.validate_mappings(snapshot,mappings,local))
+        shared={k:{'start':'c','end':'c'} for k in self.qa_keys}
+        self.assertEqual(set(c.validate_mappings(snapshot,shared,local)),set(self.qa_keys))
+
+    def test_bind_agent_created_document_uses_real_blocks_and_is_not_synced(self):
+        self.remote.snapshot['content']='<h1 id="a">主策 Debrief</h1><p id="b">团队修改为60</p>'
+        mappings={self.key:{'start':'b','end':'b'}}
+        self.code('COLLAB_REMOTE_CHANGED',lambda:self.runcommand('collab.bind',{'url':'https://example.feishu.cn/docx/testDocument','mappings':mappings,'base_revision':0}))
+        self.runcommand('collab.bind',{'url':'https://example.feishu.cn/docx/testDocument','mappings':mappings,'base_revision':1})
+        data=self.pull();self.assertEqual(data['classification'][self.key],'remote')
+        self.assertTrue(data['events'][-1]['source_snapshot_id'])
+        self.assertIsNone(self.runcommand('collab.show')['data']['binding']['last_synced_at'])
+
+    def test_remapping_unchanged_document_still_enters_inbox(self):
+        self.authored_create();data=self.pull();old=data['mappings'][self.key]
+        self.code('COLLAB_REMOTE_CHANGED',lambda:self.runcommand('collab.map',{'mappings':{self.key:{'start':old['end'],'end':old['end']}},'base_revision':0}))
+        self.runcommand('collab.map',{'mappings':{self.key:{'start':old['end'],'end':old['end']}},'base_revision':data['remote_revision']})
+        data=self.pull();self.assertEqual(data['classification'][self.key],'remote');self.assertTrue(data['events'])
+
+    def test_legacy_heading_mapping_remains_writable(self):
+        self.remote.snapshot['content']='<h1 id="a">旧标题 · 1</h1><p id="b">100</p>'
+        self.runcommand('collab.bind',{'url':'https://example.feishu.cn/docx/testDocument','mappings':{self.key:'a'}})
+        data=self.pull();event=data['events'][-1]
+        changed=self.update('100',event['source_snapshot_id']);self.publish('100')
+        self.runcommand('collab.accept',{'event_id':event['id'],'outcome':'applied','reason':'确认原始内容','change_ids':[changed['meta']['change_id']],'handled_keys':[self.key]})
+        self.update('80');self.publish('80');data=self.pull()
+        self.runcommand('collab.push',{'key':self.key,'xml':'<p>80</p>','base_revision':data['remote_revision'],'expected_local_revision':self.review['revision_id']})
+        self.assertIn('旧标题 · 1',self.remote.snapshot['content']);self.assertIn('80',self.remote.snapshot['content'])
+
+    def test_range_push_does_not_erase_unmapped_neighbor(self):
+        self.authored_create();self.remote.snapshot['content']+='<p id="team">团队自由补充</p>';self.remote.snapshot['revision']+=1
+        self.update('80');self.publish('80');data=self.pull()
+        self.runcommand('collab.push',{'key':self.key,'xml':'<h2>项目任务</h2><p>80</p>','base_revision':data['remote_revision'],'expected_local_revision':self.review['revision_id']})
+        self.assertIn('团队自由补充',self.remote.snapshot['content'])
+        self.assertTrue(self.pull()['events'])
+
+    def test_shared_table_conflict_blocks_every_member(self):
+        self.grouped_create();self.add_qa(('本地档期','待答复'))
+        self.remote.edit('场地：待答复','场地：远端确认');data=self.pull()
+        self.assertEqual(data['classification'][self.qa_keys[0]],'conflict')
+        self.code('COLLAB_CONFLICT',lambda:self.runcommand('collab.push',{'key':self.qa_keys[1],
+            'xml':'<p>本地整理</p>','base_revision':data['remote_revision'],
+            'expected_local_revisions':{k:self.qa['revision_id'] for k in self.qa_keys}}))
+        self.assertIn('场地：远端确认',self.remote.snapshot['content']);self.assertEqual(self.remote.writes,1)
+
+    def test_removed_range_endpoint_requires_reconciliation(self):
+        self.authored_create();data=self.pull();end=data['mappings'][self.key]['end']
+        self.remote.snapshot['content']=''.join(ET.tostring(n,encoding='unicode') for n in c.nodes(self.remote.snapshot) if n.get('id')!=end)
+        self.remote.snapshot['revision']+=1;data=self.pull()
+        self.code('COLLAB_MAPPING_REQUIRED',lambda:self.runcommand('collab.push',{'key':self.key,
+            'xml':'<p>100</p>','base_revision':data['remote_revision'],'expected_local_revision':self.review['revision_id']}))
+        self.assertEqual(self.remote.writes,1)
+
+    def test_range_push_preserves_media_and_comments(self):
+        self.authored_create('<h1>主策 Debrief</h1><p>100</p><whiteboard token="board_token"/>',
+            {self.key:{'start':1,'end':2}})
+        data=self.pull();body={'key':self.key,'xml':'<p>100</p>',
+            'base_revision':data['remote_revision'],'expected_local_revision':self.review['revision_id']}
+        self.code('COLLAB_RESOURCE_LOSS',lambda:self.runcommand('collab.push',body))
+        self.remote.snapshot['reference_map']={'comments':['团队评论']};self.remote.snapshot['revision']+=1;data=self.pull()
+        self.code('COLLAB_COMMENT_PROTECTED',lambda:self.runcommand('collab.push',{**body,
+            'xml':'<p>100</p><whiteboard token="board_token"/>','base_revision':data['remote_revision']}))
+        self.assertEqual(self.remote.writes,1)
+
+    def test_missing_media_on_readback_cannot_be_acknowledged(self):
+        self.authored_create('<p>100</p><whiteboard token="board_token"/>',{self.key:{'start':0,'end':1}})
+        self.update('80');self.publish('80');data=self.pull();original=self.remote.write
+        def drop_media(args,xml):
+            result=original(args,xml)
+            self.remote.snapshot['content']=''.join(ET.tostring(n,encoding='unicode') for n in c.nodes(self.remote.snapshot) if n.tag!='whiteboard')
+            return result
+        with patch('yuplus.collaboration.remote_write',drop_media):
+            self.code('COLLAB_WRITE_UNCERTAIN',lambda:self.runcommand('collab.push',{'key':self.key,
+                'xml':'<p>80</p><whiteboard token="board_token"/>','base_revision':data['remote_revision'],
+                'expected_local_revision':self.review['revision_id']}))
+        self.assertTrue(self.runcommand('collab.show')['data']['binding']['local_pending'])

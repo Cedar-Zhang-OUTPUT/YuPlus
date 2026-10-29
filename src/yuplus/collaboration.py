@@ -58,7 +58,8 @@ def public(db,pid):
     r['schedule']=json.loads(r.pop('schedule_json'));r['error']=json.loads(r.pop('error_json') or 'null')
     r['pending']=db.execute("SELECT count(*) FROM collaboration_events WHERE project_id=? AND state='pending'",(pid,)).fetchone()[0]
     r['conflicts']=db.execute("SELECT count(*) FROM collaboration_events WHERE project_id=? AND state='conflict'",(pid,)).fetchone()[0]
-    base=json.loads(r.pop('baseline_json'));r['local_pending']=base.get('local')!=local_sections(db,pid) if base else True
+    base=json.loads(r.pop('baseline_json'));local=local_sections(db,pid)
+    r['local_pending']=base.get('local')!=local or any(not base.get('remote',{}).get(k) for k in local) if base else True
     r.pop('observed_json');r.pop('mappings_json')
     r['records']=[dict(x) for x in db.execute('SELECT id,state,resolution_json,created_at FROM collaboration_events WHERE project_id=? ORDER BY created_at DESC LIMIT 20',(pid,))]
     return r
@@ -74,7 +75,7 @@ def valid_url(url):
 def local_sections(db,pid):
     result={}
     rows=db.execute("SELECT * FROM objects WHERE project_id=? AND archived_at IS NULL AND (layer='review' OR type_key='qa') ORDER BY type_key,scope_key,id",(pid,)).fetchall()
-    for o in rows:
+    for o in sorted(rows,key=lambda o:(list(NAMES).index(o['type_key']) if o['type_key'] in NAMES else len(NAMES),o['scope_key'],o['id'])):
         if not o['current_revision_id']:continue
         r=load_revision(db,pid,o['current_revision_id'])
         entries=r['payload'].get('blocks',r['payload'].get('items',[]))
@@ -106,14 +107,77 @@ def normalized(xml):
 
 def sections(snapshot,mappings):
     items=nodes(snapshot); positions={n.get('id'):i for i,n in enumerate(items) if n.get('id')}
-    mapped={v for v in mappings.values()};result={}
+    mapped={v if isinstance(v,str) else v['start'] for v in mappings.values()};result={}
     for key,anchor in mappings.items():
-        if anchor not in positions:result[key]=None;continue
-        start=positions[anchor];end=start+1
-        while end<len(items) and items[end].get('id') not in mapped and items[end].tag!='h1':end+=1
+        if isinstance(anchor,dict):
+            start=positions.get(anchor['start']);last=positions.get(anchor['end'])
+            if start is None or last is None or last<start:result[key]=None;continue
+            end=last+1
+        else:
+            if anchor not in positions:result[key]=None;continue
+            start=positions[anchor];end=start+1
+            while end<len(items) and items[end].get('id') not in mapped and items[end].tag!='h1':end+=1
         group=items[start:end];xml=''.join(ET.tostring(n,encoding='unicode') for n in group)
-        result[key]={'start':anchor,'end':group[-1].get('id'),'xml':xml,'hash':digest(normalized(xml))}
+        result[key]={'start':group[0].get('id'),'end':group[-1].get('id'),'xml':xml,'hash':digest(normalized(xml))}
     return result
+
+def validate_mappings(snapshot,mappings,local):
+    """Ranges are inclusive top-level siblings; identical ranges share one write unit."""
+    if not isinstance(mappings,dict) or not set(mappings)<=set(local):
+        raise YuError('INVALID_INPUT','映射必须使用本项目条目键。')
+    items=nodes(snapshot);positions={n.get('id'):i for i,n in enumerate(items) if n.get('id')}
+    for value in mappings.values():
+        if isinstance(value,str):
+            if value not in positions or items[positions[value]].tag!='h1':
+                raise YuError('INVALID_INPUT','旧式映射需要存在的一级标题；新映射使用 start/end 内容块范围。')
+        elif not isinstance(value,dict) or set(value)!={'start','end'} or any(not isinstance(v,str) or v not in positions for v in value.values()):
+            raise YuError('INVALID_INPUT','映射需要同父内容块的 start/end ID。')
+        elif any(items[positions[v]].tag=='title' for v in value.values()):
+            raise YuError('INVALID_INPUT','文档 title 不能作为正文映射范围。')
+    remote=sections(snapshot,mappings);spans=[]
+    for value in remote.values():
+        if not value:raise YuError('INVALID_INPUT','映射范围不存在或顺序错误。')
+        span=(positions[value['start']],positions[value['end']])
+        if any(span!=other and max(span[0],other[0])<=min(span[1],other[1]) for other in spans):
+            raise YuError('INVALID_INPUT','映射不可部分重叠；共用表格的条目应使用完全相同的范围。')
+        spans.append(span)
+    return remote
+
+def check_local_revisions(local,expected,keys):
+    if not isinstance(expected,dict) or set(expected)!=set(keys) or any(not isinstance(v,str) for v in expected.values()):
+        raise YuError('INVALID_INPUT','expected_local_revisions 必须列出本次范围内全部本地键及版本。')
+    if any(key not in local or local[key]['revision_id']!=rid for key,rid in expected.items()):
+        raise YuError('BASE_REVISION_CONFLICT','本地策划文档已变化。')
+
+def authored_ranges(xml,mappings,local):
+    """Creation ranges use zero-based body block indexes; title is not a body block."""
+    root=validate_xml(xml,document=True);body=[n for n in root if n.tag!='title']
+    if not body:raise YuError('INVALID_INPUT','文档正文不能为空。')
+    if not isinstance(mappings,dict) or set(mappings)!=set(local):
+        raise YuError('INVALID_INPUT','mappings 必须覆盖全部本地条目键。')
+    synthetic=[]
+    for i,node in enumerate(body):
+        node.set('id',str(i));synthetic.append(ET.tostring(node,encoding='unicode'))
+    converted={}
+    for key,span in mappings.items():
+        if not isinstance(span,dict) or set(span)!={'start','end'} or any(type(v) is not int or not 0<=v<len(body) for v in span.values()):
+            raise YuError('INVALID_INPUT','创建映射使用正文顶层块从 0 开始的 start/end 下标，不计 title。')
+        converted[key]={k:str(v) for k,v in span.items()}
+    validate_mappings({'content':''.join(synthetic)},converted,local)
+    return body
+
+def plain_text(xml):
+    return re.sub(r'\s+','',''.join(ET.fromstring('<root>'+xml+'</root>').itertext()))
+
+def matching_blocks(expected,actual):
+    return len(expected)==len(actual) and all(a.tag==b.tag and plain_text(ET.tostring(a,encoding='unicode'))==plain_text(ET.tostring(b,encoding='unicode')) for a,b in zip(expected,actual))
+
+def verify_created(snapshot,body,mappings):
+    actual=[n for n in nodes(snapshot) if n.tag!='title']
+    # Never guess positions if Feishu expanded/reordered authored blocks.
+    if any(not n.get('id') for n in actual) or not matching_blocks(body,actual):
+        raise YuError('COLLAB_WRITE_UNCERTAIN','文档已创建；飞书内容块与提交结构不一致，先回读并用 map 修复范围，保留原链接。')
+    return {key:{edge:actual[index].get('id') for edge,index in span.items()} for key,span in mappings.items()}
 
 def changes(base,local,remote):
     """Three-way classification; absence is a real change, not an empty value."""
@@ -132,7 +196,7 @@ def observe(app,pid,reader=None):
     reader=reader or fetch
     row=get(app.db,pid)
     if not row['enabled']:return {'paused':True}
-    snapshot=reader(row['url']);fp=digest(snapshot)
+    snapshot=reader(row['url']);fp=digest([snapshot,json.loads(row['mappings_json'])])
     # Import a version once; generated writes are acknowledged by exact observed content.
     last=json.loads(row['observed_json'] or 'null')
     if last!=snapshot:
@@ -142,21 +206,12 @@ def observe(app,pid,reader=None):
     else:app.db.execute('UPDATE collaboration_docs SET last_checked_at=?,error_json=NULL WHERE project_id=?',(now(),pid))
     return {'snapshot':snapshot,'pending':read_pending(app.db,pid)}
 
-def validate_xml(xml):
+def validate_xml(xml,document=False):
     if not isinstance(xml,str) or not xml.strip():raise YuError('INVALID_INPUT','章节 XML 不能为空。')
     try: root=ET.fromstring('<root>'+xml+'</root>')
     except ET.ParseError:raise YuError('INVALID_INPUT','章节 XML 无法解析。') from None
-    if any(n.tag in {'h1','title'} for n in root):raise YuError('INVALID_INPUT','章节内使用二级及以下标题；一级标题由映射管理。')
+    if not document and any(n.tag=='title' for n in root):raise YuError('INVALID_INPUT','局部更新不能包含文档 title。')
     return root
-
-def markdown_xml(text):
-    # Safe initial projection. Media and Gantt must be authored by Agent using native XML.
-    out=[]
-    for para in text.split('\n'):
-        if not para.strip():continue
-        m=re.match(r'^#{1,6}\s+(.*)',para)
-        out.append('<h2>'+escape(m[1])+'</h2>' if m else '<p>'+escape(para)+'</p>')
-    return ''.join(out)
 
 def remote_write(args,xml):
     result=run_lark(['docs',*args,'--as','user','--doc-format','xml','--content','-'],timeout=120,input_text=xml)
@@ -176,22 +231,24 @@ def execute(app,command,p,pid,request):
     if action not in ACTIONS or not isinstance(p,dict):raise YuError('INVALID_INPUT','无效协作命令。')
     app._project(pid,write=action not in {'show','pending','schedule'})
     allowed={'show':set(),'pending':set(),'schedule':set(),'pull':set(),'prepare':set(),
-       'create':{'sections'},'bind':{'url','mappings'},'push':{'key','xml','base_revision','expected_local_revision'},
+       'create':{'sections','xml','mappings','expected_local_revisions'},'bind':{'url','mappings','base_revision'},'push':{'key','xml','base_revision','expected_local_revision','expected_local_revisions'},
        'accept':{'event_id','change_ids','outcome','reason','handled_keys'},'resolve':{'event_id','instruction_source_version_id','choice','reason'},
-       'map':{'mappings'},'pause':set(),'resume':set(),'scheduler-bind':{'schedule'},'step':{'event_id','command','input'}}[action]
+       'map':{'mappings','base_revision'},'pause':set(),'resume':set(),'scheduler-bind':{'schedule'},'step':{'event_id','command','input'}}[action]
     if set(p)-allowed:raise YuError('INVALID_INPUT','协作命令含未知字段。')
     if len(canonical(p).encode('utf-8'))>8*1024*1024:raise YuError('INVALID_INPUT','协作输入超过 8 MiB。')
-    required={'create':['sections'],'bind':['url'],'map':['mappings'],
-      'push':['key','xml','base_revision','expected_local_revision'],
+    required={'bind':['url'],'map':['mappings'],
+      'push':['key','xml','base_revision'],
       'accept':['event_id','outcome','reason','handled_keys'],
       'resolve':['event_id','instruction_source_version_id','choice','reason'],
       'scheduler-bind':['schedule'],'step':['event_id','command','input']}.get(action,[])
     if any(k not in p for k in required):raise YuError('INVALID_INPUT','缺少协作命令必需字段。')
+    if action=='create' and (('sections' in p)==('xml' in p)):raise YuError('INVALID_INPUT','创建需提供 xml 或 sections，不能同时提供。')
+    if action=='push' and (('expected_local_revision' in p)==('expected_local_revisions' in p)):raise YuError('INVALID_INPUT','提供 expected_local_revision 或 expected_local_revisions 中的一项。')
     for k in ('url','key','xml','expected_local_revision','event_id','outcome','reason','instruction_source_version_id','choice','command'):
         if k in p and (not isinstance(p[k],str) or not p[k].strip()):raise YuError('INVALID_INPUT',k+' 需要非空字符串。')
     if 'base_revision' in p and (type(p['base_revision']) is not int or p['base_revision']<0):raise YuError('INVALID_INPUT','base_revision 需要非负整数。')
     if action=='step' and not isinstance(p['input'],dict):raise YuError('INVALID_INPUT','input 需要命令 JSON 对象。')
-    if action=='show':return app._envelope(command,pid,None,{'binding':public(app.db,pid),'local':local_sections(app.db,pid)})
+    if action=='show':return app._envelope(command,pid,None,{'binding':public(app.db,pid),'local':local_sections(app.db,pid),'presentation':'agent_authored','mapping_format':'block_ranges'})
     if action=='pending':return app._envelope(command,pid,None,{'events':read_pending(app.db,pid)})
     if action=='schedule':return app._envelope(command,pid,None,{'suggested_interval_minutes':5,'requires_host_automation_tool':True,'prompt':f'用 Yu+ 同步项目 {pid} 已绑定的飞书协作文档。按需读取 Yu+ references/collaboration.md，复用已读上下文；用数据目录 {json.dumps(str(app.data_dir),ensure_ascii=False)} 执行 collab pull，检查 pending/conflicts/local_pending。先吸收远端变化到 draft，再更新 review；解决后局部回写本地待同步内容。暂停项目不再处理；无变化保持安静，仅在实质变化、需用户选择或持续失败时通知。','schedule':json.loads(get(app.db,pid)['schedule_json'])})
     with lock(app,pid):
@@ -236,33 +293,35 @@ def mutate(app,action,p,pid):
         local=local_sections(db,pid)
         if action=='create':
             if not local:raise YuError('COLLAB_NO_CONTENT','先保存有依据的策划文档，再创建协作文档。')
-            authored=p.get('sections',{})
-            if not isinstance(authored,dict) or set(authored)!=set(local):raise YuError('INVALID_INPUT','sections 必须按 prepare/show 的本地条目键提供完整 XML，包含原生甘特图、引用和素材。')
-            for xml in authored.values():validate_xml(xml)
+            if 'xml' in p:
+                xml=p['xml'];indexes=p.get('mappings')
+                check_local_revisions(local,p.get('expected_local_revisions'),local)
+            else:
+                # Older callers supply fragments. Transport them without inventing headings.
+                if set(p)-{'sections'}:raise YuError('INVALID_INPUT','sections 模式不接受其他编排字段。')
+                authored=p['sections']
+                if not isinstance(authored,dict) or set(authored)!=set(local):raise YuError('INVALID_INPUT','sections 必须覆盖全部本地条目键。')
+                xml='<title>'+escape(app._project(pid)['name']+'｜项目创意协作文档')+'</title>';indexes={};cursor=0
+                for key in local:
+                    part=validate_xml(authored[key]);count=len(part)
+                    if not count:raise YuError('INVALID_INPUT','章节必须包含 XML 内容块。')
+                    indexes[key]={'start':cursor,'end':cursor+count-1};cursor+=count;xml+=authored[key]
+            body=authored_ranges(xml,indexes,local)
             for item in local.values():
                 if not is_fresh(db,pid,item['revision_id'],item['block_id']):raise YuError('COLLAB_REVIEW_PENDING','先更新受影响的策划文档。')
-            # Each mapped section gets its own stable heading. Keep round/plan identity local.
-            names={key:f'{local[key]["title"]} · {i+1}' for i,key in enumerate(local)}
-            xml='<title>'+escape(app._project(pid)['name']+'｜项目创意协作文档')+'</title>'
-            for key in local: xml+='<h1>'+escape(names[key])+'</h1>'+authored[key]
             written=remote_write(['+create'],xml);created=written['document'];url=valid_url(created['url'])
             # Persist the locator immediately; uncertain readback must never create another doc.
-            db.execute('INSERT INTO collaboration_docs(project_id,url,created_at) VALUES(?,?,?)',(pid,url,now()))
+            db.execute('INSERT INTO collaboration_docs(project_id,url,baseline_json,created_at) VALUES(?,?,?,?)',(pid,url,canonical({'local':local,'remote':{}}),now()))
             if written.get('warnings'):raise YuError('COLLAB_WRITE_UNCERTAIN','文档已创建并保留链接；请回读核对飞书写入警告。',details=written['warnings'])
-            snapshot=fetch(url);heads={''.join(n.itertext()):n.get('id') for n in nodes(snapshot) if n.tag=='h1'}
-            mappings={key:heads.get(name) for key,name in names.items()}
-            if not all(mappings.values()):raise YuError('COLLAB_WRITE_UNCERTAIN','文档已创建，但章节映射需回读修复；保留原链接。')
+            snapshot=fetch(url);mappings=verify_created(snapshot,body,indexes)
             remote=sections(snapshot,mappings);base={'local':local,'remote':remote}
             db.execute('UPDATE collaboration_docs SET baseline_json=?,observed_json=?,mappings_json=?,last_synced_at=? WHERE project_id=?',(canonical(base),canonical(snapshot),canonical(mappings),now(),pid))
         else:
             url=valid_url(p.get('url'));snapshot=fetch(url);mappings=p.get('mappings',{})
-            if not isinstance(mappings,dict) or not set(mappings)<=set(local) or any(not isinstance(v,str) for v in mappings.values()) or len(set(mappings.values()))!=len(mappings):raise YuError('INVALID_INPUT','映射必须使用本项目条目键及不同飞书块。')
-            heads={n.get('id') for n in nodes(snapshot) if n.tag=='h1'}
-            if not set(mappings.values())<=heads:raise YuError('INVALID_INPUT','映射必须指向一级标题。')
-            remote=sections(snapshot,mappings)
-            if any(not v for v in remote.values()):raise YuError('INVALID_INPUT','映射的飞书章节不存在。')
+            remote=validate_mappings(snapshot,mappings,local)
+            if ('base_revision' in p or any(isinstance(v,dict) for v in mappings.values())) and p.get('base_revision')!=snapshot['revision']:raise YuError('COLLAB_REMOTE_CHANGED','绑定范围需要当前 base_revision。')
             # Binding an existing doc is an intake, never silently assume equality.
-            db.execute('INSERT INTO collaboration_docs(project_id,url,mappings_json,created_at) VALUES(?,?,?,?)',(pid,url,canonical(mappings),now()))
+            db.execute('INSERT INTO collaboration_docs(project_id,url,mappings_json,baseline_json,created_at) VALUES(?,?,?,?,?)',(pid,url,canonical(mappings),canonical({'local':local,'remote':{}}),now()))
             observe(app,pid)
         db.execute("UPDATE projects SET working_scene='review' WHERE id=?",(pid,))
         return public(db,pid)
@@ -272,10 +331,9 @@ def mutate(app,action,p,pid):
     if not row['enabled']:raise YuError('COLLAB_PAUSED','协作同步已暂停。')
     if action=='map':
         snapshot=fetch(row['url']);local=local_sections(db,pid);mappings=p.get('mappings')
-        if not isinstance(mappings,dict) or not set(mappings)<=set(local) or any(not isinstance(v,str) for v in mappings.values()) or len(set(mappings.values()))!=len(mappings):raise YuError('INVALID_INPUT','映射须为本项目内容键到不同飞书一级标题 ID。')
-        heads={n.get('id') for n in nodes(snapshot) if n.tag=='h1'}
-        if not set(mappings.values())<=heads:raise YuError('INVALID_INPUT','映射标题不存在。')
-        db.execute('UPDATE collaboration_docs SET mappings_json=?,version=version+1 WHERE project_id=?',(canonical(mappings),pid))
+        if p.get('base_revision')!=snapshot['revision']:raise YuError('COLLAB_REMOTE_CHANGED','修改映射需要当前 base_revision，先回读核对范围。')
+        validate_mappings(snapshot,mappings,local)
+        db.execute('UPDATE collaboration_docs SET mappings_json=?,observed_json=NULL,version=version+1 WHERE project_id=?',(canonical(mappings),pid))
         observe(app,pid)
         return public(db,pid)
     if action=='scheduler-bind':
@@ -338,43 +396,57 @@ def mutate(app,action,p,pid):
         except BaseException:db.execute('ROLLBACK');raise
         return public(db,pid)
     if action=='push':
-        local=local_sections(db,pid);key=p.get('key');entry=local.get(key)
-        if not entry or entry['revision_id']!=p.get('expected_local_revision'):raise YuError('BASE_REVISION_CONFLICT','本地策划文档已变化。')
-        if not is_fresh(db,pid,entry['revision_id'],entry['block_id']):raise YuError('COLLAB_REVIEW_PENDING','先更新 draft 所影响的策划文档。')
+        local=local_sections(db,pid);key=p['key'];entry=local.get(key)
+        if not entry:raise YuError('BASE_REVISION_CONFLICT','本地策划文档已变化。')
         observed=observe(app,pid);snapshot=observed['snapshot']
-        if snapshot['revision']!=p.get('base_revision'):raise YuError('COLLAB_REMOTE_CHANGED','飞书版本已变化，重新 pull 后合并，未回写。')
-        mappings=json.loads(row['mappings_json']);remote=sections(snapshot,mappings);base=json.loads(row['baseline_json']);state=changes(base,local,remote).get(key)
-        if state in ['remote','conflict']:raise YuError('COLLAB_CONFLICT','先吸收飞书变化或解决冲突，未回写。')
-        xml=p.get('xml')
-        validate_xml(xml)
+        if snapshot['revision']!=p['base_revision']:raise YuError('COLLAB_REMOTE_CHANGED','飞书版本已变化，重新 pull 后合并，未回写。')
+        mappings=json.loads(row['mappings_json']);remote=sections(snapshot,mappings);base=json.loads(row['baseline_json'])
         old=remote.get(key)
-        if not old:
-            if key in mappings:raise YuError('COLLAB_MAPPING_REQUIRED','原章节已被删除，请确认删减意图并修复映射。')
-            title=entry['title']+' · '+entry['block_id']
-            heading='<h1>'+escape(title)+'</h1>';group=[]
-        else:
-            group=nodes({'content':old['xml']});heading=normalized(ET.tostring(group[0],encoding='unicode'));title=''.join(group[0].itertext())
-        # Replacing annotated blocks can detach discussion threads. Fail closed.
+        if not old and key in mappings:raise YuError('COLLAB_MAPPING_REQUIRED','原内容范围已被删除，请确认删减意图并修复映射。')
+        keys={k for k,v in remote.items() if old and v and (v['start'],v['end'])==(old['start'],old['end'])} or {key}
+        expected=p.get('expected_local_revisions')
+        if 'expected_local_revisions' not in p:
+            if len(keys)!=1:raise YuError('INVALID_INPUT','共用内容范围需用 expected_local_revisions 校验全部关联条目。')
+            expected={key:p['expected_local_revision']}
+        check_local_revisions(local,expected,keys)
+        states=changes(base,local,remote)
+        for k in keys:
+            item=local[k]
+            if not is_fresh(db,pid,item['revision_id'],item['block_id']):raise YuError('COLLAB_REVIEW_PENDING','先更新 draft 所影响的策划文档。')
+            if states.get(k) in {'remote','conflict'}:raise YuError('COLLAB_CONFLICT','先吸收飞书变化或解决冲突，未回写。')
+        xml=p['xml']
+        if not list(validate_xml(xml)):raise YuError('INVALID_INPUT','更新必须包含内容块；删除需先处理业务依据和映射。')
+        if old and isinstance(mappings.get(key),str):
+            # Compatibility for an already-bound heading anchor, not a new title generator.
+            xml=normalized(ET.tostring(nodes({'content':old['xml']})[0],encoding='unicode'))+xml
         refs=snapshot.get('reference_map') or {}
         if old and (re.search(r'<comment|comment[-_]id=',old['xml']) or any('comment' in str(k).lower() and v for k,v in refs.items())):
             raise YuError('COLLAB_COMMENT_PROTECTED','文档含协作评论，保留原块；请先处理评论并通过支持的原位编辑调整，不能替换整节。')
-        # Do not replace resource-containing sections blindly; explicit XML must retain tokens.
         tokens=re.findall(r'(?:token|src)="([A-Za-z0-9_-]+)"',(old or {}).get('xml',''))
         if any(token not in xml for token in tokens):raise YuError('COLLAB_RESOURCE_LOSS','需保留原图片、画板与附件引用；请局部调整。')
+        before=nodes(snapshot);positions={n.get('id'):i for i,n in enumerate(before)}
+        a=positions[old['start']] if old else len(before);b=positions[old['end']]+1 if old else len(before)
+        # A collaborator may have moved boundaries into another range since mapping.
+        for k,v in remote.items():
+            if k not in keys and v and max(a,positions[v['start']])<min(b,positions[v['end']]+1):
+                raise YuError('COLLAB_MAPPING_REQUIRED','内容范围出现重叠，先核对并修复映射。')
+        left=before[a-1].get('id') if a else None;right=before[b].get('id') if b<len(before) else None
         args=['+update','--doc',row['url'],'--revision-id',str(snapshot['revision'])]
         args+=['--command','block_replace','--start-block-id',old['start'],'--end-block-id',old['end']] if old else ['--command','append']
-        written=remote_write(args,heading+xml)
+        written=remote_write(args,xml)
         if written.get('warnings'):raise YuError('COLLAB_WRITE_UNCERTAIN','飞书写入返回警告，请回读核对后继续。',details=written['warnings'])
-        after=fetch(row['url']);heads=[n for n in nodes(after) if n.tag=='h1' and ''.join(n.itertext())==title]
-        if len(heads)!=1:raise YuError('COLLAB_WRITE_UNCERTAIN','写入后章节身份不明确，需回读修复。')
-        mappings[key]=heads[0].get('id');newremote=sections(after,mappings)
-        base.setdefault('local',{})[key]=entry;base.setdefault('remote',{})[key]=newremote[key]
-        # Preserve other-section races as pending; only our verified section is acknowledged.
-        expected_text=''.join(ET.fromstring('<root>'+heading+xml+'</root>').itertext())
-        actual_text=''.join(ET.fromstring('<root>'+newremote[key]['xml']+'</root>').itertext())
-        if re.sub(r'\s+','',expected_text)!=re.sub(r'\s+','',actual_text):
-            observe(app,pid)
-            raise YuError('COLLAB_WRITE_UNCERTAIN','回读内容与提交不一致，保留双方内容，请重新核对。')
+        after=fetch(row['url']);after_nodes=nodes(after);after_pos={n.get('id'):i for i,n in enumerate(after_nodes)}
+        if (left and left not in after_pos) or (right and right not in after_pos):
+            observe(app,pid);raise YuError('COLLAB_WRITE_UNCERTAIN','写入后相邻内容已变化，需回读修复范围。')
+        new_start=after_pos[left]+1 if left else 0;new_end=after_pos[right] if right else len(after_nodes)
+        group=after_nodes[new_start:new_end]
+        actual_xml=''.join(ET.tostring(n,encoding='unicode') for n in group)
+        if not group or any(not n.get('id') for n in group) or not matching_blocks(list(validate_xml(xml)),group) or any(token not in actual_xml for token in tokens):
+            observe(app,pid);raise YuError('COLLAB_WRITE_UNCERTAIN','回读内容与提交不一致，保留双方内容，请重新核对。')
+        for k in keys:mappings[k]={'start':group[0].get('id'),'end':group[-1].get('id')}
+        newremote=sections(after,mappings)
+        for k in keys:
+            base.setdefault('local',{})[k]=local[k];base.setdefault('remote',{})[k]=newremote[k]
         def remainder(snap,section):
             ids=set(n.get('id') for n in nodes({'content':section['xml']})) if section else set()
             return normalized(''.join(ET.tostring(n,encoding='unicode') for n in nodes(snap) if n.get('id') not in ids))

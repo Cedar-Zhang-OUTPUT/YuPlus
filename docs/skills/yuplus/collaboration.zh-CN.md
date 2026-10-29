@@ -2,12 +2,28 @@
 
 进入策划文档、收到团队修改或定时同步时按需读取；已读上下文复用。服务运行时每 60 秒观察远端版本，保存变化。业务理解由 Agent 完成；最后编辑时间不代表决定权限。
 
+Agent 负责文档编排和通过 draft → Review 回填语义；服务端保存文档绑定、来源快照、同步基线与冲突，并传输 Agent 编写的 XML，不自动补标题和正文。同步映射使用实际内容范围，与阅读目录分离。直接修改飞书并不会同步更新 Yu+ 基线。
+
 ## 进入第二场景
 
 1. 按 review-structure 的固定结构生成范围内已有依据的成果，先保存 draft 原因再生成 Review。未知内容保留，不凭空创造方案或决定。
-2. `collab show --project PID --json` 返回绑定和本地章节键。有文档就复用；没有则按 export 和 lark-doc 编写/媒体说明，为每个键编写原生 XML。`collab create --input FILE --request-id ID` 输入 `{"sections":{"OBJECT:BLOCK":"<h2>…</h2><p>…</p>"}}`，覆盖全部本地键。日期必须有可见甘特图，文档用标题链接，选用图片/文件实际上传。回读验证正文及资源，失败续修同一份文档。
+2. `collab show --project PID --json` 返回绑定、本地章节键和版本。有文档就复用；没有则按 export 和 lark-doc 编写/媒体说明，编写具有正常阅读层级的完整原生 XML，按下方契约提交给 `collab create`。标题、正文、表格和媒体由 Agent 决定。日期必须有可见甘特图，来源用标题链接，选用图片/文件实际上传。回读验证正文及资源，失败续修同一份文档。
 3. 用 `collab schedule` 取得提示词和建议间隔，通过宿主真实自动化工具建立任务；支持时建议五分钟，遵守用户间隔和宿主能力。把真实回执写入 `collab scheduler-bind`：`{"schedule":{"automation_id":"…","thread_id":"…","host_id":"…","interval_minutes":5,"state":"active"}}`。回执不是任务创建。不能调度就说明限制。原有群聊任务独立保留。
 4. 返回页面常驻的文档链接，无需单独导出指令。远端失败不能抹掉本地成果。
+
+## 完整文档与内容范围
+
+`collab create --input FILE --request-id ID` 接收：
+
+```json
+{"xml":"<title>项目策划文档</title><h1>主策 Debrief</h1><h2>项目任务</h2><p>已保存的项目任务正文</p>","mappings":{"OBJECT:BLOCK":{"start":1,"end":2}},"expected_local_revisions":{"OBJECT:BLOCK":"REVISION_ID"}}
+```
+
+使用 show 返回的真实身份替换示例，覆盖全部本地键。创建时 start/end 是从 0 开始、包含两端的**正文顶层块下标**，不计 `<title>`；标题、段落、表格和媒体各占一个位置。保持有意义的小范围，例如一个章节的标题与正文或一张表。多个 Q&A 键可以共用完全相同的表格范围，不允许部分重叠。不能为了省去章节追踪把整篇映射成一块。
+
+创建后，pull/prepare 返回真实块 ID 映射：`{"OBJECT:BLOCK":{"start":"BLOCK_ID","end":"BLOCK_ID"}}`。Agent 已直接在飞书创建的文档，也可以用 `collab bind` 登记 url、这些实际映射和回读的 base_revision；绑定只是收录，不代表内容已经同步。先 pull，经 draft → Review 整理后再 accept，不因登记失败另建文档。
+
+`collab map` 使用实际同父块 ID 和当前 base_revision 替换完整映射表，适用于核对团队新内容或修复变形/缺失块。映射变化进入待处理记录，不代表已接受内容或解决冲突。创建/回读不确定时链接会被保留：检查原文档、修复映射，不盲目重试创建。
 
 ## 团队修改回流
 
@@ -19,9 +35,9 @@
 
 ## 本地回写
 
-- `collab prepare` 重查远端。逐节 `collab push`：key、xml、base_revision、expected_local_revision，核对两端版本、局部修改并回读；下一节前刷新。同节远端变化先吸收/解决，不能用全文覆盖或最新版本通配符绕过。
+- `collab prepare` 重查远端。`collab push` 传 key、该映射范围的完整替换 xml、确切 base_revision 和 expected_local_revision。共用范围改用 `expected_local_revisions:{"KEY":"REVISION_ID",…}`，包含映射到该范围的**全部**键，保留每行当前内容。服务端校验全部本地版本与远端冲突，只替换该范围、回读并更新对应同步基线；下一次修改前刷新。同范围远端变化先吸收/解决，不能用全文覆盖或最新版本通配符绕过。
 - 保留图片、附件、画板、表格及评论。无法安全替换的部分保留原块，仅用支持的原位修改，再回读核对；不能为简化比较抹掉团队内容。
-- 新本地章节追加；团队新章节通过 `collab map` 传完整 mappings（本地键到不同一级标题 ID）。锚点消失需先理解删除意图；映射不是冲突确认。
+- 未映射的本地键可用 push 追加，Agent 提供完整 XML 及必要阅读标题。更新既有范围时，需保留的标题也应包含在替换 XML 中。旧字符串映射更新时保留既有标题；新映射使用明确 start/end。端点消失需先理解删除意图，不能静默重建。
 - 小改动沿用方向与文档，独立方向才新建 proposal 条目及 scope。
 
 ## 恢复与报告

@@ -1,4 +1,4 @@
-import { collaborationPanel, collaborationStartPrompt, safeCollaborationUrl } from "./data/collaboration.js";
+import { collaborationPanel, collaborationStartPrompt, collaborationUpdatePrompt } from "./data/collaboration.js";
 /* ═══════════════════════════════════════════════════════════════════════════
    Yu+ 只读浏览界面
    本文件只读取服务提供的数据并渲染，模拟预览必须由服务明确声明。没有任何写入路径：没有编辑、批准、删除、上传，
@@ -1698,20 +1698,16 @@ function viewReview(pid) {
   head.style.margin = "30px 0 6px";
   const h = el("h1", "largetitle"); h.style.margin = "0 0 6px"; h.textContent = "策划文档";
   const headingRow = el("div", "review-heading-row");
-  const actions = el("div", "review-export-actions");
   const collaboration = DATA.collaboration?.project_id === pid ? DATA.collaboration : null;
-  const url = safeCollaborationUrl(collaboration?.url);
-  if (url) {
-    const link=el("a","btn primary collaboration-link");link.href=url;link.target="_blank";link.rel="noopener noreferrer";
-    link.textContent="打开飞书协作文档 ↗";actions.append(link);
-  }
-  headingRow.append(h, actions);
+  headingRow.append(h);
   head.append(headingRow);
   const sub = el("p", "subtitle");
   c.append(head);
   c.append(projectMonitorPanel(pid));
   c.append(collaborationPanel(collaboration, {el,tag,formatTime:fullTime,
-    onStart:node=>copyText(collaborationStartPrompt(DATA,pid),node)}));
+    onStart:node=>copyText(collaborationStartPrompt(DATA,pid),node),
+    onCopyLink:(url,node)=>copyText(url,node),
+    onUpdate:node=>copyText(collaborationUpdatePrompt(DATA,pid,collaboration),node)}));
 
   const layout = el("div");
   layout.style.cssText = "display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr);gap:26px;align-items:start;margin-top:20px;";

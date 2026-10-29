@@ -68,7 +68,7 @@ def default_data_dir():
 
 
 def main(argv=None):
-    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.26）',
+    parser=Parser(prog='yu',description='Yu+ 本地项目与来源 CLI（v0.3.27）',
                   epilog='案例库 library：只保存类型、名称和链接；kind 为 feishu_folder 或 website，分别由 Agent 按需使用飞书 CLI 或浏览器查找，不缓存内容。\nlibrary delete/restore 仅移除/恢复本地登记，不删除飞书文件夹或网站内容。\n可用命令：\n'+'\n'.join('  '+c.replace('.',' ') for c in sorted(COMMANDS)),
                   formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('resource',nargs='?');parser.add_argument('action',nargs='?')
