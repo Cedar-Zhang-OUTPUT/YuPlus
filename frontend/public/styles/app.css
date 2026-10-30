@@ -833,3 +833,10 @@ html.reading-draft { overflow-anchor:none; }
 .library-form-error { color:var(--label); }
 @media(max-width:1050px) { .library-heading { flex-direction:column; gap:16px; } .library-source-grid { column-gap:24px; } }
 @media(max-width:700px) { .library-source-grid { grid-template-columns:1fr; } .library-tools { width:100%; } .library-search { width:100%; min-width:0; } .library-add-form { padding:20px; } }
+.library-field textarea { font:inherit; color:var(--label); background:var(--bg-elevated); border:1px solid var(--separator-strong); border-radius:var(--r-sm); padding:10px 13px; width:100%; box-sizing:border-box; resize:vertical; line-height:1.6; }
+.library-guidance { margin-top:8px; font-size:12px; color:var(--label-2); }
+.library-guidance summary { cursor:pointer; padding:8px 0; }
+.library-guidance p { padding:4px 0 8px; white-space:pre-wrap; }
+.library-edit { border:0; background:transparent; color:var(--label-2); cursor:pointer; padding:8px 0; min-height:44px; font:inherit; font-size:12px; }
+.library-edit:hover { color:var(--label); text-decoration:underline; }
+.library-catalog :is(textarea,summary):focus-visible { outline:2px solid var(--blue); outline-offset:3px; }

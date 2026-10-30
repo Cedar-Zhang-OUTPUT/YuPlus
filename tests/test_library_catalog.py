@@ -48,10 +48,15 @@ class CatalogTests(unittest.TestCase):
         try:self.assertFalse(next(r for r in catalog(reopened.db) if r['id'] == row['id'])['enabled'])
         finally:reopened.close()
         self.assertEqual(self.post('restore', {**payload, 'base_version': 2}, 'restore')[0], 200)
-        status, result = self.post('add', {'name': 'Personal', 'kind': 'website', 'url': 'https://example.com/'}, 'personal')
+        status, result = self.post('add', {'name': 'Personal', 'kind': 'website', 'url': 'https://example.com/', 'description':'互动体验', 'search_guidance':'先看视频'}, 'personal')
         self.assertEqual(status, 200)
         own = next(r for r in result['libraries'] if r['name'] == 'Personal')
         self.assertEqual(own['origin'], 'personal'); self.assertTrue(own['enabled'])
+        status, updated = self.post('update', {'library_id':own['id'], 'base_version':1, 'name':own['name'], 'url':own['url'], 'description':'', 'search_guidance':'核对年份'}, 'edit')
+        self.assertEqual(status,200)
+        self.assertEqual(updated['data']['search_guidance'],'核对年份')
+        cli = self.app.execute('library.show',{'library_id':own['id']})['data']
+        self.assertEqual(cli['description'],''); self.assertEqual(cli['search_guidance'],'核对年份')
         self.assertEqual(self.post('add', {'name': 'Duplicate', 'kind': 'website', 'url': 'https://example.com/'}, 'duplicate')[0], 409)
         for table in ('projects', 'sources', 'objects', 'blobs'):
             self.assertEqual(self.app.db.execute(f'SELECT count(*) FROM {table}').fetchone()[0], 0)

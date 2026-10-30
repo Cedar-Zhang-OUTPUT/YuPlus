@@ -41,7 +41,7 @@ R02 为「项目推进安排」，R03 为「创意方案」，R04 为「创意�
 | --- | --- | --- |
 | 开启找案例研究、修改其画板或续接中断研究 | [找案例参考](case-research.zh-CN.md)；访问案例库时读 [案例库参考](case-library.zh-CN.md) | 网站及公开研究用浏览器/网页工具；飞书文件夹、证据与画板创作使用对应飞书 Skill。 |
 | 更改/恢复左上角头像或 Logo | [appearance.zh-CN.md](appearance.zh-CN.md) | 用可用的本地图像转换工具压缩附件，无需项目上下文或飞书权限。 |
-| 新增、使用、移除或恢复工作空间案例库 | [case-library.zh-CN.md](case-library.zh-CN.md) | feishu_folder 用 `lark-drive` 和飞书 CLI 到登记文件夹查找；website 用浏览器/网页工具到登记网站查找；只保存链接，不保存案例内容；移除只作用于本地登记。 |
+| 新增、使用、移除或恢复工作空间案例库 | [case-library.zh-CN.md](case-library.zh-CN.md) | feishu_folder 用 `lark-drive` 和飞书 CLI 到登记文件夹查找；website 用浏览器/网页工具到登记网站查找；按 description/search_guidance 选择检索词；只保存来源元数据，不保存案例内容；移除只作用于本地登记。 |
 | 首次设置或环境故障 | [materials.md](../../../skills/yuplus/references/materials.md) 的“First setup”（首次设置） | 初次飞书健康检查或相关认证故障时，使用已安装的 `lark-shared` 认证说明；不要每次读材料前都检查。 |
 | 读取飞书材料 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Feishu documents and exports”（飞书文档与导出物） | 文档/wiki 内容用 `lark-doc`，文件下载/导出用 `lark-drive`；其他资源类型选择对应的已安装飞书 Skill。只读本次操作需要的说明。 |
 | 绑定用户指定的飞书群、执行定时检查、查看/暂停/恢复监控或续接失败同步 | [群聊监控](chat-monitoring.zh-CN.md) 中本次所需的绑定、执行或恢复部分 | 群身份及认证问题按需用已安装 `lark-im` / `lark-shared`；真实调度必须通过当前宿主自动化工具。 |

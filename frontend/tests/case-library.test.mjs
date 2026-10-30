@@ -74,7 +74,7 @@ test('personal form validates input and retries uncertain writes with the same r
     assert.ok(nodes(page).some(n => n.textContent === 'Network failed'));
     await form.onsubmit({preventDefault(){}});
     assert.equal(requests.length, 2); assert.equal(requests[0].request_id, requests[1].request_id);
-    assert.deepEqual(requests[1].input, {kind:'website', name:'My site', url:'https://example.com/'});
+    assert.deepEqual(requests[1].input, {kind:'website', name:'My site', url:'https://example.com/', description:'', search_guidance:''});
     assert.equal(result[0].origin, 'personal'); assert.ok(form.hidden);
   } finally {cleanup();}
 });
@@ -87,4 +87,41 @@ test('HTTP writes expose failures rather than optimistic success', async () => {
   }), /版本已变化/);
   assert.equal(args[0], '/api/libraries'); assert.equal(args[1].method, 'POST');
   assert.deepEqual(JSON.parse(args[1].body), request);
+});
+
+test('guidance is searchable plain text and Personal edits preserve version and allow clearing', async () => {
+  const cleanup = fakeDOM();
+  try {
+    const rows = [{id:'own',origin:'personal',kind:'website',name:'My source',url:'https://example.com/',version:7,
+      description:'光影装置',search_guidance:'<img onerror=bad> material / light'}];
+    const calls = [], state = {tab:'personal'};
+    const page = libraryView(rows,state,{save:async req => {calls.push(req);return [{...rows[0],...req.input,version:8}];}});
+    assert.ok(nodes(page).some(n => n.tag==='p' && n.textContent==='<img onerror=bad> material / light'));
+    const search=nodes(page).find(n=>n.type==='search');search.value='material';search.oninput();
+    assert.equal(nodes(page).filter(n=>n.tag==='article').length,1);
+    nodes(page).find(n=>n.attrs['aria-label']==='编辑 My source').onclick();
+    const form=nodes(page).find(n=>n.tag==='form');assert.equal(form.hidden,false);
+    const description=nodes(page).find(n=>n.id==='library-description');
+    const guidance=nodes(page).find(n=>n.id==='library-search_guidance');
+    assert.equal(description.value,'光影装置');assert.equal(guidance.value,rows[0].search_guidance);
+    description.value='';guidance.value='先看视频，再核对制作团队';guidance.oninput();
+    await form.onsubmit({preventDefault(){}});
+    assert.equal(calls[0].action,'update');assert.equal(calls[0].input.base_version,7);
+    assert.equal(calls[0].input.description,'');assert.equal(calls[0].input.search_guidance,'先看视频，再核对制作团队');
+    assert.ok(form.hidden);assert.ok(nodes(page).some(n=>n.textContent==='已保存，Agent 下次检索时会读取新的说明。'));
+  } finally {cleanup();}
+});
+
+test('adding a disabled existing URL does not silently discard newly entered guidance', async () => {
+  const cleanup=fakeDOM();
+  try {
+    let writes=0;
+    const page=libraryView([{id:'old',name:'Old',url:'https://example.com/',kind:'website',origin:'personal',version:2,deleted_at:'now'}],{}, {save:async()=>{writes++;return [];}});
+    nodes(page).find(n=>n.id==='library-name').value='New';
+    nodes(page).find(n=>n.id==='library-url').value='https://example.com/';
+    nodes(page).find(n=>n.id==='library-search_guidance').value='新的建议';
+    await nodes(page).find(n=>n.tag==='form').onsubmit({preventDefault(){}});
+    assert.equal(writes,0);
+    assert.ok(nodes(page).some(n=>n.textContent==='此来源已登记但未启用，请在列表中重新添加，再编辑说明。'));
+  } finally {cleanup();}
 });

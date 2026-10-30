@@ -37,9 +37,9 @@ class App:
         # executescript commits any pending transaction, so put BEGIN in the script.
         # Concurrent starters serialize on BEGIN and re-check user_version afterwards.
         initial_version=self.db.execute('PRAGMA user_version').fetchone()[0]
-        if initial_version in (1,2,3,4,5,6,7,8,9):
+        if initial_version in (1,2,3,4,5,6,7,8,9,10):
             from .backup import create_backup
-            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_schema10'))
+            create_backup(self.data_dir, self.data_dir.parent / (self.data_dir.name + '-migration-backups') / new_id('before_schema11'))
         # SQLite requires FK enforcement off before starting a table rebuild;
         # add_open_questions validates all references before commit.
         if initial_version in (0,1,2,3,4,5,6,7,8):self.db.execute('PRAGMA foreign_keys=OFF')
@@ -58,7 +58,7 @@ class App:
                         self.db.execute(pending);pending=''
                 if pending.strip() and not all(x.strip().startswith('--') or not x.strip() for x in pending.splitlines()):
                     raise YuError('INTEGRITY_FAILURE','Schema 文件不完整。')
-            elif version not in (1,2,3,4,5,6,7,8,9,10): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
+            elif version not in (1,2,3,4,5,6,7,8,9,10,11): raise YuError('INTEGRITY_FAILURE','数据库版本不兼容，拒绝修改。')
             if version in (0,1):
                 pending=''
                 for line in (CONTRACTS/'monitor-schema.sql').read_text().splitlines(keepends=True):
@@ -90,7 +90,9 @@ class App:
                 from .migrations import collaborative_objects
                 collaborative_objects(self.db)
             from .purge import migrate as migrate_purge
-            migrate_purge(self.db)
+            if version < 10:migrate_purge(self.db)
+            from .case_library import migrate_guidance
+            if version < 11:migrate_guidance(self.db)
             from .case_library import initialize_defaults
             initialize_defaults(self.db)
             self.db.execute('COMMIT')

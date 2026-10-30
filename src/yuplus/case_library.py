@@ -55,6 +55,29 @@ def source_url(value,kind):
 _LEGACY_RECEIPT = '__builtin_case_libraries_v1'
 _DEFAULT_RECEIPT = '__builtin_case_libraries_v2'
 _DEFAULTS = Path(__file__).parent/'contracts'/'default-case-libraries.json'
+GUIDANCE_LIMITS = {'description': 1000, 'search_guidance': 2000}
+
+
+def migrate_guidance(db):
+    # NULL inherits bundled guidance; an explicit empty string clears it.
+    columns = {r['name'] for r in db.execute('PRAGMA table_info(case_libraries)')}
+    for key, limit in GUIDANCE_LIMITS.items():
+        if key not in columns:
+            db.execute(f'ALTER TABLE case_libraries ADD COLUMN {key} TEXT CHECK({key} IS NULL OR length({key})<={limit})')
+    db.execute('PRAGMA user_version=11')
+
+
+def source_metadata():
+    return {source_url(e['url'], e['kind']): e for e in json.loads(_DEFAULTS.read_text())['libraries']}
+
+
+def with_guidance(row, metadata=None):
+    result = dict(row)
+    entry = (metadata if metadata is not None else source_metadata()).get(result['url'], {})
+    for key in GUIDANCE_LIMITS:
+        if result.get(key) is None:
+            result[key] = entry.get(key, '')
+    return result
 
 
 def initialize_defaults(db):
@@ -88,7 +111,8 @@ def initialize_defaults(db):
 
 def listed(db,include_deleted=False):
     if not db.execute("SELECT 1 FROM sqlite_master WHERE name='case_libraries'").fetchone():return []
-    return [dict(r) for r in db.execute('SELECT * FROM case_libraries'+('' if include_deleted else ' WHERE deleted_at IS NULL')+' ORDER BY created_at DESC,id')]
+    metadata = source_metadata()
+    return [with_guidance(r, metadata) for r in db.execute('SELECT * FROM case_libraries'+('' if include_deleted else ' WHERE deleted_at IS NULL')+' ORDER BY created_at DESC,id')]
 
 
 def catalog(db):
@@ -103,11 +127,10 @@ def catalog(db):
         receipt = json.loads(row['result_json'])
         official.update(receipt.get('added', []))
         official.update(receipt.get('reused', []))
-    metadata = {source_url(e['url'], e['kind']): e for e in json.loads(_DEFAULTS.read_text())['libraries']}
+    metadata = source_metadata()
     return [{**row, 'origin': 'official' if row['id'] in official else 'personal',
              'enabled': row['deleted_at'] is None,
              'logo': metadata.get(row['url'], {}).get('logo'),
-             'description': metadata.get(row['url'], {}).get('description', ''),
              'category': metadata.get(row['url'], {}).get('category', '其他来源')}
             for row in listed(db, include_deleted=True)]
 
@@ -119,9 +142,9 @@ def execute(app,command,payload,project_id,request_id):
         if set(payload)-{'include_deleted'} or type(payload.get('include_deleted',False)) is not bool:raise YuError('INVALID_INPUT','无效列表参数。')
         return envelope(app,command,None,None,{'libraries':listed(app.db,payload.get('include_deleted',False))})
     allowed={'library_id'} if action=='show' else {'api_version','command','library_id','base_version'}
-    if action in ('add','update'):allowed|={'name','url','kind'}
+    if action in ('add','update'):allowed|={'name','url','kind',*GUIDANCE_LIMITS}
     if action=='add':allowed-={'library_id','base_version'}
-    if set(payload)-allowed:raise YuError('INVALID_INPUT','案例库只登记类型、名称和链接及管理元数据，不接收正文、附件、目录清单或内容索引。')
+    if set(payload)-allowed:raise YuError('INVALID_INPUT','案例库只登记类型、名称、链接、检索方向和使用建议，不接收正文、附件、目录清单或内容索引。')
     if action!='show':
         if payload.get('api_version')!='1' or payload.get('command')!=command:raise YuError('INVALID_INPUT','需要 api_version: 1 和匹配的 command。')
         if not isinstance(request_id,str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,127}',request_id):raise YuError('INVALID_INPUT','写操作需要合法 --request-id。')
@@ -132,6 +155,9 @@ def execute(app,command,payload,project_id,request_id):
         name=payload.get('name')
         if not isinstance(name,str) or not name.strip() or len(name)>200:raise YuError('INVALID_INPUT','案例库名称不能为空，最多 200 字。')
         name=name.strip()
+        for key, limit in GUIDANCE_LIMITS.items():
+            if key in payload and (not isinstance(payload[key], str) or len(payload[key]) > limit or '\x00' in payload[key]):
+                raise YuError('INVALID_INPUT', f'{key} 必须是最多 {limit} 字的文本；空字符串可清空说明。')
     fingerprint=digest({'command':command,'input':payload})
     app.db.execute('BEGIN' if action=='show' else 'BEGIN IMMEDIATE')
     try:
@@ -146,7 +172,7 @@ def execute(app,command,payload,project_id,request_id):
             row=app.db.execute('SELECT * FROM case_libraries WHERE id=?',(payload['library_id'],)).fetchone()
             if not row:raise YuError('NOT_FOUND','案例库不存在。')
         if action=='show':
-            app.db.execute('COMMIT');return envelope(app,command,None,None,dict(row))
+            app.db.execute('COMMIT');return envelope(app,command,None,None,with_guidance(row))
         if row and row['version']!=payload['base_version']:raise YuError('VERSION_CONFLICT','案例库已变化，请重新读取。')
         if row and row['deleted_at'] and action!='restore':raise YuError('INVALID_INPUT','案例库已移除，请先恢复。')
         if row and not row['deleted_at'] and action=='restore':raise YuError('INVALID_INPUT','案例库未被移除。')
@@ -163,7 +189,10 @@ def execute(app,command,payload,project_id,request_id):
             app.db.execute('UPDATE case_libraries SET name=?,url=?,kind=?,version=version+1,updated_at=? WHERE id=?',(name,url,kind,stamp,identity))
         else:
             app.db.execute('UPDATE case_libraries SET deleted_at=?,version=version+1,updated_at=? WHERE id=?',(stamp if action=='delete' else None,stamp,identity))
-        result=dict(app.db.execute('SELECT * FROM case_libraries WHERE id=?',(identity,)).fetchone())
+        for key in GUIDANCE_LIMITS:
+            if action in ('add', 'update') and key in payload:
+                app.db.execute(f'UPDATE case_libraries SET {key}=? WHERE id=?', (payload[key].strip(), identity))
+        result=with_guidance(app.db.execute('SELECT * FROM case_libraries WHERE id=?',(identity,)).fetchone())
         app.db.execute('INSERT INTO case_library_requests VALUES(?,?,?,?,?)',(request_id,fingerprint,command,canonical(result),stamp))
         app.db.execute('COMMIT');return envelope(app,command,None,request_id,result)
     except BaseException:

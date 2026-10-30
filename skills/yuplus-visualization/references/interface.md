@@ -77,3 +77,5 @@ To the left of refresh, **打开飞书画板 ↗** opens the selected version’
 
 
 策划文档页常驻「打开飞书协作文档」链接，新标签页打开。协作卡显示已保存的检查/同步状态及记录；无绑定时提示在 Codex 开始整理。没有单独复制导出入口。程序检查与 Agent 整理分别运行，不能从页面刷新时间推断同步完成。
+
+Source rows show `description` and expandable “怎么用” (`search_guidance`). Search includes both. The Personal form accepts optional “适合找什么” and “怎么用”; “编辑说明” loads an active Personal source for revision. Saving updates CLI-readable metadata; clearing a field removes that custom text. Restore a disabled source before editing.

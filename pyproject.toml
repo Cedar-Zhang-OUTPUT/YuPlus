@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yuplus-local"
-version = "0.3.29"
+version = "0.3.30"
 description = "Local, provenance-aware project CLI for Yu+"
 requires-python = ">=3.12"
 dependencies = ["jsonschema[format]==4.25.1"]

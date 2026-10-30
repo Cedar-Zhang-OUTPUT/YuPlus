@@ -6,143 +6,219 @@
       "url": "https://k1mai98sti.feishu.cn/drive/folder/MiFifQzyel9JCDdYx0GcG9KXn6g",
       "category": "团队案例",
       "description": "团队共享的策展与项目参考",
-      "logo": "/assets/library-logos/feishu-cn.png"
+      "logo": "/assets/library-logos/feishu-cn.png",
+      "search_guidance": "通过飞书 CLI 按项目主题、品牌、材料或体验关键词检索文件夹；读取原文与图片，核对项目时间、团队角色和适用情境。",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/drive/folder/MiFifQzyel9JCDdYx0GcG9KXn6g"
+      ]
     },
     {
       "kind": "website",
       "name": "Random Studio",
       "url": "https://random.studio/",
       "category": "创意工作室",
-      "description": "random.studio",
-      "logo": "/assets/library-logos/random-studio.png"
+      "description": "品牌空间、互动装置与沉浸式零售体验",
+      "logo": "/assets/library-logos/random-studio.png",
+      "search_guidance": "品牌名＋installation／exhibition／retail；关注数字交互如何融入实体空间，核对观众动作、空间动线和制作团队。",
+      "guidance_sources": [
+        "https://random.studio/"
+      ]
     },
     {
       "kind": "website",
       "name": "Modem — Office for design and innovation",
       "url": "https://modemworks.com/",
       "category": "创意工作室",
-      "description": "modemworks.com",
-      "logo": "/assets/library-logos/modemworks-com.png"
+      "description": "未来设计研究、新技术交互与实体数字体验",
+      "logo": "/assets/library-logos/modemworks-com.png",
+      "search_guidance": "AI／interface／speculative design／retail；同时看研究论述和项目，区分概念提案、原型与已落地体验。",
+      "guidance_sources": [
+        "https://modemworks.com/",
+        "https://modemworks.com/projects/dreamrecorder/",
+        "https://modemworks.com/projects/general-purpose-interfaces/",
+        "https://modemworks.com/projects/movement-lab-zurich/"
+      ]
     },
     {
       "kind": "website",
       "name": "OBJ.Studio",
       "url": "https://obj.studio/",
       "category": "创意工作室",
-      "description": "obj.studio",
-      "logo": "/assets/library-logos/obj-studio.png"
+      "description": "展览、品牌空间与活动中的沉浸装置",
+      "logo": "/assets/library-logos/obj-studio.png",
+      "search_guidance": "品牌名＋spatial experience／installation／exhibition；关注互动机制、现场尺度与观众参与，核对项目角色。",
+      "guidance_sources": [
+        "https://obj.studio/"
+      ]
     },
     {
       "kind": "website",
       "name": "FIELD.IO — Creative Intelligence for a Living World",
       "url": "https://field.systems/",
       "category": "创意工作室",
-      "description": "field.systems",
-      "logo": "/assets/library-logos/field-systems.png"
+      "description": "品牌创意系统、互动零售与空间中的数字体验",
+      "logo": "/assets/library-logos/field-systems.png",
+      "search_guidance": "品牌名＋retail／interactive／creative systems；从项目页梳理视觉系统与交互规则，区分品牌系统和单次装置。",
+      "guidance_sources": [
+        "https://field.systems/"
+      ]
     },
     {
       "kind": "website",
       "name": "FutureDeluxe — Design, Technology & Moving Image",
       "url": "https://futuredeluxe.com/",
       "category": "创意工作室",
-      "description": "futuredeluxe.com",
-      "logo": "/assets/library-logos/futuredeluxe-com.png"
+      "description": "品牌动态影像、实验视觉与产品发布",
+      "logo": "/assets/library-logos/futuredeluxe-com.png",
+      "search_guidance": "品牌或产品＋film／design／moving image；适合研究材质、形态和动态节奏，区分 CGI 视觉与实体搭建。",
+      "guidance_sources": [
+        "https://futuredeluxe.com/"
+      ]
     },
     {
       "kind": "website",
       "name": "iart — Studio for Media Architectures",
       "url": "https://iart.ch/en",
       "category": "创意工作室",
-      "description": "iart.ch",
-      "logo": "/assets/library-logos/iart-ch.png"
+      "description": "媒体建筑、互动展陈与创意工程",
+      "logo": "/assets/library-logos/iart-ch.png",
+      "search_guidance": "media facade／visitor experience／interactive；结合项目与技术说明看媒体、建筑、观众的关系，核实工程条件。",
+      "guidance_sources": [
+        "https://iart.ch/en"
+      ]
     },
     {
       "kind": "website",
       "name": "Tellart",
       "url": "https://www.tellart.com/",
       "category": "创意工作室",
-      "description": "www.tellart.com",
-      "logo": "/assets/library-logos/tellart-com.png"
+      "description": "多感官展览、未来叙事与新技术体验",
+      "logo": "/assets/library-logos/tellart-com.png",
+      "search_guidance": "pavilion／multisensory／future／AI；关注叙事如何转成可参与的体验，从项目页核对场馆、年份与合作方。",
+      "guidance_sources": [
+        "https://www.tellart.com/"
+      ]
     },
     {
       "kind": "website",
       "name": "Local Projects",
       "url": "https://localprojects.com/",
       "category": "创意工作室",
-      "description": "localprojects.com",
-      "logo": "/assets/library-logos/localprojects-com.png"
+      "description": "博物馆叙事、文化展陈与互动学习体验",
+      "logo": "/assets/library-logos/localprojects-com.png",
+      "search_guidance": "museum／visitor center／interactive；优先看故事组织、观众路径和参与方式，结合场馆资料核实展示内容。",
+      "guidance_sources": [
+        "https://localprojects.com/"
+      ]
     },
     {
       "kind": "website",
       "name": "FLOAT4",
       "url": "https://float4.com/en/",
       "category": "创意工作室",
-      "description": "float4.com",
-      "logo": "/assets/library-logos/float4-com.png"
+      "description": "空间中的数字叙事、沉浸体验与媒体制作",
+      "logo": "/assets/library-logos/float4-com.png",
+      "search_guidance": "immersive／digital art／空间类型或项目名；观察影像与建筑尺度的配合，区分内容设计、播放系统和现场制作职责。",
+      "guidance_sources": [
+        "https://float4.com/en/"
+      ]
     },
     {
       "kind": "website",
       "name": "Moment Factory — Global Entertainment Studio",
       "url": "https://momentfactory.com/home",
       "category": "创意工作室",
-      "description": "momentfactory.com",
-      "logo": "/assets/library-logos/momentfactory-com.png"
+      "description": "夜游、文旅景点、演出与大型多媒体体验",
+      "logo": "/assets/library-logos/momentfactory-com.png",
+      "search_guidance": "night walk／attraction／immersive／项目地点；比较体验流程、灯光与声音编排，核对常设、巡演或限时属性。",
+      "guidance_sources": [
+        "https://momentfactory.com/home"
+      ]
     },
     {
       "kind": "website",
       "name": "Onionlab — Creativity, audiovisual design and innovation",
       "url": "https://www.onionlab.com/",
       "category": "创意工作室",
-      "description": "www.onionlab.com",
-      "logo": "/assets/library-logos/onionlab-com.png"
+      "description": "视听装置、投影映射与展览体验",
+      "logo": "/assets/library-logos/onionlab-com.png",
+      "search_guidance": "projection mapping／audiovisual／interactive／exhibition；关注投影与实体结构、光声同步及观众视角，核对技术条件。",
+      "guidance_sources": [
+        "https://www.onionlab.com/"
+      ]
     },
     {
       "kind": "website",
       "name": "MNFST",
       "url": "https://www.mnfst.studio/",
       "category": "创意工作室",
-      "description": "www.mnfst.studio",
-      "logo": "/assets/library-logos/mnfst-studio.png"
+      "description": "品牌与产品的高端 3D 设计、动态视觉",
+      "logo": "/assets/library-logos/mnfst-studio.png",
+      "search_guidance": "品牌名＋3D／motion／design；从作品看产品形态、质感与镜头语言。官网不可访问时可查官方 Behance（https://www.behance.net/mnfst-studio/），核对归属，勿混用同名工作室。",
+      "guidance_sources": [
+        "https://www.behance.net/mnfst-studio/"
+      ]
     },
     {
       "kind": "website",
       "name": "Media.Work",
       "url": "https://media.work/",
       "category": "创意工作室",
-      "description": "media.work",
-      "logo": "/assets/library-logos/media-work.png"
+      "description": "产品与品牌视觉、材料实验及动态影像",
+      "logo": "/assets/library-logos/media-work.png",
+      "search_guidance": "品牌名＋材料或产品词；对照 Projects 与 Studies，关注形态、材质和运动规律，区分商业交付与独立实验。",
+      "guidance_sources": [
+        "https://media.work/"
+      ]
     },
     {
       "kind": "website",
       "name": "New Format",
       "url": "https://newformat.io/",
       "category": "创意工作室",
-      "description": "newformat.io",
-      "logo": "/assets/library-logos/newformat-io.png"
+      "description": "时尚、运动与奢侈品牌的数字视觉和广告影像",
+      "logo": "/assets/library-logos/newformat-io.png",
+      "search_guidance": "品牌名＋campaign／fashion film／visuals；观察产品表达、人物与数字场景的关系，核对项目年份与团队署名。",
+      "guidance_sources": [
+        "https://newformat.io/"
+      ]
     },
     {
       "kind": "website",
       "name": "Studio Woolston",
       "url": "https://woolston.studio/",
       "category": "创意工作室",
-      "description": "woolston.studio",
-      "logo": "/assets/library-logos/woolston-studio.png"
+      "description": "生成式艺术、物理模拟与多感官视听作品",
+      "logo": "/assets/library-logos/woolston-studio.png",
+      "search_guidance": "Jesse Woolston＋simulation／generative art／Latent Colour；关注自然运动、色彩和声音的关系，核对作品媒介与展出形式。官网文字有限，可结合其官方账号与展出机构介绍核实。",
+      "guidance_sources": [
+        "https://woolston.studio/",
+        "https://www.nvidia.com/en-us/research/ai-art-gallery/artists/jesse-woolston/"
+      ]
     },
     {
       "kind": "website",
       "name": "Six N. Five",
       "url": "https://sixnfive.com/",
       "category": "创意工作室",
-      "description": "sixnfive.com",
-      "logo": "/assets/library-logos/sixnfive-com.png"
+      "description": "数字艺术、想象空间、雕塑与品牌合作",
+      "logo": "/assets/library-logos/sixnfive-com.png",
+      "search_guidance": "artwork／exhibition／collaboration／品牌名；关注空间构图、光影与超现实叙事，区分数字作品、收藏品和实体展出。",
+      "guidance_sources": [
+        "https://sixnfive.com/"
+      ]
     },
     {
       "kind": "website",
       "name": "Tomorrow Bureau — Speculative. Digital. Realities.",
       "url": "https://www.tomorrowbureau.io/",
       "category": "创意工作室",
-      "description": "www.tomorrowbureau.io",
-      "logo": "/assets/library-logos/tomorrowbureau-io.png"
+      "description": "CGI、影像与概念驱动的品牌视觉",
+      "logo": "/assets/library-logos/tomorrowbureau-io.png",
+      "search_guidance": "品牌名＋CGI／film／LAB；对照商业项目与实验，研究材质、运动和概念转译，核对实拍、数字制作及团队职责。",
+      "guidance_sources": [
+        "https://www.tomorrowbureau.io/"
+      ]
     },
     {
       "kind": "website",
@@ -150,7 +226,11 @@
       "url": "https://www.wallpaper.com/",
       "description": "高端品牌、设计周、艺术与工艺策展",
       "category": "设计媒体与灵感",
-      "logo": "/assets/library-logos/wallpaper-com.png"
+      "logo": "/assets/library-logos/wallpaper-com.png",
+      "search_guidance": "品牌名＋exhibition／installation＋2026；关注摄影、材料与策展背景",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -158,7 +238,11 @@
       "url": "https://www.nytimes.com/section/t-magazine",
       "description": "文化语境、人物、静物与编辑视觉",
       "category": "设计媒体与灵感",
-      "logo": "/assets/library-logos/nytimes-com.png"
+      "logo": "/assets/library-logos/nytimes-com.png",
+      "search_guidance": "品牌／艺术家＋design／interiors；适合审美研究，部分内容需订阅",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -166,7 +250,11 @@
       "url": "https://www.ignant.com/",
       "description": "艺术、摄影、建筑的色彩与光影",
       "category": "设计媒体与灵感",
-      "logo": "/assets/library-logos/ignant-com.png"
+      "logo": "/assets/library-logos/ignant-com.png",
+      "search_guidance": "material／light／installation；回溯艺术家与摄影师原始出处",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -174,7 +262,11 @@
       "url": "https://frameweb.com/",
       "description": "零售空间、展览与体验设计",
       "category": "设计媒体与灵感",
-      "logo": "/assets/library-logos/frameweb-com.png"
+      "logo": "/assets/library-logos/frameweb-com.png",
+      "search_guidance": "retail／exhibition／pop-up；部分页面需登录或订阅",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -182,7 +274,11 @@
       "url": "https://www.designboom.com/",
       "description": "装置、建筑与设计周新项目",
       "category": "设计媒体与灵感",
-      "logo": "/assets/library-logos/designboom-com.png"
+      "logo": "/assets/library-logos/designboom-com.png",
+      "search_guidance": "品牌＋Milan design week＋年份；结合创作者官网核对",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -190,7 +286,11 @@
       "url": "https://www.fuorisalone.it/en/",
       "description": "米兰设计周项目与年度线索",
       "category": "展览与品牌体验",
-      "logo": "/assets/library-logos/fuorisalone-it.png"
+      "logo": "/assets/library-logos/fuorisalone-it.png",
+      "search_guidance": "先限定2025或2026，再按品牌与地点查项目；区分已发生和预告",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -198,7 +298,11 @@
       "url": "https://www.onsiteclub.com/",
       "description": "国内品牌活动、快闪与现场多图",
       "category": "展览与品牌体验",
-      "logo": "/assets/library-logos/onsiteclub-com.png"
+      "logo": "/assets/library-logos/onsiteclub-com.png",
+      "search_guidance": "品牌＋西岸／张园／太古里；图集用于发现，AI生成正文需交叉核实",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -206,7 +310,11 @@
       "url": "https://www.windowswear.com/",
       "description": "奢侈品橱窗、零售与快闪",
       "category": "展览与品牌体验",
-      "logo": "/assets/library-logos/windowswear-com.png"
+      "logo": "/assets/library-logos/windowswear-com.png",
+      "search_guidance": "品牌＋pop-up／window；部分页面有访问限制",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -214,7 +322,11 @@
       "url": "https://www.oma.com/projects",
       "description": "展览叙事、空间系统与过程资料",
       "category": "展览与品牌体验",
-      "logo": "/assets/library-logos/oma-com.png"
+      "logo": "/assets/library-logos/oma-com.png",
+      "search_guidance": "Louis Vuitton／exhibition；优先看平面、章节与空间关系",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -222,7 +334,11 @@
       "url": "https://www.balichwonderstudio.com/",
       "description": "品牌展览、沉浸体验与大型事件",
       "category": "展览与品牌体验",
-      "logo": "/assets/library-logos/balichwonderstudio-com.png"
+      "logo": "/assets/library-logos/balichwonderstudio-com.png",
+      "search_guidance": "Buccellati／brand experiences；从创作团队核对概念和制作角色",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -230,7 +346,11 @@
       "url": "https://www.march.studio/aesop-salone-del-mobile",
       "description": "材料、构造、模型与空间过程",
       "category": "展览与品牌体验",
-      "logo": "/assets/library-logos/march-studio.png"
+      "logo": "/assets/library-logos/march-studio.png",
+      "search_guidance": "Aesop／Salone；适合从实景追溯设计方法",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -238,7 +358,11 @@
       "url": "https://www.activation-gp.com/en/work",
       "description": "品牌体验、快闪与美妆活动",
       "category": "展览与品牌体验",
-      "logo": "/assets/library-logos/activation-gp-com.png"
+      "logo": "/assets/library-logos/activation-gp-com.png",
+      "search_guidance": "Burberry／beauty／events；核对项目年份及团队职责",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     },
     {
       "kind": "website",
@@ -246,7 +370,12 @@
       "url": "https://www.are.na/",
       "description": "跨领域视觉线索整理",
       "category": "设计媒体与灵感",
-      "logo": "/assets/library-logos/are-na.png"
+      "logo": "/assets/library-logos/are-na.png",
+      "search_guidance": "用材料、形态、概念词搜索；用户收藏不等于原始来源",
+      "guidance_sources": [
+        "https://k1mai98sti.feishu.cn/docx/YOktdXZp5oUDSmxKy3TcBQz0n6d"
+      ]
     }
-  ]
+  ],
+  "guidance_note": "检索建议供选词与方法参考；年份按当前任务调整，案例事实需读取原始项目页核实。工作室介绍依据官方页面整理，检索建议为编辑建议。"
 }

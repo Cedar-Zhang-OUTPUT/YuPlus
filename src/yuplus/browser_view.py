@@ -21,7 +21,7 @@ def read_snapshot(data_dir):
     try:
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
-        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7,8,9,10):
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7,8,9,10,11):
             raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
         yield db
     finally:

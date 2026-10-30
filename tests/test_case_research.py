@@ -59,7 +59,7 @@ class ResearchTests(unittest.TestCase):
     def test_migration_backup_and_restore(self):
         self.app.db.execute('DROP TABLE case_research_requests');self.app.db.execute('DROP TABLE case_research');self.app.db.execute('PRAGMA user_version=6')
         migrated=App(self.data);migrated.close()
-        self.assertEqual(self.app.execute('doctor')['data']['schema_version'],10)
+        self.assertEqual(self.app.execute('doctor')['data']['schema_version'],11)
         backups=list((self.root/'data-migration-backups').iterdir());self.assertEqual(len(backups),1)
         with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],6)
         r=self.round();backup=self.root/'backup';create_backup(self.data,backup);restore_backup(backup,self.root/'restored')

@@ -200,12 +200,12 @@ class GatewayHandler(BaseHTTPRequestHandler):
         if self.headers.get_content_type() != 'application/json' or self.headers.get('Transfer-Encoding'):
             return self.error('INVALID_INPUT', '需要 JSON 请求。', 400)
         lengths = self.headers.get_all('Content-Length', [])
-        if len(lengths) != 1 or not lengths[0].isdigit() or not 0 < int(lengths[0]) <= 16384:
+        if len(lengths) != 1 or not lengths[0].isdigit() or not 0 < int(lengths[0]) <= 32768:
             return self.error('INVALID_INPUT', 'JSON 请求长度无效。', 400)
         from .cli import parse_json
         body = parse_json(self.rfile.read(int(lengths[0])).decode('utf-8'))
-        if not isinstance(body, dict) or set(body) != {'request_id', 'action', 'input'} or body['action'] not in ('add', 'delete', 'restore'):
-            raise YuError('INVALID_INPUT', '仅支持添加、移除或重新添加案例库源。')
+        if not isinstance(body, dict) or set(body) != {'request_id', 'action', 'input'} or body['action'] not in ('add', 'update', 'delete', 'restore'):
+            raise YuError('INVALID_INPUT', '仅支持添加、编辑、移除或重新添加案例库源。')
         if not isinstance(body['input'], dict) or set(body['input']) & {'api_version', 'command'}:
             raise YuError('INVALID_INPUT', '无效案例库输入。')
         from .app import App

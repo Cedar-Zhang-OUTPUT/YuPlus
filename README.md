@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.29](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.29)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.30](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.30)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -237,7 +237,7 @@ Agent 按 Skill 用飞书 CLI 创建和修改画板；本地服务仅导出预�
 
 左上角头像菜单可复制更改提示词；Agent 压缩图片后使用 `logo set`，支持 `logo show/reset`。头像随数据库备份。
 
-当前 schema 10。从 schema 1–9 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
+当前 schema 11。从 schema 1–10 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
 
 ## 策划文档协作（v0.3.24）
 
@@ -289,3 +289,10 @@ Agent 决定完整飞书文档的标题、排版、正文和素材，服务端�
 ## 案例库来源目录（v0.3.29）
 
 案例库采用可搜索的 Official / Personal 双列目录，内置 31 个来源默认全部启用。新增文档所列的 13 个灵感网站，不包含 Milanote Moodboard Guide。用户可直接添加 Personal 网站或飞书文件夹，默认启用；点击移除关闭使用，重新添加恢复。Agent 只检索启用的来源。升级按批次补充新来源，保留用户关闭、修改和永久删除的记录；数据库仍为 schema 10。内置来源使用从官方站点或官方账号获取、随包分发的图标，个人网站尝试读取原站 favicon，失败时显示名称缩写。
+
+
+## 案例库检索说明（v0.3.30）
+
+31 个内置源现均提供检索方向和使用建议：保留参考文档 13 个网站的建议，按官方介绍补齐原有 17 个工作室，团队共享文件夹也有检索说明。`library list/show` 直接返回 `description` 和 `search_guidance`，Skill 按本轮需求与来源特长组织检索。建议中的品牌、年份是示例，案例事实仍从原页核实。
+
+Personal 源可选填两项说明，也可在页面编辑。`library add/update` 接受相同字段；省略保留，空字符串清空。页面和 CLI 使用同一份数据，默认全部启用及移除／恢复行为不变。schema 11 新增说明字段，迁移前自动备份，保留原项目、来源启停、自定义说明和写入历史。

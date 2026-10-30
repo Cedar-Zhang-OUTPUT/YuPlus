@@ -151,7 +151,7 @@ Installed service management, complete backup/restore and `source check` are ava
 
 ## Workspace case libraries
 
-`library add/list/show/update/delete/restore` manages folder/website registrations outside projects. Read [case-library.md](case-library.md) when using these commands. Yu+ stores kind/title/URL and registration metadata only; find folder contents via Feishu CLI and website content via browser/web tools on demand. `delete`/`restore` removes/restores the local registration, never the remote folder or website.
+`library add/list/show/update/delete/restore` manages folder/website registrations outside projects. `list/show` return `description` and `search_guidance`; `add/update` accept these optional fields (1,000 / 2,000 characters). Omission preserves existing guidance; an empty string clears it. Read [case-library.md](case-library.md) when using these commands. Yu+ stores kind/title/URL and registration metadata only; find folder contents via Feishu CLI and website content via browser/web tools on demand. `delete`/`restore` removes/restores the local registration, never the remote folder or website.
 
 ## Feishu export receipts
 

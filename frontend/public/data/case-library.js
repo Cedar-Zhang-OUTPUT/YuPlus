@@ -81,16 +81,22 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
   const notice = el('p', 'library-notice'); notice.setAttribute('role', 'status'); notice.setAttribute('aria-live', 'polite');
   const list = el('div', 'library-sections');
   const form = el('form', 'library-add-form'); form.id = 'library-add-form'; form.hidden = !state.addOpen;
-  form.append(el('h2', '', '添加 Personal 源'), el('p', 'muted', '保存你常用的网站或飞书共享文件夹，添加后默认启用。'));
+  const formTitle = el('h2', '', state.editId ? '编辑 Personal 源' : '添加 Personal 源');
+  form.append(formTitle, el('p', 'muted', '添加后默认启用。填写检索方向与使用建议，让 Agent 知道去这里找什么、怎么找。'));
   const fields = {};
-  for (const [key, label, tag] of [['kind', '来源类型', 'select'], ['name', '名称', 'input'], ['url', '链接', 'input']]) {
+  for (const [key, label, tag] of [['kind', '来源类型', 'select'], ['name', '名称', 'input'], ['url', '链接', 'input'],
+    ['description', '适合找什么（选填）', 'textarea'], ['search_guidance', '怎么用（选填）', 'textarea']]) {
     const field = el('div', 'library-field'); const caption = el('label', '', label); caption.htmlFor = 'library-' + key;
-    const input = el(tag); input.id = caption.htmlFor; input.required = true;
+    const input = el(tag); input.id = caption.htmlFor; input.required = tag !== 'textarea';
     if (key === 'kind') {
       for (const [value, text] of [['website', '网站'], ['feishu_folder', '飞书共享文件夹']]) {
         const option = el('option', '', text); option.value = value; input.append(option);
       }
       input.value = state.kind || 'website';
+    } else if (tag === 'textarea') {
+      input.rows = key === 'description' ? 2 : 3; input.maxLength = key === 'description' ? 1000 : 2000;
+      input.value = state[key] || '';
+      input.placeholder = key === 'description' ? '例如：互动装置、品牌空间、材料实验' : '例如：用品牌名 + installation 搜索，关注现场视频和制作过程';
     } else {
       input.type = key === 'url' ? 'url' : 'text'; input.maxLength = key === 'url' ? 4096 : 200;
       input.value = state[key] || ''; input.placeholder = key === 'url' ? 'https://…' : '为这个来源命名';
@@ -102,10 +108,15 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
   const formError = el('p', 'library-form-error'); formError.id = 'library-form-error'; formError.setAttribute('aria-live', 'polite');
   fields.url.setAttribute('aria-describedby', formError.id);
   const actions = el('div', 'library-form-actions');
-  const submit = el('button', 'library-primary', '添加并启用'); submit.type = 'submit';
+  const submit = el('button', 'library-primary', state.editId ? '保存修改' : '添加并启用'); submit.type = 'submit';
   const cancel = el('button', 'chipbtn', '取消'); cancel.type = 'button';
   const showForm = (open) => { state.addOpen = open; form.hidden = !open; add.setAttribute('aria-expanded', String(open)); };
-  add.onclick = () => { showForm(!state.addOpen); if (state.addOpen) fields.name.focus(); };
+  const resetForm = () => {
+    delete state.editId;
+    for (const key of ['name', 'url', 'description', 'search_guidance']) fields[key].value = state[key] = '';
+    formTitle.textContent = '添加 Personal 源'; submit.textContent = '添加并启用';
+  };
+  add.onclick = () => { if (pending) return; const open = !state.addOpen || !!state.editId; resetForm(); showForm(open); validate(); if (open) fields.name.focus(); };
   cancel.onclick = () => { showForm(false); add.focus(); };
   actions.append(submit, cancel); form.append(formError, actions);
   page.append(tabs, form, notice, list);
@@ -120,7 +131,7 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
     notice.textContent = ''; page.setAttribute('aria-busy', 'true');
     try {
       records = await save(retry.request); retry = null; onChange(records);
-      notice.textContent = action === 'delete' ? '已移除，此来源不会参与案例研究。' : '已添加，此来源可以用于案例研究。';
+      notice.textContent = action === 'delete' ? '已移除，此来源不会参与案例研究。' : action === 'update' ? '已保存，Agent 下次检索时会读取新的说明。' : '已添加，此来源可以用于案例研究。';
       return true;
     } catch (error) {
       notice.textContent = error.message; return false;
@@ -133,21 +144,26 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
     const invalid = !!fields.url.value.trim() && !url;
     fields.url.setAttribute('aria-invalid', String(invalid));
     formError.textContent = invalid ? (fields.kind.value === 'website' ? '请输入有效的 http 或 https 网站链接。' : '请输入飞书共享文件夹链接（/drive/folder/…）。') : '';
-    submit.disabled = demo || pending || !url || !fields.name.value.trim(); return url;
+    const tooLong = Object.values(fields).some(field => field.maxLength && field.value.length > field.maxLength);
+    if (tooLong) formError.textContent = '输入过长：名称最多 200 字，检索方向 1000 字，使用建议 2000 字，链接 4096 字。';
+    submit.disabled = demo || pending || tooLong || !url || !fields.name.value.trim(); return tooLong ? null : url;
   };
   form.onsubmit = async (event) => {
     event.preventDefault(); const url = validate(); const name = fields.name.value.trim();
     if (!url || !name || pending || demo) return;
-    const existing = records.find(row => row.url === url);
-    if (existing && !existing.deleted_at) {
-      formError.textContent = '此来源已经启用，可以在列表中搜索查看。'; return;
+    const editing = records.find(row => row.id === state.editId);
+    if (state.editId && (!editing || editing.deleted_at)) { formError.textContent = '此来源已移除，请先重新添加再编辑。'; return; }
+    const existing = records.find(row => row.url === url && row.id !== state.editId);
+    if (existing) {
+      formError.textContent = existing.deleted_at ? '此来源已登记但未启用，请在列表中重新添加，再编辑说明。' : '此来源已经启用，可以在列表中搜索查看。'; return;
     }
-    const ok = await write(existing ? 'restore' : 'add', existing
-      ? {library_id: existing.id, base_version: existing.version}
-      : {kind: fields.kind.value, name, url}, submit);
+    const input = {kind: fields.kind.value, name, url, description: fields.description.value.trim(), search_guidance: fields.search_guidance.value.trim()};
+    const ok = await write(editing ? 'update' : 'add', editing
+      ? {...input, library_id: editing.id, base_version: state.editVersion}
+      : input, submit);
     if (ok) {
       state.tab = existing?.origin || 'personal'; state.search = ''; search.value = '';
-      fields.name.value = fields.url.value = ''; state.name = state.url = ''; showForm(false); draw();
+      resetForm(); showForm(false); draw();
       add.focus();
     }
     validate();
@@ -161,7 +177,7 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
     list.replaceChildren();
     const query = (state.search || '').trim().toLocaleLowerCase();
     const filtered = records.filter(row => (row.origin || 'personal') === state.tab &&
-      `${row.name} ${row.url} ${row.description || ''}`.toLocaleLowerCase().includes(query));
+      `${row.name} ${row.url} ${row.description || ''} ${row.search_guidance || ''}`.toLocaleLowerCase().includes(query));
     if (!filtered.length) {
       const empty = el('div', 'library-empty');
       empty.append(el('h2', '', query ? '没有匹配的来源' : '收藏你的灵感来源'), el('p', 'muted', query ? '试试其他名称或网址。' : '点击“添加源”，把常用网站和飞书文件夹放在这里。'));
@@ -195,6 +211,22 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
         } else title.textContent = row.name;
         const description = row.description || (row.kind === 'feishu_folder' ? '飞书共享文件夹' : url ? new URL(url).hostname : '链接不可用');
         body.append(title, el('p', 'muted', description), el('span', 'library-source-status', row.deleted_at ? '未启用' : '已启用'));
+        if (row.search_guidance) {
+          const details = el('details', 'library-guidance');
+          details.append(el('summary', '', '怎么用'), el('p', '', row.search_guidance)); body.append(details);
+        }
+        if ((row.origin || 'personal') === 'personal' && !row.deleted_at) {
+          const edit = el('button', 'library-edit', '编辑说明'); edit.type = 'button'; edit.disabled = demo || pending;
+          edit.setAttribute('aria-label', `编辑 ${row.name}`);
+          edit.onclick = () => {
+            if (pending) return;
+            state.editId = row.id; state.editVersion = row.version;
+            for (const key of Object.keys(fields)) fields[key].value = state[key] = row[key] || '';
+            formTitle.textContent = '编辑 Personal 源'; submit.textContent = '保存修改';
+            showForm(true); validate(); fields.description.focus();
+          };
+          body.append(edit);
+        }
         const toggle = el('button', 'library-toggle', row.deleted_at ? '＋ 添加' : '− 移除'); toggle.type = 'button';
         toggle.disabled = demo || pending;
         toggle.setAttribute('aria-label', `${row.deleted_at ? '添加' : '移除'} ${row.name}`);

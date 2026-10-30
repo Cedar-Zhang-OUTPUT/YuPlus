@@ -225,7 +225,7 @@ class PurgeTests(unittest.TestCase):
         for table in ['purge_requests','purge_tombstones','purged_requests']:app.db.execute('DROP TABLE '+table)
         app.db.execute('PRAGMA user_version=9')
         current=self.db()
-        self.assertEqual(current.db.execute('PRAGMA user_version').fetchone()[0],10)
+        self.assertEqual(current.db.execute('PRAGMA user_version').fetchone()[0],11)
         self.assertEqual(current.db.execute('SELECT id FROM projects').fetchone()[0],pid)
         backups=list(self.data_dir.parent.glob('data-migration-backups/*'))
         self.assertEqual(len(backups),1);verify_backup(backups[0])

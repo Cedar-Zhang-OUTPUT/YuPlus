@@ -66,6 +66,6 @@ npm --prefix frontend test
 
 ## 案例库源设置
 
-`/#/libraries` 按 Official / Personal 展示所有来源，包含已关闭项；默认全部启用。名称、说明和网址均可搜索。添加 Personal 源需填名称、链接和类型，默认启用。移除仅关闭使用，再次添加恢复原登记。
+`/#/libraries` 按 Official / Personal 展示所有来源，包含已关闭项；默认全部启用。名称、检索方向、使用建议和网址均可搜索；使用建议默认折叠。添加 Personal 源需填名称、链接和类型，默认启用；可选填检索方向与使用建议，已有 Personal 源可编辑说明。移除仅关闭使用，再次添加恢复原登记。
 
-同源 `POST /api/libraries` 是案例库设置的专用写入口，仅接受 add/delete/restore，复用 CLI 的版本校验和幂等回执。要求准确的本地 Host、Origin、JSON 和有界请求体。项目内容继续只读，模拟服务不写数据库。CLI `library list` 仅返回已启用源；浏览器目录保留所有源。
+同源 `POST /api/libraries` 是案例库设置的专用写入口，仅接受 add/update/delete/restore，复用 CLI 的版本校验和幂等回执。要求准确的本地 Host、Origin、JSON 和有界请求体。项目内容继续只读，模拟服务不写数据库。CLI `library list` 仅返回已启用源；浏览器目录保留所有源。

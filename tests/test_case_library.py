@@ -58,7 +58,7 @@ class LibraryTests(unittest.TestCase):
         old.db.execute('DROP TABLE case_library_requests');old.db.execute('DROP TABLE case_libraries');old.db.execute('PRAGMA user_version=3');old.close()
         migrated=App(legacy)
         try:
-            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],10)
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],11)
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
             self.assertEqual(len(migrated.execute('library.list')['data']['libraries']),31)
         finally:migrated.close()
@@ -69,8 +69,10 @@ class LibraryTests(unittest.TestCase):
         def run(*args,payload=None):
             result=subprocess.run([sys.executable,'-m','yuplus','--data-dir',str(self.data),*args,'--json'],input=json.dumps(payload) if payload else None,text=True,capture_output=True,env=env)
             self.assertEqual(result.returncode,0,result.stdout+result.stderr);return json.loads(result.stdout)['data']
-        added=run('library','add','--request-id','cli_add','--input','-',payload={'api_version':'1','command':'library.add','name':'CLI案例库','url':URL})
+        added=run('library','add','--request-id','cli_add','--input','-',payload={'api_version':'1','command':'library.add','name':'CLI案例库','url':URL,'description':'空间装置','search_guidance':'按材料关键词检索'})
         self.assertEqual(run('library','show','--library',added['id'])['name'],'CLI案例库')
+        self.assertEqual(run('library','show','--library',added['id'])['search_guidance'],'按材料关键词检索')
+        self.assertEqual(run('library','list')['libraries'][0]['description'],'空间装置')
         self.assertEqual(run('library','list')['libraries'][0]['id'],added['id'])
         deleted=run('library','delete','--request-id','cli_delete','--input','-',payload={'api_version':'1','command':'library.delete','library_id':added['id'],'base_version':added['version']})
         self.assertTrue(deleted['deleted_at'])
@@ -155,7 +157,7 @@ class LibraryTests(unittest.TestCase):
             self.assertEqual(saved['kind'],'feishu_folder')
             self.assertEqual(saved['version'],row['version'])
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
-            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],10)
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],11)
         finally:migrated.close()
         backups=list((self.root/'legacy4-migration-backups').iterdir());self.assertEqual(len(backups),1)
         with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:
