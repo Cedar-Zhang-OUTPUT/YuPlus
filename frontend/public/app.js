@@ -6,6 +6,7 @@ import { collaborationPanel, collaborationStartPrompt, collaborationUpdatePrompt
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { loadingProgress } from "./data/loading-progress.js";
+import { icon as uiIcon } from "./data/icons.js";
 import { exportHistory } from "./data/export-history.js";
 import { libraryView } from "./data/case-library.js";
 import { createProjectPromptTemplate } from "./data/project-create.js";
@@ -239,10 +240,16 @@ function kv(pairs) {
   }
   return dl;
 }
+// 旧字符图标统一换成线性 SVG；找不到对应图标时保留原字符
+function glyphNode(glyph, size) {
+  const svg = uiIcon(glyph, size);
+  if (svg) return svg;
+  const t = el("span"); t.textContent = glyph; return t;
+}
 function banner(hue, icon, nodes) {
   const b = el("div", "banner");
   b.style.setProperty("--h", hueOf(hue));
-  const i = el("span", "ic"); i.textContent = icon; b.append(i);
+  const i = el("span", "ic"); i.append(glyphNode(icon, 16)); b.append(i);
   const g = el("div", "grow");
   for (const n of nodes) g.append(n);
   b.append(g);
@@ -250,7 +257,7 @@ function banner(hue, icon, nodes) {
 }
 function empty(glyph, title, lines) {
   const e = el("div", "empty");
-  const g = el("div", "glyph"); g.textContent = glyph; e.append(g);
+  const g = el("div", "glyph"); g.append(glyphNode(glyph, 22)); e.append(g);
   const h = el("h3"); h.textContent = title; e.append(h);
   for (const l of lines || []) { const p = el("p"); p.textContent = l; e.append(p); }
   return e;
@@ -442,7 +449,7 @@ function renderInspector() {
   const box = el("div", "inspector");
   const head = el("div", "ihead");
   const h = el("h3");
-  const close = el("button", "close"); close.setAttribute("aria-label", "关闭详情"); close.type = "button"; close.textContent = "✕";
+  const close = el("button", "close"); close.setAttribute("aria-label", "关闭详情"); close.type = "button"; close.append(glyphNode("x", 15));
   close.title = "关闭"; close.onclick = closeInspector;
   const body = el("div", "ibody");
   // 头部始终挂载，具体分支只负责填充内容
@@ -571,7 +578,7 @@ function renderInspector() {
           const f = el("figure", "thumb");
           f.style.setProperty("--h", hueOf(prov.hue));
           const im = el("div", "img");
-          im.textContent = a.mime_type.startsWith("image") ? "🖼" : a.mime_type.includes("pdf") ? "📄" : a.mime_type.startsWith("video") ? "🎬" : a.mime_type.includes("presentation") ? "📊" : "📎";
+          im.replaceChildren(glyphNode(a.mime_type.startsWith("image") ? "image" : a.mime_type.startsWith("video") ? "film" : "doc", 26));
           if (a.url && a.availability === 'available') {
             if (/^image\/(png|jpeg|gif|webp|avif)$/.test(a.mime_type)) {
               const image = el('img'); image.src=a.url; image.alt=a.display_name; image.loading='lazy';
@@ -759,9 +766,8 @@ function viewProjects() {
 
   const group = (title, list) => {
     if (!list.length) return;
-    const gh = el("div");
-    gh.style.cssText = "display:flex;align-items:baseline;gap:10px;margin:30px 0 10px;";
-    const h = el("h2"); h.style.cssText = "font-size:13px;font-weight:660;letter-spacing:.05em;text-transform:uppercase;color:var(--label-3);";
+    const gh = el("div", "group-heading");
+    const h = el("h2");
     h.textContent = title;
     gh.append(h);
     c.append(gh);
@@ -1072,11 +1078,7 @@ function viewDraft(pid) {
       b.type = "button";
       b.style.setProperty("--h", hueOf(th.hue));
       if (o.id === selectedId) b.setAttribute("aria-current", "true");
-      const cc = el("span", "ct"); cc.textContent = typeCode(o.type_key) || "—";
-      cc.style.color = hueOf(th.hue);
-      cc.style.fontFamily = "var(--mono)";
-      cc.style.fontWeight = "700";
-      cc.style.fontSize = "11px";
+      const cc = el("span", "ct objcode"); cc.textContent = typeCode(o.type_key) || "—";
       b.append(cc);
       const nm = el("span", "nm"); nm.textContent = typeName(o.type_key); b.append(nm);
       const ct = el("span", "ct");
@@ -1734,9 +1736,8 @@ function viewReview(pid) {
     b.type = "button";
     b.style.setProperty("--h", isR05 ? hueOf("teal") : hueOf("indigo"));
     if (S.route.objId === k.type_key || (instances[0] && S.route.objId === instances[0].id)) b.setAttribute("aria-current", "true");
-    const cc = el("span", "ct");
-    cc.textContent = k.code; cc.style.fontFamily = "var(--mono)"; cc.style.fontWeight = "700";
-    cc.style.fontSize = "11px"; cc.style.color = isR05 ? hueOf("teal") : hueOf("indigo");
+    const cc = el("span", "ct objcode");
+    cc.textContent = k.code;
     b.append(cc);
     const nm = el("span", "nm"); nm.textContent = k.name; b.append(nm);
     const ct = el("span", "ct"); ct.textContent = instances.length ? instances.length + " 份" : "暂无";
@@ -2114,13 +2115,12 @@ function viewSources(pid) {
     const list = srcs.filter((s) => s.provider === prov);
     if (!list.length) continue;
     const pm = DATA.PROVIDERS[prov];
-    const gh = el("div");
-    gh.style.cssText = "display:flex;align-items:center;gap:9px;margin:28px 0 10px;";
-    const gd = el("span"); gd.style.cssText = `width:9px;height:9px;border-radius:50%;background:${hueOf(pm.hue)};`;
+    const gh = el("div", "group-heading");
+    const gd = el("span", "dot"); gd.style.background = hueOf(pm.hue);
     gh.append(gd);
-    const gt = el("h2"); gt.style.cssText = "font-size:13px;font-weight:660;letter-spacing:.05em;text-transform:uppercase;color:var(--label-3);";
+    const gt = el("h2");
     gt.textContent = pm.label; gh.append(gt);
-    const gn = el("span", "tiny muted"); gn.textContent = list.length + " 份"; gh.append(gn);
+    const gn = el("span", "n"); gn.textContent = list.length + " 份"; gh.append(gn);
     c.append(gh);
 
     const g = el("div", "listgroup");
@@ -2133,8 +2133,9 @@ function viewSources(pid) {
       row.setAttribute("aria-label", "查看材料：" + (s.cached_title || "标题尚未取得"));
       row.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); row.click(); } };
       const ic = el("span");
-      ic.style.cssText = `width:34px;height:34px;border-radius:9px;flex:none;display:grid;place-items:center;font-size:15px;background:color-mix(in srgb, ${hueOf(pm.hue)} 14%, transparent);color:${hueOf(pm.hue)};`;
-      ic.textContent = { doc: "📄", folder: "📁", mic: "🎙", globe: "🔗" }[pm.icon] || "📄";
+      ic.className = "row-icon";
+      ic.style.setProperty("--h", hueOf(pm.hue));
+      ic.append(glyphNode(pm.icon || "doc", 17));
       row.append(ic);
       const g2 = el("div", "grow");
       const h4 = el("h4"); h4.textContent = s.cached_title || "标题尚未取得";
@@ -2194,14 +2195,15 @@ function viewHistory(pid) {
   c.append(head);
 
   const tab = el("div", "tabbar");
+  const seg = el("div", "seg"); seg.setAttribute("aria-label", "记录类型"); tab.append(seg);
   const mode = S.route.sub || "changes";
   for (const [k, label, n] of [["changes", "变更记录", changes.length], ["decisions", "正式决策", decisions.length]]) {
-    const b = el("button", "chipbtn");
+    const b = el("button");
     b.type = "button";
     b.textContent = label + "  " + n;
-    if (mode === k) { b.style.background = "var(--label)"; b.style.color = "#fff"; }
+    b.setAttribute("aria-pressed", String(mode === k));
     b.onclick = () => go(`#/p/${pid}/history/${k}`);
-    tab.append(b);
+    seg.append(b);
   }
   c.append(tab);
   c.append((() => { const d = el("div"); d.style.height = "18px"; return d; })());
@@ -2261,8 +2263,9 @@ function viewHistory(pid) {
     const row = el("div", "lrow");
     const ic = el("span");
     const isNoop = ch.effect === "noop";
-    ic.style.cssText = `width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:13px;background:color-mix(in srgb, ${hueOf(isNoop ? "gray" : "blue")} 12%, transparent);color:${hueOf(isNoop ? "gray" : "blue")};`;
-    ic.textContent = isNoop ? "∅" : "＋";
+    ic.className = "row-icon";
+    ic.style.setProperty("--h", hueOf(isNoop ? "gray" : "blue"));
+    ic.append(glyphNode(isNoop ? "∅" : "＋", 16));
     row.append(ic);
     const g2 = el("div", "grow");
     const h4 = el("h4"); h4.textContent = ch.reason; g2.append(h4);
@@ -2333,7 +2336,7 @@ function viewCatalog() {
     row.append(td0);
     const td1 = el("td"); td1.style.fontWeight = "620"; td1.textContent = k.name; row.append(td1);
     const td2 = el("td", "small"); td2.textContent = k.meaning; td2.style.maxWidth = "26ch"; row.append(td2);
-    const td3 = el("td", "small"); td3.style.color = "var(--orange)"; td3.textContent = k.boundary; td3.style.maxWidth = "24ch"; row.append(td3);
+    const td3 = el("td", "small boundary-cell"); td3.textContent = k.boundary; td3.style.maxWidth = "24ch"; row.append(td3);
     const td4 = el("td", "small muted"); td4.textContent = k.sources; td4.style.maxWidth = "22ch"; row.append(td4);
     const td5 = el("td", "small muted"); td5.textContent = k.usage; td5.style.maxWidth = "20ch"; row.append(td5);
     tbody.append(row);
@@ -2498,6 +2501,7 @@ function renderChrome() {
     document.body.classList.toggle("navigation-open");
     menu.setAttribute("aria-expanded", String(document.body.classList.contains("navigation-open")));
   }, "sm mobile-menu");
+  menu.replaceChildren(glyphNode("menu", 18));
   menu.setAttribute("aria-label", "展开或收起导航");
   menu.setAttribute("aria-controls", "navigation");
   menu.setAttribute("aria-expanded", String(document.body.classList.contains("navigation-open")));
@@ -2516,7 +2520,7 @@ function renderChrome() {
     const b = el("button");
     b.type = "button";
     if (opts && opts.current) b.setAttribute("aria-current", "page");
-    const ic = el("span", "ic"); ic.textContent = opts.icon || ""; b.append(ic);
+    const ic = el("span", "ic"); ic.append(/^\d$/.test(opts.icon || "") ? document.createTextNode(opts.icon) : glyphNode(opts.icon || "", 17)); b.append(ic);
     const text = el("span", "nav-label"); text.textContent = label; b.append(text);
     b.setAttribute("aria-label", label); b.title = label;
     if (opts && opts.n != null) { const n = el("span", "n"); n.textContent = opts.n; b.append(n); }
@@ -2524,8 +2528,8 @@ function renderChrome() {
     parent.append(b);
     return b;
   };
-  addNav(sm, "项目", "#/", { icon: "▦", current: S.route.view === "projects" });
-  addNav(sm, "案例库", "#/libraries", { icon: "▤", current: S.route.view === "libraries" });
+  addNav(sm, "项目", "#/", { icon: "grid", current: S.route.view === "projects" });
+  addNav(sm, "案例库", "#/libraries", { icon: "library", current: S.route.view === "libraries" });
 
   const sp = $("sideProject"); sp.replaceChildren();
   const secondary = $("sideProjectSecondary"); secondary.replaceChildren();
@@ -2533,8 +2537,8 @@ function renderChrome() {
     addNav(sp, "项目信息", `#/p/${proj.id}/draft`, { icon: "1", current: S.route.view === "draft" });
     addNav(sp, "策划文档", `#/p/${proj.id}/review`, { icon: "2", current: S.route.view === "review" });
     addNav(sp, "案例分析", `#/p/${proj.id}/case-finding`, { icon: "3", current: S.route.view === "case-finding" });
-    addNav(secondary, "原始资料", `#/p/${proj.id}/sources`, { icon: "❖", current: S.route.view === "sources" });
-    addNav(secondary, "修改与确认记录", `#/p/${proj.id}/history`, { icon: "◷", current: S.route.view === "history" });
+    addNav(secondary, "原始资料", `#/p/${proj.id}/sources`, { icon: "layers", current: S.route.view === "sources" });
+    addNav(secondary, "修改与确认记录", `#/p/${proj.id}/history`, { icon: "clock", current: S.route.view === "history" });
   } else {
     const info = el("div");
     info.style.cssText = "padding:6px 10px;font-size:12px;color:var(--label-3);line-height:1.6;";
@@ -2681,7 +2685,7 @@ function renderInspectorExtra() {
   body.replaceChildren();
   head.replaceChildren();
   const h3 = el("h3");
-  const close = el("button", "close"); close.setAttribute("aria-label", "关闭详情"); close.type = "button"; close.textContent = "✕"; close.onclick = closeInspector;
+  const close = el("button", "close"); close.setAttribute("aria-label", "关闭详情"); close.type = "button"; close.append(glyphNode("x", 15)); close.onclick = closeInspector;
   h3.textContent = spec.kind === "basis" ? "依据版本对比" : "完整追溯路径";
   head.append(h3, close);
 

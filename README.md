@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.30](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.30)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.31](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.31)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -296,3 +296,9 @@ Agent 决定完整飞书文档的标题、排版、正文和素材，服务端�
 31 个内置源现均提供检索方向和使用建议：保留参考文档 13 个网站的建议，按官方介绍补齐原有 17 个工作室，团队共享文件夹也有检索说明。`library list/show` 直接返回 `description` 和 `search_guidance`，Skill 按本轮需求与来源特长组织检索。建议中的品牌、年份是示例，案例事实仍从原页核实。
 
 Personal 源可选填两项说明，也可在页面编辑。`library add/update` 接受相同字段；省略保留，空字符串清空。页面和 CLI 使用同一份数据，默认全部启用及移除／恢复行为不变。schema 11 新增说明字段，迁移前自动备份，保留原项目、来源启停、自定义说明和写入历史。
+
+## 界面更新（v0.3.31）
+
+采用新的工作台排版、统一线性图标、清晰的按钮与键盘焦点。案例库保留 Official / Personal 分组、官方 logo、检索方向与使用建议，添加和移除以不同颜色区分；问号可通过悬停、聚焦或点按查看建议，Esc 关闭。优化移动端导航和案例分析的研究入口。正式界面不包含交接包的测试横幅、场景切换入口或模拟数据适配器。
+
+数据库保持 schema 11，保留现有项目、来源设置与说明。新安装的 31 个内置源仍默认全部启用，已移除的源不会被重新启用。

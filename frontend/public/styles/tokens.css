@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Yu+ Design Tokens · v1.0
+   Yu+ Design Tokens · v2.0
    ---------------------------------------------------------------------------
-   结构语言取自 Apple：分层材质、连续圆角、分段控件、按需展开的检查器。
+   安静的编辑式工作台：实色表面 + 发丝边框，阴影只留给浮层。
    色彩承担信息含义：阅读主题、信息性质、来源类型、成果类型各有一色，
-   颜色本身可被读懂，不是装饰。
+   颜色本身可被读懂，不是装饰；所有正文与标签文字满足 WCAG AA 对比度。
+   性能：不使用 backdrop-filter，不使用常驻动画；过渡只作用于颜色与透明度。
 
-   直接 `<link rel="stylesheet" href="tokens.css">` 即可使用。
    正式实现建议把「语义色彩」部分映射到设计系统的 color roles，
    不要在业务组件里硬编码色值。
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -13,35 +13,40 @@
 :root {
   color-scheme: light;
 
-  /* ── 1. 基础色板（Apple 系统色） ─────────────────────────────────────
-     仅作为语义色的来源。业务代码应使用第 2 节的语义变量。 */
-  --red:    #FF3B30;
-  --orange: #FF9500;
-  --yellow: #FFCC00;
-  --green:  #34C759;
-  --mint:   #00C7BE;
-  --teal:   #30B0C7;
-  --cyan:   #32ADE6;
-  --blue:   #007AFF;
-  --indigo: #5856D6;
-  --purple: #AF52DE;
-  --pink:   #FF2D55;
-  --brown:  #A2845E;
-  --gray:   #8E8E93;
+  /* ── 1. 基础色板 ─────────────────────────────────────────────────────
+     保留原色相身份，调深以便作为文字与细线时清晰可读。
+     仅作为语义色的来源；业务代码使用第 2–6 节的语义变量。 */
+  --red:    #E5484D;
+  --orange: #EE8A10;
+  --yellow: #F5C400;
+  --green:  #2F9E5B;
+  --mint:   #12A594;
+  --teal:   #1597AE;
+  --cyan:   #1C93D1;
+  --blue:   #2F6FED;
+  --indigo: #5B5BD6;
+  --purple: #9B51D0;
+  --pink:   #E5487F;
+  --brown:  #9A7650;
+  --gray:   #7C808A;
+
+  /* 界面强调色：链接、焦点、选中。与「背景与需求 / 飞书 / 原文信息」的蓝色语义分开。 */
+  --accent:      #3657E0;
+  --accent-soft: color-mix(in srgb, var(--accent) 9%, transparent);
 
   /* ── 2. 语义色 · 阅读主题（draft 对象按主题分组，仅改变展示） ──────── */
-  --theme-background: var(--blue);    /* 背景与需求 D01 D02 D03 D11 D13 D14 */
-  --theme-research:   var(--teal);    /* 研究与资料 D04 D05 D06 D12 */
-  --theme-plan:       var(--orange);  /* 计划与协作 D09 D19 D20 D18 D07 D08 */
-  --theme-judgment:   var(--purple);  /* 判断与决定 D17 D22 D10 D21 D23 D15 */
+  --theme-background: var(--blue);
+  --theme-research:   var(--teal);
+  --theme-plan:       var(--orange);
+  --theme-judgment:   var(--purple);
 
   /* ── 3. 语义色 · 信息性质（★ 核心约束：不可把推断显示成客户原话） ──── */
-  --epistemic-source-statement: var(--blue);    /* 原文陈述：可回到原文定位 */
-  --epistemic-user-supplement:  var(--green);   /* 用户补充：主策补充，非客户原文 */
-  --epistemic-reported:         var(--teal);    /* 转述：经他人转述，可能有偏差 */
-  --epistemic-hypothesis:       var(--orange);  /* 假设：尚未确认，不作事实依据 */
-  --epistemic-suggestion:       var(--purple);  /* 建议：不是正式决定 */
-  --epistemic-adopted-decision: var(--indigo);  /* 采用决定：已采用口径，附依据 */
+  --epistemic-source-statement: var(--blue);
+  --epistemic-user-supplement:  var(--green);
+  --epistemic-reported:         var(--teal);
+  --epistemic-hypothesis:       var(--orange);
+  --epistemic-suggestion:       var(--purple);
+  --epistemic-adopted-decision: var(--indigo);
 
   /* ── 4. 语义色 · 来源类型 ──────────────────────────────────────────── */
   --provider-feishu: var(--blue);
@@ -50,97 +55,94 @@
   --provider-web:    var(--gray);
 
   /* ── 5. 语义色 · 成果类型 ──────────────────────────────────────────── */
-  --review-persistable: var(--indigo);  /* R01–R03，可持久化成果 */
-  --review-derived:     var(--teal);    /* R05，读取 D15，不单独持久化 */
+  --review-persistable: var(--indigo);
+  --review-derived:     var(--teal);
 
-  /* ── 6. 语义色 · 状态 ──────────────────────────────────────────────
-     状态色只用于「已保存记录之间可验证的差异」，不用于表达 Agent 的工作进度。 */
-  --state-ok:      var(--green);   /* 与当前一致、已在当前版本 */
-  --state-attention: var(--orange); /* 依据已变化、远端有更新、待答复 */
-  --state-muted:   var(--gray);    /* 不适用、尚未记录、尚未检查 */
-  --state-danger:  var(--red);     /* 原件不可用、读取失败 */
+  /* ── 6. 语义色 · 状态（只表达已保存记录之间可验证的差异） ───────────── */
+  --state-ok:        var(--green);
+  --state-attention: var(--orange);
+  --state-muted:     var(--gray);
+  --state-danger:    var(--red);
 
-  /* ── 7. 中性层次 ──────────────────────────────────────────────────── */
-  --label:            #1D1D1F;  /* 主文本 */
-  --label-2:          #48484A;  /* 次要文本 */
-  --label-3:          #8E8E93;  /* 第三级：时间、计数、单位 */
-  --label-4:          #C7C7CC;  /* 分隔、禁用 */
-  --bg-page:          #FBFBFD;  /* 页面底 */
+  /* ── 7. 中性层次（对白底：label 17:1 · label-2 9:1 · label-3 5:1） ──── */
+  --label:            #17181B;  /* 主文本 */
+  --label-2:          #43464D;  /* 次要文本 */
+  --label-3:          #676B73;  /* 时间、计数、单位 —— 仍满足 AA */
+  --label-4:          #B9BCC2;  /* 仅用于装饰线与禁用，不承载文字 */
+  --bg-page:          #F7F7F5;  /* 页面底 */
   --bg-elevated:      #FFFFFF;  /* 卡片、检查器 */
-  --bg-grouped:       #F2F2F7;  /* 分组底、代码块 */
-  --bg-fill:          rgba(120,120,128,0.10);   /* 分段控件底、次级按钮 */
-  --bg-sidebar:       rgba(247,247,249,0.72);   /* 半透明侧栏 */
-  --separator:        rgba(60,60,67,0.12);      /* 发丝分隔线 */
-  --separator-strong: rgba(60,60,67,0.20);
+  --bg-grouped:       #F2F2EF;  /* 分组底、代码块 */
+  --bg-fill:          rgba(23,24,27,0.055);  /* 次级按钮、悬停 */
+  --bg-sidebar:       #EFEFEC;               /* 实色侧栏，不做模糊 */
+  --separator:        rgba(23,24,27,0.10);
+  --separator-strong: rgba(23,24,27,0.18);
 
-  /* 标签底色/文字色由基色派生，保证对比度一致 */
-  --tag-bg-mix:   13%;   /* 与基色混合的比例 */
-  --tag-fg-mix:   82%;
-  --tag-fg-darken: 8%;
+  /* 标签：浅底 + 深字，文字由基色加深得到，保证对比度 */
+  --tag-bg-mix:    11%;
+  --tag-fg-mix:    64%;
+  --tag-fg-darken: 36%;
 
-  /* ── 8. 圆角（连续圆角观感） ───────────────────────────────────────── */
-  --r-xs: 6px;    /* 行内代码、小徽标 */
-  --r-sm: 10px;   /* 输入框、紧凑按钮、缩略图 */
-  --r:    14px;   /* 条目卡、段落高亮 */
-  --r-lg: 20px;   /* 卡片、成组列表 */
-  --r-xl: 26px;   /* 模态、空态容器 */
+  /* ── 8. 圆角（更利落） ─────────────────────────────────────────────── */
+  --r-xs: 5px;
+  --r-sm: 8px;
+  --r:    10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
 
-  /* ── 9. 阴影（克制的分层，靠发丝线而非重阴影） ────────────────────── */
-  --shadow-1: 0 1px 2px rgba(0,0,0,.04), 0 1px 1px rgba(0,0,0,.02);           /* 选中态、统计块 */
-  --shadow-2: 0 1px 2px rgba(0,0,0,.05), 0 8px 22px -10px rgba(0,0,0,.14);   /* 卡片 */
-  --shadow-3: 0 24px 60px -18px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.06);  /* 模态、浮层 */
+  /* ── 9. 阴影：卡片靠边框；只有浮层投影 ───────────────────────────────── */
+  --shadow-1: 0 1px 1px rgba(16,17,20,.04);
+  --shadow-2: 0 1px 2px rgba(16,17,20,.04);
+  --shadow-3: 0 16px 40px -12px rgba(16,17,20,.22), 0 0 0 1px rgba(16,17,20,.06);
 
   /* ── 10. 字体 ─────────────────────────────────────────────────────── */
   --font: -apple-system, BlinkMacSystemFont, "SF Pro SC", "SF Pro Text",
-          "PingFang SC", "Helvetica Neue", "Segoe UI", sans-serif;
-  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
-  --fs-display: clamp(28px, 3vw, 38px);  /* 页标题，tracking -0.032em */
-  --fs-h3:      19px;
+  --fs-display: clamp(24px, 2.4vw, 30px);
+  --fs-h3:      18px;
   --fs-h4:      15px;
   --fs-body:    15px;
-  --fs-doc:     16px;   /* review 正文，行高 1.78 */
+  --fs-doc:     16px;
   --fs-small:   13px;
-  --fs-tiny:    11.5px;
-  --fs-eyebrow: 11.5px; /* 大写 + tracking .07em */
+  --fs-tiny:    12px;
+  --fs-eyebrow: 12px;
 
   /* ── 11. 布局 ─────────────────────────────────────────────────────── */
-  --rail: 268px;    /* 侧栏 */
-  --insp: 400px;    /* 检查器 */
-  --toolbar-h: 57px;
+  --rail: 248px;
+  --insp: 400px;
+  --toolbar-h: 52px;
   --content-max: 1080px;
   --content-max-wide: 1240px;
+  --read-max: 46em;   /* 长段落的舒适行长 */
 
-  /* ── 12. 动效（克制，无弹跳） ─────────────────────────────────────── */
-  --ease: cubic-bezier(.32,.72,0,1);  /* Apple 常用减速曲线 */
-  --dur-fast: .14s;
-  --dur:      .18s;
+  /* ── 12. 动效（短、只动颜色/透明度/位移） ─────────────────────────── */
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --dur-fast: .12s;
+  --dur:      .16s;
 
-  /* ── 13. 断点（供 JS 参考，CSS 中仍需字面量） ─────────────────────── */
-  --bp-inspector-collapse: 1180px;  /* 检查器不再并排，改为排在内容之后 */
-  --bp-draft-collapse:      980px;  /* draft 目录与正文改为上下排列 */
-  --bp-mobile:              720px;  /* 侧栏收起 */
+  --bp-inspector-collapse: 1180px;
+  --bp-draft-collapse:      980px;
+  --bp-mobile:              720px;
 }
 
-/* 语义色标签：底色为基色低透明度，文字为基色加深，保证可读且不刺眼 */
+/* 语义色标签：底色为基色浅调，文字为基色加深 */
 .tag, .code, .cite {
   background: color-mix(in srgb, var(--h) var(--tag-bg-mix), transparent);
   color: color-mix(in srgb, var(--h) var(--tag-fg-mix), #000 var(--tag-fg-darken));
 }
-.tag { display:inline-flex; align-items:center; gap:5px; padding:2.5px 9px;
-       border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; line-height:1.5; }
+.tag { display:inline-flex; align-items:center; gap:5px; padding:2px 8px;
+       border-radius:6px; font-size:12px; font-weight:600; white-space:nowrap; line-height:1.55; }
 .tag .d { width:6px; height:6px; border-radius:50%; background:currentColor; }
 .code { font-family:var(--mono); font-size:11px; font-weight:700;
-        padding:2px 6px; border-radius:6px; }
+        padding:2px 6px; border-radius:5px; }
 
-/* 无障碍：所有可聚焦元素统一焦点环 */
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* 降低动效偏好 */
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
@@ -151,6 +153,6 @@
 .collaboration-card p { margin: 0 0 10px; }
 .collaboration-card p:last-child { margin-bottom: 0; }
 .collaboration-card summary { cursor: pointer; }
-.collaboration-record { font-size: 12px; line-height: 1.6; margin-top: 10px !important; }
-.collaboration-notice { color: var(--orange, #a34d00); }
+.collaboration-record { font-size: 12.5px; line-height: 1.6; margin-top: 10px !important; }
+.collaboration-notice { color: color-mix(in srgb, var(--orange) 60%, #000); }
 .collaboration-link { text-decoration: none; }

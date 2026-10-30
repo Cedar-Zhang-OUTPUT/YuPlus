@@ -192,29 +192,48 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
       const section = el('section', 'library-section'); section.append(el('h2', '', name));
       const grid = el('div', 'library-source-grid');
       for (const row of rows.sort((a, b) => a.name.localeCompare(b.name))) {
-        const item = el('article', 'library-source');
+        const item = el('article', 'library-source' + (row.deleted_at ? ' is-disabled' : ''));
         const icon = el('span', 'library-source-icon');
         icon.setAttribute('aria-hidden', 'true');
         const fallback = el('span', '', row.name.slice(0, 2).toUpperCase()); icon.append(fallback);
         const logo = libraryLogo(row);
         if (logo) {
-          const img = el('img', 'library-logo'); img.alt = ''; img.width = img.height = 32;
+          const img = el('img', 'library-logo'); img.alt = ''; img.width = img.height = 28;
           img.referrerPolicy = 'no-referrer'; img.decoding = 'async'; img.hidden = true;
           img.onload = () => { img.hidden = false; fallback.hidden = true; };
           img.onerror = () => { img.hidden = true; fallback.hidden = false; };
           img.src = logo; icon.append(img);
         }
-        const body = el('div', 'library-source-body'); const title = el('h3');
+        const body = el('div', 'library-source-body');
+        const head = el('div', 'library-source-head');
+        const title = el('h3');
         const url = row.kind === 'website' ? websiteUrl(row.url) : folderUrl(row.url);
         if (url) {
           const link = el('a', '', row.name); link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; title.append(link);
         } else title.textContent = row.name;
-        const description = row.description || (row.kind === 'feishu_folder' ? '飞书共享文件夹' : url ? new URL(url).hostname : '链接不可用');
-        body.append(title, el('p', 'muted', description), el('span', 'library-source-status', row.deleted_at ? '未启用' : '已启用'));
+        head.append(title);
+        // 「怎么用」：问号按钮，悬停、键盘聚焦或点按时显示完整建议；文字不截断，长内容可滚动
         if (row.search_guidance) {
-          const details = el('details', 'library-guidance');
-          details.append(el('summary', '', '怎么用'), el('p', '', row.search_guidance)); body.append(details);
+          const help = el('div', 'library-help');
+          const tipId = 'library-tip-' + row.id;
+          const trigger = el('button', 'library-help-button', '?'); trigger.type = 'button';
+          trigger.setAttribute('aria-label', `怎么用：${row.name}`);
+          trigger.setAttribute('aria-describedby', tipId); trigger.setAttribute('aria-expanded', 'false');
+          const tip = el('div', 'library-tip'); tip.id = tipId; tip.setAttribute('role', 'tooltip');
+          tip.append(el('b', '', '怎么用'), el('p', 'library-tip-text', row.search_guidance));
+          const setOpen = open => { help.className = 'library-help' + (open ? ' is-open' : ''); trigger.setAttribute('aria-expanded', String(open)); };
+          trigger.onclick = () => setOpen(true);
+          trigger.onfocus = () => setOpen(true);
+          help.onmouseenter = () => setOpen(true);
+          help.onmouseleave = () => { if (document.activeElement !== trigger) setOpen(false); };
+          trigger.onblur = () => setOpen(false);
+          trigger.onkeydown = event => { if (event.key === 'Escape') setOpen(false); };
+          help.append(trigger, tip); head.append(help);
         }
+        const description = row.description || (row.kind === 'feishu_folder' ? '飞书共享文件夹' : url ? new URL(url).hostname : '链接不可用');
+        const meta = el('div', 'library-source-meta');
+        meta.append(el('span', 'library-source-status ' + (row.deleted_at ? 'is-off' : 'is-on'), row.deleted_at ? '未启用' : '已启用'));
+        body.append(head, el('p', 'muted', description), meta);
         if ((row.origin || 'personal') === 'personal' && !row.deleted_at) {
           const edit = el('button', 'library-edit', '编辑说明'); edit.type = 'button'; edit.disabled = demo || pending;
           edit.setAttribute('aria-label', `编辑 ${row.name}`);
@@ -225,9 +244,10 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
             formTitle.textContent = '编辑 Personal 源'; submit.textContent = '保存修改';
             showForm(true); validate(); fields.description.focus();
           };
-          body.append(edit);
+          meta.append(edit);
         }
-        const toggle = el('button', 'library-toggle', row.deleted_at ? '＋ 添加' : '− 移除'); toggle.type = 'button';
+        // 添加 / 移除 用不同的按钮颜色区分：添加为实心强调色，移除为描边、悬停时转为警示色
+        const toggle = el('button', 'library-toggle ' + (row.deleted_at ? 'is-add' : 'is-remove'), row.deleted_at ? '＋ 添加' : '− 移除'); toggle.type = 'button';
         toggle.disabled = demo || pending;
         toggle.setAttribute('aria-label', `${row.deleted_at ? '添加' : '移除'} ${row.name}`);
         toggle.onclick = async () => {

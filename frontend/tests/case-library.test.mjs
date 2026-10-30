@@ -125,3 +125,20 @@ test('adding a disabled existing URL does not silently discard newly entered gui
     assert.ok(nodes(page).some(n=>n.textContent==='此来源已登记但未启用，请在列表中重新添加，再编辑说明。'));
   } finally {cleanup();}
 });
+
+test('source help opens for pointer and keyboard and Escape dismisses without losing focus', () => {
+  const cleanup = fakeDOM();
+  try {
+    const page = libraryView([{id:'one', origin:'official', name:'One', kind:'website', url:'https://one.example/', search_guidance:'先看案例视频'}], {});
+    const help = nodes(page).find(n => n.className === 'library-help');
+    const trigger = nodes(page).find(n => n.attrs['aria-label'] === '怎么用：One');
+    help.onmouseenter(); assert.equal(trigger.attrs['aria-expanded'], 'true');
+    help.onmouseleave(); assert.equal(trigger.attrs['aria-expanded'], 'false');
+    document.activeElement = trigger; trigger.onfocus();
+    help.onmouseleave(); assert.equal(trigger.attrs['aria-expanded'], 'true');
+    trigger.onkeydown({key:'Escape'}); assert.equal(trigger.attrs['aria-expanded'], 'false');
+    assert.equal(help.className, 'library-help'); assert.equal(document.activeElement, trigger);
+    trigger.onclick(); assert.equal(trigger.attrs['aria-expanded'], 'true');
+    trigger.onblur(); assert.equal(trigger.attrs['aria-expanded'], 'false');
+  } finally { cleanup(); }
+});
