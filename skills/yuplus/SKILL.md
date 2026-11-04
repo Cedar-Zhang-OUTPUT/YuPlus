@@ -1,6 +1,6 @@
 ---
 name: yuplus
-description: Use when a lead planner works on a Yu+ project in Codex—changing the workspace avatar/logo, managing workspace case-library (案例库) folders and websites, collecting materials, organizing project information, researching cases (找案例), reviewing outputs, or deciding the next useful action. Not for developing Yu+ itself or unrelated conversations.
+description: Use when a lead planner works on a Yu+ project in Codex—changing the workspace avatar/logo, managing workspace case-library (案例库) folders and websites, connecting or researching an Eagle local library through its official MCP, collecting materials, organizing project information, researching cases (找案例), reviewing outputs, or deciding the next useful action. Not for developing Yu+ itself or unrelated conversations.
 ---
 
 # Yu+ project copilot
@@ -31,6 +31,7 @@ The files below are Yu+ references, not separate skills. Follow this routing whe
 | Step | Yu+ reference to consult | When to use another Skill |
 | --- | --- | --- |
 | Start case research, refine its board, or continue an interrupted round | [case-research.md](references/case-research.md); [case-library.md](references/case-library.md) when accessing registered libraries | Browser/web tools for websites and public research; matching Feishu Skills for registered folders, evidence and board authoring. |
+| Connect Eagle, resume its setup after receiving configuration, or search an Eagle library | [eagle-library.md](references/eagle-library.md) | Use the official Eagle MCP exposed by the current client. Discover/reuse, configure safely, verify actual library and material reads; default read-only. The browser entry only copies the short Skill trigger. |
 | Change/reset the top-left avatar or logo | [appearance.md](references/appearance.md) | Compress the attached image with an available local image converter; no project context or Feishu access is needed. |
 | Add, use, remove or restore workspace case-library sources | [case-library.md](references/case-library.md) | For `feishu_folder`, use installed `lark-drive` and Feishu CLI; for `website`, use browser/web tools to find/read cases on the registered site on demand. Read description/search_guidance to tailor queries; store source metadata only, never case contents; deletion removes only the local registration. |
 | Install/start/stop, backup/restore, or remote update checks | [operations.md](references/operations.md), only the relevant section | Use installed lark-shared for authentication, and the matching material Skill when an observed update needs importing. |

@@ -14,7 +14,7 @@ R02 为「项目推进安排」，R03 为「创意方案」，R04 为「创意�
 
 **名称：** `yuplus`
 
-**触发条件：** 当主策在 Codex 中处理 Yu+ 项目，更改全局头像、管理案例库源、收集材料、整理项目信息、找案例、审阅成果或判断下一步行动时使用。不适用于 Yu+ 软件开发本身或无关对话。
+**触发条件：** 当主策在 Codex 中处理 Yu+ 项目，更改全局头像、管理案例库源、通过官方 MCP 连接或检索 Eagle 本地库、收集材料、整理项目信息、找案例、审阅成果或判断下一步行动时使用。不适用于 Yu+ 软件开发本身或无关对话。
 
 帮助策展主策减少查找和重复传递信息的时间。Codex 承载工作对话，Yu+ 保存可持续追溯的项目记录。项目写入使用 Yu+ CLI，绝不直接修改 SQLite。浏览器中的项目内容只读；案例库页面可直接添加 Personal 源以及启用、关闭来源。不能仅凭浏览器画面确定当前项目。
 
@@ -41,6 +41,7 @@ R02 为「项目推进安排」，R03 为「创意方案」，R04 为「创意�
 | --- | --- | --- |
 | 开启找案例研究、修改其画板或续接中断研究 | [找案例参考](case-research.zh-CN.md)；访问案例库时读 [案例库参考](case-library.zh-CN.md) | 网站及公开研究用浏览器/网页工具；飞书文件夹、证据与画板创作使用对应飞书 Skill。 |
 | 更改/恢复左上角头像或 Logo | [appearance.zh-CN.md](appearance.zh-CN.md) | 用可用的本地图像转换工具压缩附件，无需项目上下文或飞书权限。 |
+| 连接 Eagle、收到配置后续接初始化，或检索 Eagle 库 | [Eagle 连接与检索](eagle-library.zh-CN.md) | 使用当前客户端暴露的官方 Eagle MCP：发现与复用、安全配置、核验真实库与素材读取，默认只读。页面仅复制简短 Skill 触发指令。 |
 | 新增、使用、移除或恢复工作空间案例库 | [case-library.zh-CN.md](case-library.zh-CN.md) | feishu_folder 用 `lark-drive` 和飞书 CLI 到登记文件夹查找；website 用浏览器/网页工具到登记网站查找；按 description/search_guidance 选择检索词；只保存来源元数据，不保存案例内容；移除只作用于本地登记。 |
 | 首次设置或环境故障 | [materials.md](../../../skills/yuplus/references/materials.md) 的“First setup”（首次设置） | 初次飞书健康检查或相关认证故障时，使用已安装的 `lark-shared` 认证说明；不要每次读材料前都检查。 |
 | 读取飞书材料 | [materials.md](../../../skills/yuplus/references/materials.md) 的“Feishu documents and exports”（飞书文档与导出物） | 文档/wiki 内容用 `lark-doc`，文件下载/导出用 `lark-drive`；其他资源类型选择对应的已安装飞书 Skill。只读本次操作需要的说明。 |

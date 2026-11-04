@@ -1,5 +1,7 @@
 # Case analysis
 
+When the user includes an **Eagle local library** in this round, read [eagle-library.md](eagle-library.md) for official MCP connection, current-library verification, bounded search, actual image/file reading and library + item ID citations. Keep metadata-only results distinct from viewed cases. This is additional to the active registered sources unless the user narrows scope. Do not upload local Eagle assets to the Feishu board without authorization for the material scope and destination; use traceable local references if that authorization is absent.
+
 Use for a project’s 案例分析 research, new rounds and changes to an existing board. This workflow can start from user text, files or available project context; completing draft/review is not a prerequisite. Do not create sources or modify draft/review merely to conduct research.
 
 ## Choose the research identity

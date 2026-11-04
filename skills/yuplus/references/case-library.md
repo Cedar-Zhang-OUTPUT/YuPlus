@@ -1,5 +1,7 @@
 # Workspace case library sources
 
+For **Eagle local libraries**, read [eagle-library.md](eagle-library.md). The “连接 Eagle 案例库” browser entry invokes that Skill workflow; Eagle uses the current Agent client's official MCP connection, not a website/folder registration. Do not store MCP endpoints, commands or tokens in this catalog. Verify the current library and actual material reads before research; this page cannot report live MCP state.
+
 Read this when adding, finding cases in, or removing 案例库. A library is a Feishu shared folder (`kind=feishu_folder`) or website (`kind=website`), independent of projects and draft/review objects. **Yu+ stores only its kind, title, URL, search direction, usage guidance and registration metadata. Contents stay at the original source:** do not import files, bodies, excerpts, directory inventories or search indexes into Yu+ storage. Do not mirror folders/websites or run background crawling.
 
 For the full find-cases workflow, read [case-research.md](case-research.md). Unless the user narrows scope, search every active registered website/folder for this round’s direction; do not skip a registered type that exists, and do not require absent types. Use the user-imported aesthetic guidance as evidence without creating a lasting preference profile. Public web research (including GitHub when relevant) is encouraged alongside libraries; use the current registry rather than a separate studio list. Targeted searches do not mean mirroring a whole library.

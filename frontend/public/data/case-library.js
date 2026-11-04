@@ -1,4 +1,5 @@
 // Workspace source preferences; project content remains read-only.
+import { eagleLibraryEntry } from './eagle-library.js';
 export function folderUrl(value) {
   if (typeof value !== 'string' || value.length > 4096 || /[\x00-\x1f]/.test(value)) return null;
   const text = value.trim();
@@ -70,7 +71,7 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
   search.setAttribute('aria-label', '搜索案例库源');
   const add = el('button', 'library-primary', '＋ 添加源'); add.type = 'button';
   add.setAttribute('aria-expanded', String(!!state.addOpen)); add.setAttribute('aria-controls', 'library-add-form');
-  tools.append(search, add); header.append(intro, tools); page.append(header);
+  tools.append(search, add); header.append(intro, tools); page.append(header, eagleLibraryEntry());
   const tabs = el('div', 'library-tabs'); tabs.setAttribute('aria-label', '来源分类');
   const tabButtons = {};
   for (const [key, label] of [['official', 'Official'], ['personal', 'Personal']]) {

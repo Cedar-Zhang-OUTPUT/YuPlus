@@ -912,3 +912,19 @@ html.reading-draft { overflow-anchor:none; }
 .library-edit { border:0; background:transparent; color:var(--accent); cursor:pointer; padding:2px 0; font:inherit; font-size:12.5px; font-weight:550; }
 .library-edit:hover { text-decoration:underline; text-underline-offset:3px; }
 .library-catalog textarea:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+/* Local Eagle access is verified in the Agent, never inferred from a copy action. */
+.eagle-library-entry { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px 24px; padding:20px; margin:0 0 24px; border:1px solid var(--separator-strong); border-radius:var(--r-lg); background:var(--bg-elevated); }
+.eagle-library-body { min-width:0; }
+.eagle-library-body h2 { font-size:17px; margin:0 0 8px; }
+.eagle-library-body p { font-size:13.5px; line-height:1.65; margin:4px 0 0; text-wrap:pretty; }
+.eagle-library-actions { display:flex; flex-direction:column; align-items:center; gap:10px; }
+.eagle-library-actions button { min-height:44px; }
+.eagle-library-actions a { font-size:13px; color:var(--accent); }
+.eagle-library-status { grid-column:1/-1; margin:0; font-size:13px; line-height:1.6; }
+.eagle-library-status:empty { display:none; }
+.eagle-library-fallback { grid-column:1/-1; }
+.eagle-library-fallback[hidden] { display:none; }
+.eagle-library-fallback label { display:block; margin-bottom:6px; font-size:13px; }
+.eagle-library-fallback textarea { box-sizing:border-box; width:100%; padding:10px; border:1px solid var(--separator-strong); border-radius:var(--r-sm); background:var(--bg); color:var(--label); font:inherit; line-height:1.6; resize:vertical; }
+@media(max-width:700px) { .eagle-library-entry { grid-template-columns:minmax(0,1fr); } .eagle-library-actions { align-items:flex-start; } }
