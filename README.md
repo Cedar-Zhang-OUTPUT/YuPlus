@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.31](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.31)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.32](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.32)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -303,7 +303,7 @@ Personal 源可选填两项说明，也可在页面编辑。`library add/update`
 
 数据库保持 schema 11，保留现有项目、来源设置与说明。新安装的 31 个内置源仍默认全部启用，已移除的源不会被重新启用。
 
-## Eagle 本地案例库
+## Eagle 本地案例库（v0.3.32）
 
 案例库页面提供“连接 Eagle 案例库”，仅复制一句 `使用 $yuplus 连接 Eagle 案例库。`。初始化流程在 Yu+ Skill 中：先发现并复用可用的官方 Eagle MCP；需要配置时，引导用户从正在运行的 Eagle 官方 MCP Server 插件复制实际配置，再由 Agent 校验并合入当前客户端。连接结果、实际库名及图片/文件可读性在 Agent 对话中核验，复制指令不代表已连接。
 
