@@ -5,18 +5,20 @@
 ## 当前发行版与可信来源
 
 - 支持平台：macOS。
-- GitHub Release：**v0.3.32**；Python 包 `yuplus-local` 的版本为 **0.3.32**，两者对应同一发行版。
+- GitHub Release：**v0.3.33**；Python 包 `yuplus-local` 的版本为 **0.3.33**，两者对应同一发行版。
 - 官方仓库：https://github.com/Cedar-Zhang-OUTPUT/YuPlus
-- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.32
-- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.32/YuPlus-v0.3.32.tar.gz
-- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.32/SHA256SUMS.txt
-- 安装包 SHA-256：`565124f4ad67bb850904ad1ecc78e152ea49dc040466644fc6a4f321e8bb70ca`
+- 发布说明：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.33
+- 安装包：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.33/YuPlus-v0.3.33.tar.gz
+- 校验文件：https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.33/SHA256SUMS.txt
+- 安装包 SHA-256：`521d8c6ea4098fe2958497f13aa50216343be863dbfdde792301a99370f79949`
 
 固定下载上述版本。不要将 main 分支、旧开发目录或演示数据冒充正式安装。版本发布后如发现错误，报告具体问题，不改写原发布包或擅自修改应用绕过校验。
 
-v0.3.32 新增 Eagle 本地案例库连接入口与 Skill 流程。页面只复制简短指令，由 Agent 按 `references/eagle-library.md` 发现/复用官方 MCP，核实插件实际配置，区分配置写入、等待加载、连接成功和素材验证。检索默认只读，引用保留资源库身份、item ID、名称与实际来源；不以文件名冒充素材读取，不自动上传本地素材。安装升级本身不安装/启动 Eagle 插件、不修改客户端 MCP 配置、不读取 Eagle 素材。Eagle 的实际连接由用户后续配置，本次发布未完成真实 Eagle 端到端联调。数据库仍为 schema 11，保留现有项目与来源设置。
+v0.3.33 修复 Eagle 连接成功后案例库页面没有变化的问题。Agent 通过 `eagle status/record` 将真实检查结果写回同一工作空间，页面每 5 秒读取保存的状态，显示连接标记、实际库名、素材可读情况和检查时间；超过 24 小时显示“连接待复核”。按钮仍只复制 Skill 指令并附当前数据目录，复制不代表已连接。既有连接需补一次真实验证与回写，不能仅凭旧配置或用户描述标记成功。
 
-保留新版工作台界面：采用实色表面、清晰的排版和统一线性图标，优化移动端导航、键盘焦点及案例分析研究入口。案例库添加/移除按钮区分状态，问号说明支持悬停、聚焦、点按与 Esc 关闭。正式界面不包含前端交接包的测试横幅、场景入口与模拟数据适配器。数据库保持 schema 11，升级保留已有项目、来源启用状态及 Personal 说明；新安装的内置来源仍默认全部启用。
+该记录是 Agent 最近观察，不是实时在线探测。保留官方 MCP 初始化与只读检索流程；安装升级本身不安装/启动 Eagle 插件、不修改客户端 MCP 配置、不读取 Eagle 素材、不自动验证或写入成功状态。此次验证覆盖模拟状态流转与安装包升级，未完成真实 Eagle MCP 端到端联调。schema 12 新增连接观察和幂等回执，迁移前自动备份，保留原有项目及来源设置。
+
+保留新版工作台界面：采用实色表面、清晰的排版和统一线性图标，优化移动端导航、键盘焦点及案例分析研究入口。案例库添加/移除按钮区分状态，问号说明支持悬停、聚焦、点按与 Esc 关闭。正式界面不包含前端交接包的测试横幅、场景入口与模拟数据适配器。数据库为 schema 12，升级保留已有项目、来源启用状态及 Personal 说明；新安装的内置来源仍默认全部启用。
 
 保留案例库说明与 Agent 接入：`library list/show` 返回检索方向 `description` 和使用建议 `search_guidance`。保留参考文档中 13 个网站的说明，补齐原有 17 个工作室与团队文件夹的检索建议；31 个内置源均有说明。Personal 源可选填、编辑和清空这两项，页面与 CLI 读取一致。Skill 按来源特长组织检索，并要求验证案例原页、按实际任务调整示例品牌与年份。schema 11 增加说明字段，升级前自动备份，保留用户设置及项目数据。
 
@@ -25,7 +27,7 @@ v0.3.32 新增 Eagle 本地案例库连接入口与 Skill 流程。页面只复�
 保留案例分析 Skill：完整视觉研究以约 4–5 个主题组、50–60 张不同且有效的图片为目标，首批可先形成 30–40 张再继续完善。纯视觉参考直接组成图群，重点案例才附简短方法分析；按核心概念、图片关系、视觉符号与创意转译组织 Moodboard，保留图片来源并核验真实加载与可读性。补图与修改说明沿用当前研究轮次。按需读取 `references/case-research.md`；安装升级本身不开始研究、不修改已有画板或项目数据。
 
 保留 Agent 编写完整飞书文档、内容范围映射与多人协作同步。共用范围更新需校验全部关联条目，并保留远端版本、多人冲突、素材保护及先改 draft 再改 review 的约束。
-策划文档面板新增打开飞书文档、复制飞书链接、复制更新指令。Skill 和中文审阅版同步明确栏目职责、阅读层级、内容去重及历史迭代的识别。升级不自动重排既有飞书文档、不重写历史项目、不创建新定时任务；本版数据库保持 schema 11。未指明币种的金额继续按人民币（CNY）处理。
+策划文档面板新增打开飞书文档、复制飞书链接、复制更新指令。Skill 和中文审阅版同步明确栏目职责、阅读层级、内容去重及历史迭代的识别。升级不自动重排既有飞书文档、不重写历史项目、不创建新定时任务；本版数据库为 schema 12。未指明币种的金额继续按人民币（CNY）处理。
 
 保留整项目、单个 draft/Review 对象、原始资料和案例库登记的硬删除；默认仅预览，执行需匹配目标与计划，当前/历史引用会阻止断链。原有软删除与恢复保留。硬删除不会删除飞书内容、外部原件、共用文件或已有备份，整项目删除会清理对应画板缓存。策划文档空状态新增“复制开始整理指令”，按 Skill 整理已有信息并建立或复用飞书协作文档。
 
@@ -33,7 +35,7 @@ v0.3.32 新增 Eagle 本地案例库连接入口与 Skill 流程。页面只复�
 
 用户进入第二场景时，Agent 保存本地成果并创建或复用项目飞书协作文档，页面常驻文档链接。服务运行时每 60 秒检查绑定文档；远端变化由 Agent 先写入 draft，再更新相关 Review。自动整理需实际宿主任务，建议五分钟且遵守用户设置与宿主限制；同章节两端竞争修改需用户选择，可能丢失评论或素材时暂停替换。安装升级本身不建立文档或新定时任务，也不吸收项目内容。
 
-旧数据库升级为 schema 11，迁移前自动完整备份，保留现有项目、来源、对象和历史。两份 Skill 同步更新；按需读取 references/collaboration.md 和 references/review-structure.md。原有案例分析画板、头像、案例库与群聊能力保留。内置 31 个已确认案例库源（1 个飞书共享文件夹、30 个网站），默认全部启用，每个版本批次在工作空间只初始化一次。案例库不保存正文、附件、目录清单或搜索索引，移除与恢复只影响本地登记。
+旧数据库升级为 schema 12，迁移前自动完整备份，保留现有项目、来源、对象和历史。两份 Skill 同步更新；按需读取 references/collaboration.md 和 references/review-structure.md。原有案例分析画板、头像、案例库与群聊能力保留。内置 31 个已确认案例库源（1 个飞书共享文件夹、30 个网站），默认全部启用，每个版本批次在工作空间只初始化一次。案例库不保存正文、附件、目录清单或搜索索引，移除与恢复只影响本地登记。
 
 ## 1. 识别已有环境
 
@@ -55,10 +57,10 @@ v0.3.32 新增 Eagle 本地案例库连接入口与 Skill 流程。页面只复�
 
 ```sh
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.32/YuPlus-v0.3.32.tar.gz \
-  --output YuPlus-v0.3.32.tar.gz
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.33/YuPlus-v0.3.33.tar.gz \
+  --output YuPlus-v0.3.33.tar.gz
 curl --fail --location --proto '=https' --tlsv1.2 \
-  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.32/SHA256SUMS.txt \
+  https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/download/v0.3.33/SHA256SUMS.txt \
   --output SHA256SUMS.txt
 shasum -a 256 -c SHA256SUMS.txt
 ```
@@ -66,8 +68,8 @@ shasum -a 256 -c SHA256SUMS.txt
 同时核对计算出的摘要与本文件上面的固定摘要。下载或校验失败时停止执行，不忽略错误继续解压。校验成功后：
 
 ```sh
-tar -xzf YuPlus-v0.3.32.tar.gz
-cd YuPlus-v0.3.32
+tar -xzf YuPlus-v0.3.33.tar.gz
+cd YuPlus-v0.3.33
 ```
 
 读取包内 README.md 及安装入口说明。安装包包含 CLI 源码、前端静态资源、两份 Skill 和安装器，不需要另外搭建数据库服务或 Node 前端服务。
@@ -82,9 +84,9 @@ cd YuPlus-v0.3.32
 
 已有自定义安装时，显式传入其应用前缀，例如 `./install.sh --prefix '/实际应用目录'`；安装器会沿用该前缀安装记录中的数据和 Skill 目录。仅在用户有意选择新位置时传 `--data-dir` 或 `--skills-dir`，不指向 `.preview` 或验收目录。
 
-从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.32 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
+从旧版本升级或确实需要重装时，先用旧安装记录中的 CLI 显式传入已核验的 `--data-dir DIR`，执行 `backup create --output NEW_BACKUP_DIR --json`，将数据库和材料备份到与数据目录分开的新目录。备份失败则保留旧安装并处理具体问题，不继续升级。随后执行 `status --json` 和 `stop --json`，检查停止结果；安装完成后对同一目录重新 `start`。v0.3.33 不会自动重启已运行的服务，健康接口也不报告代码版本，不能凭安装成功就认定旧进程已经换成新代码。无法验证或停止旧服务时保留现场，报告具体问题，不按端口强杀进程。
 
-v0.3.32 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
+v0.3.33 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不会重建它。若现有环境损坏或 Python/SQLite 不达标，不要反复对原前缀重装。保留旧安装，选择一个不存在的新应用前缀，并显式传入原数据目录与原 Skill 目录；这会沿用项目数据并让未修改的托管 Skill 指向新 CLI。执行前说明新应用位置；若涉及已修改的 Skill，则按下文冲突规则处理。旧服务无法停止时先报告，避免两套服务混用。
 
 安装入口会复用满足 Python ≥3.12、SQLite ≥3.51.3 的运行环境；缺少时通过官方 uv 安装器准备私有 Python。之后安装 `yuplus-local`、`yuplus` 与 `yuplus-visualization` 两份 Skill，初始化数据目录并检查飞书认证。需要网络下载运行时与依赖；不修改 shell 配置。
 
@@ -92,11 +94,11 @@ v0.3.32 会复用已有的 `PREFIX/venv`；`--python` 和 `--managed-python` 不
 
 如果已有 Skill 是符号链接、非安装器管理或包含用户修改，安装器会拒绝覆盖。保留这些文件，说明具体路径和冲突，由用户选择处理方式。不要先删除旧 Skill 再重试。
 
-升级 schema 1–10 的旧数据库时，v0.3.32 首次访问会迁移到 schema 11，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的 schema 11 库。安装后查询包版本应为 `0.3.32`，并确认 `doctor` 返回 `schema_version: 11`。
+升级 schema 1–11 的旧数据库时，v0.3.33 首次访问会迁移到 schema 12，并在数据目录旁的 `数据目录名-migration-backups` 中保存迁移前的完整备份。保留升级前备份；若需要回退旧程序，将该备份恢复到一个新数据目录，不让旧程序直接操作已迁移的 schema 12 库。安装后查询包版本应为 `0.3.33`，并确认 `doctor` 返回 `schema_version: 12`。
 
 ## 4. 读取已安装 Skill，并检查环境
 
-确认 CLI 帮助包含 `project purge`、`draft purge`、`review purge`、`source purge`、`library purge`，以及安装后的 Skill `references/deletion.md`；按需用 Skill 的 `inspect_contract.py command project.purge` 等查询 CLI 所带契约。只检查命令与文件是否存在；安装升级不执行硬删除。只有用户明确要求永久删除具体内容时才读取删除流程：先预览、处理真实宿主任务和引用阻塞，再按同一计划执行；`complete=false` 时按原请求重试，不声称清理完成。
+确认 CLI 帮助包含 `eagle status/record`，且 `references/eagle-library.md` 已更新。安装过程只核对能力，不伪造连接结果；用户需要连接或复核时再执行此 Skill。确认 CLI 帮助包含 `project purge`、`draft purge`、`review purge`、`source purge`、`library purge`，以及安装后的 Skill `references/deletion.md`；按需用 Skill 的 `inspect_contract.py command project.purge` 等查询 CLI 所带契约。只检查命令与文件是否存在；安装升级不执行硬删除。只有用户明确要求永久删除具体内容时才读取删除流程：先预览、处理真实宿主任务和引用阻塞，再按同一计划执行；`complete=false` 时按原请求重试，不声称清理完成。
 
 读取两份已安装 Skill 的 `installation.json`，取得真实 CLI、Python 和数据目录；核对它们与应用安装记录一致。读取 `yuplus/SKILL.md` 与 `yuplus-visualization/SKILL.md`，按主文件指引读取当前步骤需要的参考文档，避免重复载入已读内容。升级后刷新当前会话中旧版 Skill 指引；确认 `yuplus/references/review-structure.md` 与 `references/deletion.md` 已随安装更新，分别在整理/纠正成果、删除/重新启用时按需读取。确认 `yuplus/references/export.md` 已随安装更新，编写飞书正文及素材时按需读取。确认 `references/collaboration.md` 已安装；CLI 帮助应包含 `collab create/pull/prepare/push/accept/resolve/schedule/scheduler-bind`。旧独立导出记录仍可用 `export record` 与 `export list` 操作。安装或升级本身不导出文档、不创建测试记录。确认 `yuplus/references/case-library.md` 已随安装更新；登记、查找、移除或恢复案例库时再按需读取。CLI 帮助应包含 `library add/list/show/update/delete/restore` 对应命令。安装或升级会一次性初始化内置案例库登记，Agent 用 `library list` 检查结果即可，不另行重复添加，也不读取案例内容。确认 `yuplus/references/case-research.md`、`references/appearance.md` 随安装更新，CLI 帮助包含 `research create/update/list/show/preview` 和 `logo show/set/reset`。安装或升级本身不创建研究或飞书画板、不改头像。找案例依赖已安装的 `lark-doc`、`lark-whiteboard` 及其实际所需能力，正常预览刷新由本地程序执行，无需 Agent 定时任务。新 Skill 尚未被当前会话自动发现时，可直接读取已安装文件继续。`docs/skills/` 中的中文副本仅供用户审阅，不安装，也不作为 Agent 执行参考读取。
 
@@ -122,7 +124,7 @@ CLI --data-dir DATA_DIR status --json
 
 ## 6. 群聊监控的安装边界
 
-v0.3.32 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
+v0.3.33 提供 `monitor` 命令和监控面板。确认安装后的 CLI 帮助包含该命令，并按需读取正式 Skill 的 `references/chat-monitoring.md`。只有用户明确指定项目群并要求监控时，才核实群身份、绑定项目并通过当前 Codex 宿主的原生定时工具建立任务。安装或升级本身不创建监控、不读取真实群消息、不创建测试定时任务。
 
 默认间隔60分钟，可按用户要求调整；首次收集全部可访问历史，再按时间顺序维护 draft 和已有受影响 review。没有宿主定时工具时只能手动同步，不宣称自动检查已接通。真实群聊与定时唤起需在用户指定目标后验收；已保存调度回执不等于真实运行成功。
 
