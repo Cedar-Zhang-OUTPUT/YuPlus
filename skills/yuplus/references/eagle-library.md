@@ -51,7 +51,25 @@ Show the actual library name and sufficient non-secret identity for the user to 
 
 Query a small sample (normally 1–3 items) in the confirmed scope, retrieve metadata and try an appropriate reader on an actual returned image/file. Report separately: **元数据可读 / 缩略图可读 / 原文件可读 / 未验证或不可读取**. A path, filename, MIME type, thumbnail URL or successful download is not evidence that the Agent saw the image or read the document. Use the host's image/PDF/media reader on an actual returned readable resource; report partial coverage for long documents/video. Do not concatenate guessed filesystem paths, bypass permissions, or rename/move/delete/tag assets during setup.
 
-For an empty library, unavailable file reader or missing read tools: report “连接成功，素材读取待验证” with the concrete reason. Do not create a sample asset merely to obtain a green status. Report the library, read-only scope, obtained evidence, current state and any next user step concisely in the conversation. The Yu+ browser does not observe MCP runtime and therefore displays no connection-success badge.
+For an empty library, unavailable file reader or missing read tools: report “连接成功，素材读取待验证” with the concrete reason. Do not create a sample asset merely to obtain a green status. Report the library, read-only scope, obtained evidence, current state and any next user step concisely in the conversation. The Yu+ browser shows the saved observation described below, not a live MCP heartbeat.
+
+## Sync the observation to the Yu+ card
+
+After setup, successful verification, or an observed connection failure, save the evidence through Yu+'s **status-only** CLI. This does not configure, proxy or invoke Eagle. Resolve the same `DATA_DIR` as the user's open Yu+ workspace: the copied card prompt includes it as quoted data. Use the installed Yu+ CLI and its existing installation receipt / `status` if context is missing; resolve ambiguity before writing. Never use the current repository or a guessed default as a substitute.
+
+1. Read `yu --data-dir DATA_DIR eagle status --json` for `data.version`. An old success is historical evidence only; freshly query the actual MCP before reaffirming success. Existing connections from older versions need one fresh verification and receipt.
+2. Prepare a JSON file (not shell-interpolated configuration) with **exactly** the fields below. Use the time the observation was actually made, an actual MCP server alias, and actual library name. `library_key` is the returned stable opaque ID; if Eagle only returns a path, use its SHA-256 hex digest so no private path is saved. No URL, endpoint, config, token, raw tool output or asset contents belong in this receipt.
+3. Run `yu --data-dir DATA_DIR eagle record --request-id UNIQUE_ID --input RECEIPT_FILE --json`, check exit status and `ok`, then read `eagle status` back. On an uncertain submission retry the identical request ID and payload. A version conflict requires rereading and reconciling the latest observation, not blindly overwriting another session. Older observations cannot supersede newer ones.
+
+Example **shape only**, not evidence or a ready-to-submit successful receipt:
+
+```json
+{"api_version":"1","command":"eagle.record","base_version":0,"state":"waiting","observed_at":"ACTUAL_RFC3339_TIME_WITH_OFFSET","server_name":"ACTUAL_ALIAS","library_name":"","library_key":"","tools_listed":false,"query_succeeded":false,"target_confirmed":false,"material_read":"unverified"}
+```
+
+Use `not_configured`, `configured`, `waiting`, `connected`, `verified`, or `unavailable` to match the observed state. `connected` requires an actual tools listing, successful read-only query, server alias and library identity. `verified` additionally requires a confirmed intended library and an actual thumbnail/original read. `material_read` is `unverified`, `metadata`, `thumbnail`, or `original`; never promote metadata/download success to an actual read. For failures or waiting, do not reuse prior success flags/material coverage; set query/target false and material unverified. You may retain a known library label only when it is clearly still the intended library; don't mix a newly observed library with old evidence. On a confirmed switch, replace identity and coverage together.
+
+The card refreshes its saved observation every 5 seconds while visible. It shows library, read coverage and check time; after 24 hours a success is labeled “连接待复核”. It never claims real-time availability. Clicking connect/reverify only copies a Skill invocation and cannot set success. If the CLI is older and lacks these commands, or writing fails, report “连接已验证，但页面状态未同步” and the concrete cause, rather than fabricating a browser badge or editing SQLite directly. No fresh Eagle tools means no retroactive success receipt based solely on a user claim.
 
 ## Research and reference cases
 

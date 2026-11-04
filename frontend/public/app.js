@@ -14,6 +14,7 @@ import { loadView } from "./data/runtime.js";
 let DATA;
 import { caseFindingView } from "./data/case-finding.js";
 let activeCaseFinding;
+let activeLibrary;
 import { initLogoMenu } from "./data/logo.js";
 const refreshLogo = initLogoMenu(document.getElementById("logoControl"), () => DATA, copyText);
 import { basisStatus, qaState, openQuestionState } from "./data/selectors.js";
@@ -2625,6 +2626,7 @@ function renderStage(updateChrome = true) {
     ? draftReadingAnchor() : null;
   projectDockObserver.disconnect();
   activeCaseFinding?.destroy(); activeCaseFinding = null;
+  activeLibrary?.destroy(); activeLibrary = null;
   S.route = parseRoute();
   if (updateChrome) renderChrome();
   const stage = $("stage");
@@ -2640,7 +2642,10 @@ function renderStage(updateChrome = true) {
 
   let view;
   if (S.route.view === "projects") view = viewProjects();
-  else if (S.route.view === "libraries") view = libraryView(DATA.case_libraries, S.libraryPrompt, {demo: DATA.meta.demo, onChange: records => { DATA.case_libraries = records; }});
+  else if (S.route.view === "libraries") {
+    activeLibrary = libraryView(DATA.case_libraries, S.libraryPrompt, {demo: DATA.meta.demo, eagle: DATA.eagle_connection, dataDir: DATA.meta.data_dir, onChange: records => { DATA.case_libraries = records; }});
+    view = activeLibrary; activeLibrary.start();
+  }
   else if (S.route.view === "types") view = viewCatalog();
   else if (S.route.view === "draft") view = viewDraft(S.route.pid);
   else if (S.route.view === "review") view = viewReview(S.route.pid);
@@ -2922,6 +2927,7 @@ async function loadRoute(force=false) {
     render();
   } else {
     activeCaseFinding?.destroy(); activeCaseFinding = null;
+    activeLibrary?.destroy(); activeLibrary = null;
     const content = el('div','content');
     const progress = loadingProgress();
     activeLoading = progress;

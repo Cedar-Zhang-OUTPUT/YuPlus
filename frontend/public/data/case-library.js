@@ -53,7 +53,7 @@ export function libraryLogo(library) {
   return url ? new URL(url).origin + '/favicon.ico' : null;
 }
 
-export function libraryView(libraries, state, {save = saveLibraryRequest, onChange = () => {}, demo = false} = {}) {
+export function libraryView(libraries, state, {save = saveLibraryRequest, onChange = () => {}, demo = false, eagle, dataDir} = {}) {
   const el = (tag, cls = '', text = '') => {
     const node = document.createElement(tag); node.className = cls;
     node.textContent = text; return node;
@@ -71,7 +71,11 @@ export function libraryView(libraries, state, {save = saveLibraryRequest, onChan
   search.setAttribute('aria-label', '搜索案例库源');
   const add = el('button', 'library-primary', '＋ 添加源'); add.type = 'button';
   add.setAttribute('aria-expanded', String(!!state.addOpen)); add.setAttribute('aria-controls', 'library-add-form');
-  tools.append(search, add); header.append(intro, tools); page.append(header, eagleLibraryEntry());
+  tools.append(search, add); header.append(intro, tools);
+  const eaglePanel = eagleLibraryEntry({record:eagle, dataDir});
+  page.start = () => { if (!demo) eaglePanel.start(); };
+  page.destroy = () => eaglePanel.destroy();
+  page.append(header, eaglePanel);
   const tabs = el('div', 'library-tabs'); tabs.setAttribute('aria-label', '来源分类');
   const tabButtons = {};
   for (const [key, label] of [['official', 'Official'], ['personal', 'Personal']]) {

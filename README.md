@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.32](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.32)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.33](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.33)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -237,7 +237,7 @@ Agent 按 Skill 用飞书 CLI 创建和修改画板；本地服务仅导出预�
 
 左上角头像菜单可复制更改提示词；Agent 压缩图片后使用 `logo set`，支持 `logo show/reset`。头像随数据库备份。
 
-当前 schema 11。从 schema 1–10 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
+当前 schema 12。从 schema 1–11 升级前自动完整备份；保留原项目、来源、对象和历史。升级前先备份、停止旧服务，安装后沿用原数据目录重启。两份 Skill 同步更新；中文版本仅供审阅。
 
 ## 策划文档协作（v0.3.24）
 
@@ -308,3 +308,10 @@ Personal 源可选填两项说明，也可在页面编辑。`library add/update`
 案例库页面提供“连接 Eagle 案例库”，仅复制一句 `使用 $yuplus 连接 Eagle 案例库。`。初始化流程在 Yu+ Skill 中：先发现并复用可用的官方 Eagle MCP；需要配置时，引导用户从正在运行的 Eagle 官方 MCP Server 插件复制实际配置，再由 Agent 校验并合入当前客户端。连接结果、实际库名及图片/文件可读性在 Agent 对话中核验，复制指令不代表已连接。
 
 使用时保持 Eagle 与官方插件运行。默认只读、有界检索，案例引用保留库身份、item ID、名称及实际来源；区分元数据、缩略图和原文件。此连接独立于网站/飞书源登记，不将 MCP 地址或 Token 存入项目，不自动上传本地素材到飞书。用户审阅版见 [Eagle 连接与检索](docs/skills/yuplus/eagle-library.zh-CN.md)。
+
+
+## Eagle 连接状态（v0.3.33）
+
+案例库卡片显示 Agent 最近检查的连接状态、实际库名、素材读取情况和检查时间。完成连接后，Skill 通过 `eagle status/record` 将结果回写同一工作空间；页面可见时每 5 秒自动读取，超过一天显示“连接待复核”。复制连接指令本身不会设置成功；已有连接需重新验证一次以补齐记录。页面展示历史检查结果，不冒充实时在线探测。
+
+schema 12 新增观察记录和幂等回执；升级前自动备份，随工作空间备份/恢复保留。不会保存 MCP 配置、endpoint、凭据或 Eagle 素材。

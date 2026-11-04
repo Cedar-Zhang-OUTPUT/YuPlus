@@ -1,6 +1,6 @@
 # Eagle MCP + Skill integration verification
 
-Checked 2026-11-04. This change implements the browser handoff and the installed Skill workflow. It does not add an Eagle CLI, a server proxy, a new library registry kind, or a live MCP status endpoint. Client connection states belong to the Agent conversation; website/Feishu source counts and stored preferences remain independent.
+Initial v0.3.32 checks (2026-11-04). That version implemented the browser handoff and the installed Skill workflow. It does not add an Eagle CLI, a server proxy, a new library registry kind, or a live MCP status endpoint. In v0.3.32 connection states belonged to the Agent conversation; website/Feishu source counts and stored preferences remain independent.
 
 ## Completed checks
 
@@ -30,3 +30,15 @@ This environment did not expose an Eagle MCP tool, and no configuration from the
 - Codex MCP/configuration: https://developers.openai.com/codex/mcp and https://developers.openai.com/codex/config-reference ; local `codex mcp add --help` verified STDIO/Streamable HTTP and bearer environment-variable flag. The actual running client still determines effective scope and transport compatibility.
 
 No user MCP configuration or credentials were read, changed or stored while implementing this feature.
+
+
+## Connection observation update (2026-11-04)
+
+The card now displays Agent-reported observations through `eagle status/record`, `/api/eagle`, and `eagle_connection` in `/api/view`. This is a saved result, not a live MCP probe. The installed Skill writes the exact workspace's receipt after real verification or an observed failure. No actual Eagle tools are exposed in this development session, so real MCP verification remains outside these checks.
+
+- 280 Python tests and 85 frontend tests pass; both installed Skills pass quick validation.
+- Schema 11 → 12 migration backs up first and preserves projects and source preferences. Receipts survive backup/restore; idempotent retries cannot roll back newer observations. Stale versions/observations, unsupported evidence, unknown configuration/token fields and invalid timestamps are rejected.
+- Public CLI write/read and GET `/api/eagle` share the data directory; browser POST to this endpoint is rejected. Disconnection removes prior read coverage, and changing libraries replaces the identity and observation together.
+- Browser checks use only `.preview/eagle-status/data` and the explicitly labeled “界面验证示例库（模拟记录）”: persisted success survives reload, then failure and reconnection update the card automatically without reloading. The count stays 31/31. No browser console warnings/errors.
+- 375×812 portrait and 812×375 landscape DOM checks show no horizontal overflow; the primary button is 44px high. Poll tests cover hidden pages, sequential requests, failures/recovery and cancellation after navigation. Clipboard tests preserve the short Skill invocation with the current workspace directory and never promote copying to connection success.
+- Success older than 24 hours becomes “连接待复核”; the page explicitly identifies observations as historical, not real-time availability. Existing v0.3.32 connections require one real verification and writeback before a badge can appear.

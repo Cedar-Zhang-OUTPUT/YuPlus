@@ -21,7 +21,7 @@ def read_snapshot(data_dir):
     try:
         db.execute('PRAGMA query_only=ON')
         db.execute('BEGIN')
-        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7,8,9,10,11):
+        if db.execute('PRAGMA user_version').fetchone()[0] not in (1,2,3,4,5,6,7,8,9,10,11,12):
             raise YuError('INTEGRITY_FAILURE', '数据库版本不兼容。')
         yield db
     finally:
@@ -182,6 +182,8 @@ def browser_view(db, data_dir, project_id=None):
     view['monitor_runs'] = []
     from .case_library import catalog
     view['case_libraries'] = catalog(db)
+    from .eagle import status as eagle_status
+    view['eagle_connection'] = eagle_status(db)
     from .appearance import metadata
     view['logo'] = metadata(db)
     from .case_research import listed as research_list

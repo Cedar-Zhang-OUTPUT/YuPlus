@@ -72,7 +72,7 @@ class GuidanceTests(unittest.TestCase):
         before=[dict(r) for r in self.app.db.execute('SELECT * FROM case_libraries')]
         receipts=[tuple(r) for r in self.app.db.execute('SELECT * FROM case_library_requests')]
         self.app.close();self.app=App(self.data)
-        self.assertEqual(self.app.execute('doctor')['data']['schema_version'],11)
+        self.assertEqual(self.app.execute('doctor')['data']['schema_version'],12)
         self.assertEqual(receipts,[tuple(r) for r in self.app.db.execute('SELECT * FROM case_library_requests')])
         for saved in before:
             current=dict(self.app.db.execute('SELECT * FROM case_libraries WHERE id=?',(saved['id'],)).fetchone())

@@ -119,6 +119,12 @@ class GatewayHandler(BaseHTTPRequestHandler):
                 db.execute('SELECT id FROM projects LIMIT 1').fetchall()
             return self.json_response({'ok': True, 'mode': 'live', 'api_version': '1',
                 'data_dir': str(self.server.data_dir), 'url': self.server.url, 'port': self.server.server_port, 'pid': os.getpid(), 'instance_id': os.environ.get('YUPLUS_SERVICE_INSTANCE')})
+        if path == '/api/eagle':
+            self.params(url, set())
+            from .eagle import status
+            with read_snapshot(self.server.data_dir) as db:
+                result = status(db)
+            return self.json_response({'ok': True, 'data': result})
         if path == '/api/view':
             query = self.params(url, {'project'})
             with read_snapshot(self.server.data_dir) as db:

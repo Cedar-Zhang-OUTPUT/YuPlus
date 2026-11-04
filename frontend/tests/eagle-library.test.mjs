@@ -17,7 +17,7 @@ test('connect copies a short Skill invocation without claiming a connection or s
   try {
     const copies=[];
     const panel=eagleLibraryEntry({copy:async text=>copies.push(text)});
-    const all=nodes(panel), button=all.find(n=>n.tag==='button'), status=all.find(n=>n.attrs.role==='status');
+    const all=nodes(panel), button=all.find(n=>n.tag==='button'), status=all.find(n=>n.className==='eagle-library-status');
     assert.equal(status.textContent,'');
     await button.onclick();
     assert.deepEqual(copies,['使用 $yuplus 连接 Eagle 案例库。']);
@@ -34,7 +34,7 @@ test('missing or denied clipboard offers selectable text and retry recovers with
   try {
     let attempts=0;
     const panel=eagleLibraryEntry({copy:async()=>{if(++attempts===1)throw new Error('private environment detail');}});
-    const all=nodes(panel), button=all.find(n=>n.tag==='button'), status=all.find(n=>n.attrs.role==='status');
+    const all=nodes(panel), button=all.find(n=>n.tag==='button'), status=all.find(n=>n.className==='eagle-library-status');
     const fallback=all.find(n=>n.className==='eagle-library-fallback'), prompt=all.find(n=>n.tag==='textarea');
     await button.onclick();
     assert.equal(fallback.hidden,false);assert.equal(prompt.value,EAGLE_CONNECT_PROMPT);
@@ -55,4 +55,50 @@ test('repeated click while clipboard is pending does not dispatch another operat
     await button.onclick();assert.equal(calls,1);
     resolveCopy();await pending;assert.equal(button.disabled,false);
   } finally {cleanup();}
+});
+
+import {eagleStatusText, watchEagleStatus} from '../public/data/eagle-library.js';
+
+test('connection observation shows identity and coverage but expires without pretending to probe MCP', () => {
+  const observed = Date.parse('2026-11-04T10:00:00Z');
+  const record = {state:'verified', library_name:'品牌案例', observed_at:new Date(observed).toISOString(), material_read:'thumbnail'};
+  assert.match(eagleStatusText(record, observed).label, /已连接/);
+  assert.match(eagleStatusText(record, observed).detail, /品牌案例.*缩略图可读.*最近检查/);
+  assert.equal(eagleStatusText(record, observed + 25*60*60*1000).label, '连接待复核');
+  assert.equal(eagleStatusText({...record, state:'unavailable'}, observed).label, '连接不可用');
+  assert.equal(eagleStatusText({...record, state:'waiting'}, observed).connected, false);
+  assert.match(eagleStatusText(undefined).label, /尚未记录/);
+});
+
+test('connected card preserves observed success when copying reverify and carries workspace context', async () => {
+  const cleanup = fakeDOM();
+  try {
+    let copied;
+    const panel = eagleLibraryEntry({record:{version:1, state:'verified', library_name:'真实库名', observed_at:new Date().toISOString(), material_read:'original'}, dataDir:'/workspace/a b', copy:async text=>{copied=text;}});
+    const all=nodes(panel), button=all.find(n=>n.tag==='button');
+    assert.equal(button.textContent,'重新验证连接');
+    assert.match(all.find(n=>n.className==='eagle-library-details').textContent,/真实库名.*原文件可读/);
+    await button.onclick();
+    assert.match(copied,/"\/workspace\/a b"/);
+    assert.match(all.find(n=>n.className.includes('eagle-library-badge')).textContent,/已连接/);
+  } finally {cleanup();}
+});
+
+test('poll refresh observes transitions, skips hidden pages and cancels in-flight updates on navigation', async () => {
+  let next, resolve, signal, visible=true, calls=0, failures=0; const updates=[];
+  const stop=watchEagleStatus({load:s=>{calls++; signal=s; return new Promise(r=>{resolve=r;});}, update:r=>updates.push(r), failed:()=>failures++, visible:()=>visible, schedule:fn=>{next=fn;return 1;}, cancel:()=>{next=null;}});
+  resolve({state:'verified'}); await Promise.resolve(); await Promise.resolve();
+  assert.deepEqual(updates,[{state:'verified'}]);
+  visible=false; await next(); assert.equal(calls,1);
+  visible=true; const pending=next(); assert.equal(calls,2);
+  stop(); assert.equal(signal.aborted,true);
+  resolve({state:'unavailable'}); await pending;
+  assert.equal(updates.length,1); assert.equal(failures,0); assert.equal(next,null);
+});
+
+test('failed poll reports an unavailable status read and subsequent successful poll recovers', async () => {
+  let next, attempt=0, failures=0; const updates=[];
+  const stop=watchEagleStatus({load:async()=>{if(++attempt===1)throw new Error('private');return {state:'connected'};}, update:r=>updates.push(r), failed:()=>failures++, visible:()=>true, schedule:fn=>{next=fn;}, cancel:()=>{}});
+  await Promise.resolve(); await Promise.resolve(); assert.equal(failures,1);
+  await next(); assert.deepEqual(updates,[{state:'connected'}]); stop();
 });

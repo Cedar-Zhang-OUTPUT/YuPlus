@@ -171,3 +171,7 @@ Use `collab ACTION --project PROJECT_ID --json`. Read [collaboration.md](collabo
 `accept.handled_keys` lists every remotely changed mapped section returned by comparison (remote/conflict), including ones whose local Review was updated in this operation. An empty array is only appropriate when no mapped section changed. Acceptance rechecks the latest remote snapshot. A changed snapshot requires a new pull.
 
 Use new types `creative_proposals` and `creative_feedback` under draft; `creative_plan` under review with scope `proposal:<existing draft item_id>`. Set `outline_version:2` on every new/reorganized review document. Query schema definitions on demand; display D/R codes are not IDs. User edits and conflict resolution always preserve draft-first causality.
+
+## Eagle connection observations
+
+`eagle status` reads the workspace's latest Agent-reported check; `eagle record --request-id ID --input FILE` stores an observation with `base_version`. These commands do not call or configure Eagle. Read [eagle-library.md](eagle-library.md#sync-the-observation-to-the-yu-card) for exact fields, evidence thresholds and workspace matching before recording. The browser automatically displays that receipt, including check time and library name. Saved success is not proof that Eagle is currently online.

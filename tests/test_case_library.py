@@ -58,7 +58,7 @@ class LibraryTests(unittest.TestCase):
         old.db.execute('DROP TABLE case_library_requests');old.db.execute('DROP TABLE case_libraries');old.db.execute('PRAGMA user_version=3');old.close()
         migrated=App(legacy)
         try:
-            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],11)
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],12)
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
             self.assertEqual(len(migrated.execute('library.list')['data']['libraries']),31)
         finally:migrated.close()
@@ -157,7 +157,7 @@ class LibraryTests(unittest.TestCase):
             self.assertEqual(saved['kind'],'feishu_folder')
             self.assertEqual(saved['version'],row['version'])
             self.assertEqual(migrated.execute('project.show',project_id=project)['data']['name'],'旧项目')
-            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],11)
+            self.assertEqual(migrated.execute('doctor')['data']['schema_version'],12)
         finally:migrated.close()
         backups=list((self.root/'legacy4-migration-backups').iterdir());self.assertEqual(len(backups),1)
         with sqlite3.connect(backups[0]/'yuplus.sqlite') as db:
