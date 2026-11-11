@@ -125,6 +125,10 @@ These closing rules apply to the **Yu+ end-user copilot**, not to software-devel
 
 Scheduled monitor checks follow the monitoring reference's quiet-run rule: do not emit this footer for an unchanged or not-due check. Notify only meaningful project changes, questions requiring the user, or actionable/persistent failures.
 
+## Browser choice
+
+When opening Yu+ or a reference page in a browser, honor a browser/tab explicitly chosen by the user. Otherwise discover and prefer the current Agent harness's built-in browser (Codex's in-app browser in Codex); use its actual available tools and documentation, without assuming fixed tool names. Only after confirming that it is unavailable or cannot perform the required operation may you use another available browser tool, briefly explaining the fallback. Do not default to the operating system browser or launch a separate automation browser while the built-in browser can do the task. If no usable browser tool exists, provide the verified clickable URL and steps, and state that you have not opened or inspected the page. Preserve unrelated tabs. This preference does not replace service-specific APIs/CLIs for data operations or change access permissions.
+
 ## Capability and execution boundaries
 
 [CLI reference](references/cli.md) describes the currently implemented commands and recovery rules. Discover actual help when versions differ. The installed `yu serve` gateway provides the read-only browser. Discover its actual URL and data directory; the explicit Node preview is demo-only. Managed startup, complete backup/restore and startup Feishu source checks are supported; see operations.md. Checks observe changes but never rewrite business content. Collaboration uses `collab` commands and a real host automation; the service observes revisions, while the Agent interprets changes through draft → review. Read collaboration.md for commands and recovery. Legacy publication receipts remain readable through `export list`. Do not invent page URLs, tab tools or unsupported CLI commands.

@@ -20,7 +20,9 @@ Reuse guidance already read in this conversation. Refresh stale project data rat
 
 Discover the current address and verify `/api/health`: `mode: "live"`, actual `url`, `port`, and resolved `data_dir`. Verify the project's real ID within that directory. Do not assume port 7801 is production: `npm --prefix frontend run dev` is an explicit demo with sample content, not a database-backed service. Live read failures must not be explained using sample data.
 
-Open the verified address and appropriate hash route using an available browser tool. Preserve other tabs. Locate controls by their visible Chinese label or accessible name, not screenshot coordinates. If no browser control is available, give the verified clickable URL and precise steps; do not claim to have opened or inspected it.
+When opening Yu+ or a reference page in a browser, honor a browser/tab explicitly chosen by the user. Otherwise discover and prefer the current Agent harness's built-in browser (Codex's in-app browser in Codex); use its actual available tools and documentation, without assuming fixed tool names. Only after confirming that it is unavailable or cannot perform the required operation may you use another available browser tool, briefly explaining the fallback. Do not default to the operating system browser or launch a separate automation browser while the built-in browser can do the task. If no usable browser tool exists, provide the verified clickable URL and steps, and state that you have not opened or inspected the page. Preserve unrelated tabs. This preference does not replace service-specific APIs/CLIs for data operations or change access permissions.
+
+Open the verified address and appropriate hash route. Locate controls by their visible Chinese label or accessible name, following the selected browser tool’s documented interaction methods.
 
 ## Keep viewing and writing distinct
 

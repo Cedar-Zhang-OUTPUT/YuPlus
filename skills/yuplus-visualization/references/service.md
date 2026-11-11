@@ -33,7 +33,7 @@ Append these routes to the verified base URL; replace IDs with returned identiti
 | Saved original materials | `/#/p/PROJECT_ID/sources` |
 | Changes and decisions | `/#/p/PROJECT_ID/history` |
 
-Use an available Codex/browser opening tool with the full URL. Do not close or repurpose unrelated user tabs. Hash routing changes the reading location, not business state. A copied link does not encode the selected historical version: verify the version shown in the page and preserve its revision in any edit reference.
+Apply the browser order in SKILL.md to the full URL: honor the user’s explicit browser/tab choice; otherwise prefer the current harness’s built-in browser (Codex’s in-app browser in Codex). Confirm it is unavailable or unable to perform the required operation before using another browser tool, and explain the fallback. If no browser tool is usable, provide the verified link without claiming to have opened it. Do not close or repurpose unrelated user tabs. Hash routing changes the reading location, not business state. A copied link does not encode the selected historical version: verify the version shown in the page and preserve its revision in any edit reference.
 
 The UI initially shows “正在读取项目内容”. A successful empty project/list and “无法读取项目内容” are different states. The latter has “重新读取”; it does not mean the project has no data. After CLI writes or background scans, use “刷新页面” or browser reload to see saved results. Navigation inside a loaded project can reuse its existing view, so navigating alone is not a guaranteed refresh.
 

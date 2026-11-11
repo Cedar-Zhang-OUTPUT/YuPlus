@@ -313,6 +313,10 @@ PYTHON -m yuplus.export_bundle --data-dir DATA_DIR --project PROJECT_ID --output
 
 `project context`、项目 update/archive、前文未列出的 diff/history/show 辅助命令、relations 查询、review check、GC 均不可调用，不能写成现成可用命令。使用已有 show/list/read_basis/历史回执，或如实说明限制。在 review 确认记录能力实现前，不能把用户认可说成已经持久保存的 review-check 记录。
 
+## 浏览器选择
+
+需要在浏览器中打开 Yu+ 或参考网页时，遵从用户明确指定的浏览器或标签页；否则先发现并优先使用当前 Agent 宿主（harness）的内置浏览器，在 Codex 中就是应用内浏览器。按当前实际可用工具及其文档操作，不假定固定工具名称。只有确认内置浏览器不可用或无法完成所需操作后，才改用其他可用的浏览器工具，并简短说明原因。内置浏览器能够完成任务时，不默认调用系统浏览器，也不另起独立自动化浏览器。没有可用的浏览器工具时，提供经核验的可点击地址和操作步骤，明确说明尚未打开或检查页面。保留无关标签页。这一优先级不替代数据操作所需的专用 API/CLI，也不改变访问权限。
+
 ## 按需读取：安装、维护与来源检查
 
 首次安装或发现安装目录时，读取 Skill 中的 installation.json（若有），沿用实际 CLI、Python 和数据目录。安装启动、备份恢复、飞书来源检查时，读取[运维参考](operations.zh-CN.md)的对应部分；对应英文主 Skill 的 operations.md 路由。已读且仍适用的内容不重复加载。检查发现更新后，按材料来源读取新版、追加快照、更新相关 draft，再更新 review，不绕过因果关系。

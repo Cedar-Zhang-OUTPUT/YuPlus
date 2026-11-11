@@ -1,6 +1,6 @@
 # Yu+
 
-[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.33](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.33)
+[官网与 Agent 安装提示词](https://cedar-zhang-output.github.io/YuPlus/) · [下载 v0.3.34](https://github.com/Cedar-Zhang-OUTPUT/YuPlus/releases/tag/v0.3.34)
 
 Yu+ 是供 Agent 使用的本地项目资料 CLI。当前实现覆盖创建多个项目、收录材料、修改 draft、准备与发布 review，以及来源、对象和决策历史的查询。它保存分析结果及其依据；材料读取和内容分析由 Codex 中的 Agent 完成。
 
@@ -315,3 +315,8 @@ Personal 源可选填两项说明，也可在页面编辑。`library add/update`
 案例库卡片显示 Agent 最近检查的连接状态、实际库名、素材读取情况和检查时间。完成连接后，Skill 通过 `eagle status/record` 将结果回写同一工作空间；页面可见时每 5 秒自动读取，超过一天显示“连接待复核”。复制连接指令本身不会设置成功；已有连接需重新验证一次以补齐记录。页面展示历史检查结果，不冒充实时在线探测。
 
 schema 12 新增观察记录和幂等回执；升级前自动备份，随工作空间备份/恢复保留。不会保存 MCP 配置、endpoint、凭据或 Eagle 素材。
+
+
+## 浏览器选择（v0.3.34）
+
+两份 Skill 明确浏览器优先级：遵从用户指定，否则优先 Codex 或当前 harness 的内置浏览器；确认不可用或无法完成操作后再使用其他浏览器工具，并说明原因。均不可用时提供核验后的链接，不声称已打开。安装启动指南与中文审阅版同步更新，数据库保持 schema 12。
